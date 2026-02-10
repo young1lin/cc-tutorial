@@ -1,0 +1,17 @@
+# 环境变量（包含敏感信息）
+.env
+
+# HTTP Client 响应缓存
+.idea/httpRequests/
+http-client.private.env.json
+
+# VS Code REST Client 历史
+*.rest.http
+
+# 测试输出
+test-results/
+*.log
+
+# 操作系统文件
+.DS_Store
+Thumbs.db

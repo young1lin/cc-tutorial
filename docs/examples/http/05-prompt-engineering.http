@@ -1,0 +1,630 @@
+# ============================================
+# 提示词工程 (Prompt Engineering)
+# ============================================
+# 说明：展示提示词工程的核心技术和最佳实践
+# 目的：理解如何通过优化提示词提升模型表现
+# 模型：StepFun step-3.5-flash
+# 核心技术：Few-Shot、Chain-of-Thought、结构化输出
+# ============================================
+
+# 环境变量
+@STEPFUN_BASE_URL = https://api.stepfun.com/v1/chat/completions
+@STEPFUN_BEARER_TOKEN = Bearer {{$dotenv STEPFUN_API_KEY}}
+
+# ============================================
+# 1. Few-Shot Learning（少样本学习）
+# ============================================
+
+### [提示词 1.1] Zero-Shot - 无示例（基线）
+# 说明：不提供示例，直接让模型执行任务
+# 场景：情感分析
+# 预期：模型可能理解任务，但输出格式不统一
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个情感分析助手。请分析用户评论的情感倾向。"
+    },
+    {
+      "role": "user",
+      "content": "这家餐厅的环境不错，但菜品一般，价格有点贵。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [提示词 1.2] Few-Shot (3-Shot) - 提供示例
+# 说明：提供 3 个示例，引导模型学习任务模式
+# 优势：输出格式统一、准确率提升
+# 预期：模型会模仿示例的格式输出
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个情感分析助手。请按照示例格式输出情感分析结果。\n\n示例 1：\n输入：这家餐厅真好吃！服务态度也很棒。\n输出：正面（★★★★★）\n\n示例 2：\n输入：菜品质量太差了，再也不会来了。\n输出：负面（★☆☆☆☆）\n\n示例 3：\n输入：价格适中，味道还行。\n输出：中性（★★★☆☆）\n\n现在请分析以下评论："
+    },
+    {
+      "role": "user",
+      "content": "这家餐厅的环境不错，但菜品一般，价格有点贵。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [提示词 1.3] Few-Shot - 复杂任务（代码生成）
+# 说明：通过示例引导模型生成特定风格的代码
+# 场景：生成带注释和类型提示的 Python 函数
+# 预期：模型会遵循示例的代码风格
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个代码生成助手。请按照以下示例的风格生成代码：\n\n示例 1 - 计算阶乘：\n```python\nfrom typing import Union\n\ndef factorial(n: int) -> Union[int, None]:\n    \"\"\"\n    计算给定数字的阶乘\n    \n    Args:\n        n: 非负整数\n    \n    Returns:\n        n 的阶乘，如果 n < 0 则返回 None\n    \"\"\"\n    if n < 0:\n        return None\n    if n == 0:\n        return 1\n    return n * factorial(n - 1)\n```\n\n示例 2 - 判断素数：\n```python\nfrom typing import bool\n\ndef is_prime(n: int) -> bool:\n    \"\"\"\n    判断给定数字是否为素数\n    \n    Args:\n        n: 待判断的整数\n    \n    Returns:\n        如果 n 是素数返回 True，否则返回 False\n    \"\"\"\n    if n < 2:\n        return False\n    for i in range(2, int(n ** 0.5) + 1):\n        if n % i == 0:\n            return False\n    return True\n```\n\n现在请生成一个函数："
+    },
+    {
+      "role": "user",
+      "content": "生成一个计算斐波那契数列第 n 项的函数。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [提示词 1.4] Few-Shot vs Zero-Shot 对比 - 实体提取
+# 说明：对比 Few-Shot 和 Zero-Shot 在实体提取任务上的表现
+# 场景：从文本中提取人名、地名、机构名
+# 预期：Few-Shot 的准确率和格式一致性更高
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个实体提取助手。请从文本中提取人名、地名、机构名。\n\n示例 1：\n输入：李明在北京大学读书，他的导师是王教授。\n输出：\n- 人名：李明、王教授\n- 地名：北京\n- 机构：北京大学\n\n示例 2：\n输入：张三在上海的阿里巴巴总部工作。\n输出：\n- 人名：张三\n- 地名：上海\n- 机构：阿里巴巴\n\n现在请提取以下文本的实体："
+    },
+    {
+      "role": "user",
+      "content": "杨幂在杭州的西湖边拍摄新电影，制作公司是华谊兄弟。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 2. Chain-of-Thought (思维链)
+# ============================================
+
+### [提示词 2.1] Zero-Shot CoT - "让我们一步步思考"
+# 说明：添加 "Let's think step by step" 魔法提示词
+# 原理：引导模型输出推理过程，而非直接给答案
+# 场景：数学应用题
+# 预期：模型会先列出推理步骤，再给出答案
+# 参考：https://arxiv.org/abs/2205.11916
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个数学老师。请详细展示解题过程。"
+    },
+    {
+      "role": "user",
+      "content": "一个孩子存了 21 元，如果又得到 15 元，用这些钱可以买多少个单价 6 元的玩具？\n\n让我们一步步思考。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [提示词 2.2] Zero-Shot CoT - 对比（无提示词）
+# 说明：对比不使用 "step by step" 的效果
+# 预期：模型可能直接给答案，缺少推理过程
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个数学老师。"
+    },
+    {
+      "role": "user",
+      "content": "一个孩子存了 21 元，如果又得到 15 元，用这些钱可以买多少个单价 6 元的玩具？"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [提示词 2.3] Few-Shot CoT - 提供推理示例
+# 说明：提供包含推理过程的示例
+# 优势：比 Zero-Shot CoT 更精确，模型学习推理风格
+# 场景：复杂数学问题
+# 预期：模型模仿示例的推理格式
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个数学老师。请按照示例的格式展示解题过程。\n\n示例 1：\n问题：Roger 有 5 个网球。他又买了 2 罐网球，每罐 3 个。他现在有多少个网球？\n推理：\n1. Roger 开始有 5 个球\n2. 2 罐 × 3 个/罐 = 6 个球\n3. 5 + 6 = 11\n答案：11 个网球\n\n示例 2：\n问题：餐厅有 23 个苹果，用了 20 个做午餐，又买了 6 个，现在有多少个？\n推理：\n1. 餐厅开始有 23 个苹果\n2. 用了 20 个，剩余 23 - 20 = 3 个\n3. 又买了 6 个，现在有 3 + 6 = 9 个\n答案：9 个苹果\n\n现在请解决以下问题："
+    },
+    {
+      "role": "user",
+      "content": "一个书店有 45 本书，卖出了 18 本，又进货 30 本，然后再卖出 12 本，现在有多少本书？"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [提示词 2.4] Chain-of-Thought - 逻辑推理
+# 说明：使用 CoT 提升逻辑推理能力
+# 场景：多步推理问题
+# 预期：模型会展示完整的推理链
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个逻辑推理专家。请一步步展示你的推理过程。"
+    },
+    {
+      "role": "user",
+      "content": "有三个开关，分别控制三个灯泡，但你只能进房间一次查看灯泡状态。你在房间外可以任意操作开关，如何确定每个开关对应哪个灯泡？\n\n让我们一步步思考。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [提示词 2.5] Chain-of-Thought - 代码调试
+# 说明：使用 CoT 帮助发现和修复代码问题
+# 场景：代码审查和调试
+# 预期：模型会逐步分析代码，找出问题
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个代码审查专家。请一步步分析代码，找出潜在问题。"
+    },
+    {
+      "role": "user",
+      "content": "以下 Python 代码有什么问题？请一步步分析。\n\n```python\ndef calculate_average(numbers):\n    total = 0\n    for num in numbers:\n        total += num\n    return total / len(numbers)\n\nresult = calculate_average([])\nprint(result)\n```"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 3. 结构化输出
+# ============================================
+
+### [提示词 3.1] JSON 输出 - 基础
+# 说明：强制模型返回 JSON 格式
+# 场景：信息提取，需要结构化数据
+# 预期：模型返回有效的 JSON
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个信息提取助手。请以 JSON 格式返回结果，不要包含任何其他文字。"
+    },
+    {
+      "role": "user",
+      "content": "提取以下文本的关键信息，以 JSON 格式返回，包含 name, age, occupation, city 字段：\n\n李明，35 岁，软件工程师，住在杭州。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [提示词 3.2] JSON 输出 - 带 Schema
+# 说明：提供 JSON Schema，明确字段要求
+# 优势：输出格式更严格、可预测
+# 场景：API 集成、数据处理
+# 预期：模型严格遵循 Schema
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个信息提取助手。请严格按照以下 JSON Schema 返回结果：\n\n```json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"name\": {\"type\": \"string\"},\n    \"age\": {\"type\": \"integer\"},\n    \"occupation\": {\"type\": \"string\"},\n    \"city\": {\"type\": \"string\"},\n    \"skills\": {\n      \"type\": \"array\",\n      \"items\": {\"type\": \"string\"}\n    }\n  },\n  \"required\": [\"name\", \"age\", \"occupation\", \"city\"]\n}\n```\n\n只返回 JSON，不要包含其他内容。"
+    },
+    {
+      "role": "user",
+      "content": "提取信息：\n\n张三，28 岁，前端工程师，在上海工作。擅长 React、TypeScript 和 Node.js。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [提示词 3.3] JSON 输出 - 复杂嵌套
+# 说明：测试模型处理复杂嵌套 JSON 的能力
+# 场景：电商订单、文档结构等
+# 预期：模型返回嵌套的 JSON 结构
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个订单处理助手。请将订单信息转换为 JSON 格式：\n\n```json\n{\n  \"order_id\": \"string\",\n  \"customer\": {\n    \"name\": \"string\",\n    \"phone\": \"string\"\n  },\n  \"items\": [\n    {\n      \"product\": \"string\",\n      \"quantity\": number,\n      \"price\": number\n    }\n  ],\n  \"total\": number\n}\n```\n\n只返回 JSON。"
+    },
+    {
+      "role": "user",
+      "content": "订单号：ORD-20260209-001\n客户：李明，电话 13800138000\n商品：iPhone 15（2 台，单价 5999 元）、AirPods Pro（1 个，单价 1999 元）\n总价：13997 元"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [提示词 3.4] Markdown 输出 - 文档生成
+# 说明：生成格式化的 Markdown 文档
+# 场景：文档生成、报告撰写
+# 预期：模型返回结构良好的 Markdown
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个技术文档撰写助手。请使用 Markdown 格式，包含：\n- 一级标题（#）\n- 二级标题（##）\n- 列表（- 或 1.）\n- 代码块（```）\n- 粗体（**）和斜体（*）"
+    },
+    {
+      "role": "user",
+      "content": "生成一个关于 Python 快速排序算法的技术文档，包括：原理说明、代码实现、时间复杂度分析。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0.3
+}
+
+### [提示词 3.5] 表格输出 - Markdown Table
+# 说明：生成 Markdown 表格
+# 场景：数据对比、特性矩阵
+# 预期：模型返回格式正确的表格
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个数据分析助手。请使用 Markdown 表格格式输出结果。"
+    },
+    {
+      "role": "user",
+      "content": "对比 Python、JavaScript、Java 三种编程语言的特点，生成一个表格，包含以下维度：类型系统、运行环境、主要应用场景、学习难度。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 4. 角色扮演 (Role Playing)
+# ============================================
+
+### [提示词 4.1] 专家角色 - 技术专家
+# 说明：通过角色设定提升回答质量
+# 场景：技术咨询
+# 预期：模型会使用更专业的术语和更深入的分析
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一位拥有 15 年经验的资深软件架构师，专精于分布式系统和微服务架构。你的回答应该：\n1. 使用专业术语\n2. 提供架构层面的思考\n3. 考虑可扩展性、性能、安全性等多个维度\n4. 引用实际案例和最佳实践"
+    },
+    {
+      "role": "user",
+      "content": "如何设计一个高并发的电商秒杀系统？"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0.3
+}
+
+### [提示词 4.2] 对比 - 无角色设定
+# 说明：对比有无角色设定的差异
+# 预期：回答更泛化、缺少深度
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个助手。"
+    },
+    {
+      "role": "user",
+      "content": "如何设计一个高并发的电商秒杀系统？"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0.3
+}
+
+### [提示词 4.3] 创意角色 - 诗人
+# 说明：角色扮演用于创意写作
+# 场景：内容创作
+# 预期：输出更有文学性和创意
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一位当代诗人，擅长用简洁优美的语言表达深刻的情感。你的诗歌风格类似于顾城和海子，追求意象的新颖和情感的真挚。"
+    },
+    {
+      "role": "user",
+      "content": "写一首关于杭州西湖春天的短诗（4-6 行）。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0.7
+}
+
+# ============================================
+# 5. Negative Prompting（负面提示）
+# ============================================
+
+### [提示词 5.1] 避免特定行为 - 不要解释
+# 说明：明确告知模型"不要做什么"
+# 场景：只要结果，不要过程
+# 预期：模型只返回答案，不解释
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个代码助手。\n\n重要规则：\n- 只返回代码，不要解释\n- 不要添加注释\n- 不要说明使用方法\n- 不要包含任何代码块标记（```）"
+    },
+    {
+      "role": "user",
+      "content": "写一个 Python 函数，判断一个数是否为质数。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [提示词 5.2] 避免特定内容 - 不要使用术语
+# 说明：要求模型避免使用专业术语
+# 场景：面向非技术用户的解释
+# 预期：模型使用通俗语言
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个技术科普作者。\n\n重要规则：\n- 不要使用专业术语（如「API」「框架」「异步」等）\n- 用日常生活的比喻来解释技术概念\n- 假设听众是完全没有技术背景的人"
+    },
+    {
+      "role": "user",
+      "content": "解释一下什么是「云计算」？"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0.3
+}
+
+### [提示词 5.3] 避免冗长 - 简洁回答
+# 说明：限制回答长度，避免啰嗦
+# 场景：快速问答
+# 预期：模型给出简短的回答
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个助手。\n\n重要规则：\n- 回答必须简洁，不超过 3 句话\n- 不要举例子\n- 不要解释背景知识\n- 直接回答问题核心"
+    },
+    {
+      "role": "user",
+      "content": "什么是 React？"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 6. 上下文学习 (In-Context Learning)
+# ============================================
+
+### [提示词 6.1] 动态示例 - 根据上下文调整
+# 说明：模型从对话历史中学习模式
+# 场景：客户服务，学习回复风格
+# 预期：模型会模仿之前的回复风格
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个客服助手。请学习对话中的回复风格，保持一致。"
+    },
+    {
+      "role": "user",
+      "content": "我的订单什么时候发货？"
+    },
+    {
+      "role": "assistant",
+      "content": "亲~ 您的订单预计 24 小时内发货哦！可以在「我的订单」中查看物流信息呢 ✨"
+    },
+    {
+      "role": "user",
+      "content": "可以换货吗？"
+    },
+    {
+      "role": "assistant",
+      "content": "当然可以哦~ 收货后 7 天内都可以申请换货呢！具体操作：「我的订单」→「申请售后」→「换货」就可以啦 💝"
+    },
+    {
+      "role": "user",
+      "content": "退款要多久？"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0.3
+}
+
+# ============================================
+# 总结
+# ============================================
+#
+# 提示词工程核心技术：
+#
+# 1. Few-Shot Learning（少样本学习）
+#    - 提供 2-5 个示例，引导模型学习任务模式
+#    - 优势：格式统一、准确率提升
+#    - 适用：分类、提取、生成等结构化任务
+#
+# 2. Chain-of-Thought（思维链）
+#    - Zero-Shot CoT：添加 "Let's think step by step"
+#    - Few-Shot CoT：提供带推理过程的示例
+#    - 优势：提升推理能力、减少错误
+#    - 适用：数学、逻辑、代码调试
+#
+# 3. 结构化输出
+#    - JSON：提供 Schema 约束格式
+#    - Markdown：生成文档和表格
+#    - 优势：输出可预测、便于集成
+#    - 适用：API 对接、数据处理
+#
+# 4. 角色扮演
+#    - 设定专家身份提升回答质量
+#    - 创意角色用于内容创作
+#    - 优势：更专业、更有针对性
+#
+# 5. Negative Prompting
+#    - 明确告知"不要做什么"
+#    - 避免冗长、避免术语、避免解释
+#    - 优势：输出更符合预期
+#
+# 6. In-Context Learning
+#    - 从对话历史中学习模式
+#    - 保持风格一致性
+#
+# 最佳实践：
+# - 从简单开始，逐步添加约束
+# - 使用 temperature=0 提高确定性
+# - 提供清晰的示例和格式要求
+# - 测试边界情况，迭代优化
+# - 结合多种技术（如 Few-Shot + CoT）
+#
+# 参考资料：
+# - Prompt Engineering Guide: https://www.promptingguide.ai/
+# - Chain-of-Thought Paper: https://arxiv.org/abs/2201.11903
+# - Zero-Shot CoT: https://arxiv.org/abs/2205.11916
+# - Few-Shot Learning: https://arxiv.org/abs/2005.14165
+# ============================================

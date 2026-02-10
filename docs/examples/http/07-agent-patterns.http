@@ -1,0 +1,689 @@
+# ============================================
+# Agent 模式演示
+# ============================================
+# 说明：展示基于 LLM 的 Agent 设计模式
+# 目的：理解 Agent 如何通过工具调用完成复杂任务
+# 模型：StepFun step-3.5-flash
+# 核心概念：Reasoning + Acting (ReAct)
+# ============================================
+
+# 环境变量
+@STEPFUN_BASE_URL = https://api.stepfun.com/v1/chat/completions
+@STEPFUN_BEARER_TOKEN = Bearer {{$dotenv STEPFUN_API_KEY}}
+
+# ============================================
+# 1. ReAct 模式 (Reasoning + Acting)
+# ============================================
+
+### [Agent 1.1] ReAct 基础 - Thought → Action → Observation
+# 说明：ReAct 是最经典的 Agent 模式，通过思考-行动-观察循环解决问题
+# 流程：
+#   1. Thought（思考）：分析当前状态，决定下一步
+#   2. Action（行动）：选择并调用合适的工具
+#   3. Observation（观察）：获取工具返回的结果
+#   4. 重复 1-3，直到完成任务
+# 场景：规划明天的杭州一日游，需要考虑天气
+# 预期：模型会先查询天气，再根据天气推荐景点
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个旅游规划助手。请使用 ReAct 模式：\n1. Thought: 先思考需要什么信息\n2. Action: 调用合适的工具获取信息\n3. Observation: 分析工具返回的结果\n4. 重复以上步骤，直到能给出完整的旅游建议\n\n在每次回复中，请明确说明你的思考过程（Thought）。"
+    },
+    {
+      "role": "user",
+      "content": "帮我规划明天（2026-02-10）的杭州一日游，需要考虑天气情况。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "获取指定城市的天气信息",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "城市名称（小写拼音）"
+            },
+            "date": {
+              "type": "string",
+              "description": "日期，格式 YYYY-MM-DD"
+            }
+          },
+          "required": ["location", "date"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_attractions",
+        "description": "获取指定城市的景点列表",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "城市名称（小写拼音）"
+            },
+            "category": {
+              "type": "string",
+              "enum": ["outdoor", "indoor", "cultural", "all"],
+              "description": "景点类别：outdoor（户外）、indoor（室内）、cultural（文化）、all（全部）"
+            }
+          },
+          "required": ["location"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_restaurants",
+        "description": "获取指定城市的餐厅推荐",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "城市名称（小写拼音）"
+            },
+            "cuisine": {
+              "type": "string",
+              "description": "菜系类型，如：hangzhou（杭帮菜）、sichuan（川菜）等"
+            }
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+### [Agent 1.2] ReAct - 第二轮（模拟天气查询结果）
+# 说明：模拟第一次工具调用返回天气信息后的状态
+# 预期：
+#   - Observation: 分析天气（晴天，适合户外）
+#   - Thought: 决定查询户外景点
+#   - Action: 调用 get_attractions(outdoor)
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个旅游规划助手。请使用 ReAct 模式。在每次回复中，请明确说明：\n- Thought: 你的思考\n- Action: 你要调用的工具（如果需要）\n- Observation: 对工具结果的观察和分析"
+    },
+    {
+      "role": "user",
+      "content": "帮我规划明天（2026-02-10）的杭州一日游，需要考虑天气情况。"
+    },
+    {
+      "role": "assistant",
+      "content": "Thought: 我需要先了解明天杭州的天气情况，这样才能推荐合适的活动。\nAction: 调用 get_weather 查询天气。",
+      "tool_calls": [
+        {
+          "id": "call_001",
+          "type": "function",
+          "function": {
+            "name": "get_weather",
+            "arguments": "{\"location\": \"hangzhou\", \"date\": \"2026-02-10\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_001",
+      "content": "{\"location\": \"杭州\", \"date\": \"2026-02-10\", \"weather\": \"Sunny\", \"temperature\": \"18°C\", \"description\": \"晴朗，适合户外活动\"}"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "获取指定城市的天气信息",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"},
+            "date": {"type": "string"}
+          },
+          "required": ["location", "date"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_attractions",
+        "description": "获取指定城市的景点列表",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"},
+            "category": {
+              "type": "string",
+              "enum": ["outdoor", "indoor", "cultural", "all"]
+            }
+          },
+          "required": ["location"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_restaurants",
+        "description": "获取指定城市的餐厅推荐",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"},
+            "cuisine": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+### [Agent 1.3] ReAct - 第三轮（模拟景点查询结果）
+# 说明：模拟景点查询返回后的状态
+# 预期：
+#   - Observation: 分析景点列表
+#   - Thought: 决定查询餐厅
+#   - Action: 调用 get_restaurants
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个旅游规划助手。请使用 ReAct 模式。"
+    },
+    {
+      "role": "user",
+      "content": "帮我规划明天（2026-02-10）的杭州一日游，需要考虑天气情况。"
+    },
+    {
+      "role": "assistant",
+      "content": "Thought: 我需要先了解明天杭州的天气情况。\nAction: 调用 get_weather。",
+      "tool_calls": [
+        {
+          "id": "call_001",
+          "type": "function",
+          "function": {
+            "name": "get_weather",
+            "arguments": "{\"location\": \"hangzhou\", \"date\": \"2026-02-10\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_001",
+      "content": "{\"weather\": \"Sunny\", \"temperature\": \"18°C\", \"description\": \"晴朗，适合户外活动\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "Observation: 明天杭州晴天，18°C，非常适合户外活动。\nThought: 既然天气好，我应该推荐户外景点。\nAction: 调用 get_attractions 查询户外景点。",
+      "tool_calls": [
+        {
+          "id": "call_002",
+          "type": "function",
+          "function": {
+            "name": "get_attractions",
+            "arguments": "{\"location\": \"hangzhou\", \"category\": \"outdoor\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_002",
+      "content": "{\"attractions\": [{\"name\": \"西湖\", \"rating\": 4.8, \"description\": \"杭州最著名的景点\"}, {\"name\": \"灵隐寺\", \"rating\": 4.6, \"description\": \"千年古刹\"}, {\"name\": \"西溪湿地\", \"rating\": 4.5, \"description\": \"自然生态湿地公园\"}]}"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "获取指定城市的天气信息",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"},
+            "date": {"type": "string"}
+          },
+          "required": ["location", "date"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_attractions",
+        "description": "获取指定城市的景点列表",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"},
+            "category": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_restaurants",
+        "description": "获取指定城市的餐厅推荐",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"},
+            "cuisine": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 2. Plan-and-Execute 模式
+# ============================================
+
+### [Agent 2.1] Plan-and-Execute - 任务规划
+# 说明：Plan-and-Execute 模式先制定完整计划，再逐步执行
+# 区别于 ReAct：ReAct 是边思考边行动，Plan-and-Execute 是先规划后执行
+# 场景：写一篇关于杭州旅游的博客文章
+# 预期：模型先输出完整计划，再开始执行各步骤
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个内容创作助手。请使用 Plan-and-Execute 模式：\n\n第一阶段 - 规划（Plan）：\n1. 分析任务需求\n2. 制定完整的执行计划\n3. 列出需要调用的工具和顺序\n\n第二阶段 - 执行（Execute）：\n1. 按计划逐步调用工具\n2. 收集所有信息\n3. 整合成最终结果\n\n请先输出你的计划，再开始执行。"
+    },
+    {
+      "role": "user",
+      "content": "写一篇关于杭州旅游的博客文章，包括天气建议、必去景点、美食推荐三个部分。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "获取城市天气信息",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_attractions",
+        "description": "获取城市景点列表",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"},
+            "category": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_restaurants",
+        "description": "获取餐厅推荐",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"},
+            "cuisine": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0.3
+}
+
+### [Agent 2.2] Plan-and-Execute - 执行阶段
+# 说明：模拟计划制定完成后，进入执行阶段
+# 预期：模型按计划依次调用工具
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个内容创作助手。请使用 Plan-and-Execute 模式。"
+    },
+    {
+      "role": "user",
+      "content": "写一篇关于杭州旅游的博客文章，包括天气建议、必去景点、美食推荐三个部分。"
+    },
+    {
+      "role": "assistant",
+      "content": "好的，我来制定一个计划：\n\n【计划】\n1. 查询杭州的天气情况（工具：get_weather）\n2. 获取杭州的热门景点（工具：get_attractions）\n3. 获取杭州的特色美食餐厅（工具：get_restaurants）\n4. 整合以上信息，撰写博客文章\n\n【执行】\n现在开始执行第 1 步：查询天气。"
+    },
+    {
+      "role": "user",
+      "content": "好的，请开始执行你的计划。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "获取城市天气信息",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_attractions",
+        "description": "获取城市景点列表",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"},
+            "category": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_restaurants",
+        "description": "获取餐厅推荐",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"},
+            "cuisine": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0.3
+}
+
+# ============================================
+# 3. ReAct vs Plan-and-Execute 对比
+# ============================================
+
+### [对比 3.1] ReAct 的优势 - 灵活应对变化
+# 说明：ReAct 可以根据中间结果动态调整策略
+# 场景：查询天气后发现下雨，立即改变计划
+# 预期：模型在发现下雨后，改为推荐室内景点
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个旅游规划助手。使用 ReAct 模式，根据实际情况灵活调整计划。"
+    },
+    {
+      "role": "user",
+      "content": "推荐明天杭州的游玩路线。"
+    },
+    {
+      "role": "assistant",
+      "content": "Thought: 先查询天气。",
+      "tool_calls": [
+        {
+          "id": "call_001",
+          "type": "function",
+          "function": {
+            "name": "get_weather",
+            "arguments": "{\"location\": \"hangzhou\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_001",
+      "content": "{\"weather\": \"Rainy\", \"temperature\": \"12°C\", \"description\": \"大雨，不适合户外活动\"}"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "获取天气信息",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_attractions",
+        "description": "获取景点列表",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"},
+            "category": {
+              "type": "string",
+              "enum": ["outdoor", "indoor", "cultural", "all"]
+            }
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+### [对比 3.2] Plan-and-Execute 的优势 - 全局优化
+# 说明：Plan-and-Execute 可以全局规划，避免重复工作
+# 场景：需要写多篇不同主题的文章
+# 预期：模型制定统一的数据收集计划，避免重复调用
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个内容创作助手。使用 Plan-and-Execute 模式，注重效率优化。"
+    },
+    {
+      "role": "user",
+      "content": "写两篇文章：一篇关于杭州的户外活动，一篇关于杭州的文化景点。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_attractions",
+        "description": "获取景点列表",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"},
+            "category": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0.3
+}
+
+# ============================================
+# 4. 自我反思 Agent (Self-Reflection)
+# ============================================
+
+### [Agent 4.1] 自我反思 - 验证结果
+# 说明：Agent 执行任务后，自我检查结果是否合理
+# 场景：计算复杂数学问题，自我验证答案
+# 预期：模型在给出答案后，使用工具验证
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个数学助手。请使用自我反思模式：\n1. 先尝试解决问题\n2. 使用工具验证你的答案\n3. 如果验证失败，重新思考并修正\n4. 给出最终答案"
+    },
+    {
+      "role": "user",
+      "content": "计算：(123 + 456) × (789 - 654) ÷ 10"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "calculator",
+        "description": "精确计算数学表达式",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "expression": {
+              "type": "string",
+              "description": "数学表达式"
+            }
+          },
+          "required": ["expression"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 总结
+# ============================================
+#
+# Agent 模式对比：
+#
+# 1. ReAct (Reasoning + Acting)
+#    - 优势：灵活、自适应、可根据中间结果调整策略
+#    - 劣势：可能效率较低，缺乏全局规划
+#    - 适用：动态环境、需要根据反馈调整的任务
+#    - 示例：客服对话、问题诊断、探索式搜索
+#
+# 2. Plan-and-Execute
+#    - 优势：全局优化、避免重复、效率高
+#    - 劣势：缺乏灵活性，难以应对意外情况
+#    - 适用：目标明确、步骤可预见的任务
+#    - 示例：内容创作、报告生成、批量处理
+#
+# 3. Self-Reflection (自我反思)
+#    - 优势：提高准确性、减少错误
+#    - 劣势：增加额外的工具调用开销
+#    - 适用：需要高准确性的任务
+#    - 示例：代码生成、数学计算、事实核查
+#
+# 设计原则：
+# - 根据任务特点选择合适的 Agent 模式
+# - 通过 System Prompt 引导模型输出思考过程
+# - 设计原子化的工具，便于组合
+# - 记录完整的思考链，便于调试和优化
+#
+# 实战建议：
+# - ReAct 适合大部分场景，是默认选择
+# - 对于明确的多步骤任务，使用 Plan-and-Execute
+# - 对于关键任务，添加 Self-Reflection 机制
+# - 可以组合多种模式（如 Plan-and-Execute + Self-Reflection）
+#
+# 参考资料：
+# - ReAct Paper: https://arxiv.org/abs/2210.03629
+# - ReAct Prompting Guide: https://www.promptingguide.ai/techniques/react
+# - IBM ReAct Agent: https://www.ibm.com/think/topics/react-agent
+# - ReAct vs Plan-and-Execute: https://dev.to/jamesli/react-vs-plan-and-execute-a-practical-comparison-of-llm-agent-patterns-4gh9
+# ============================================

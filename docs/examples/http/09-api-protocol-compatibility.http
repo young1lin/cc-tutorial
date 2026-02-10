@@ -1,0 +1,198 @@
+@GLM_BASE_URL = https://open.bigmodel.cn/api/anthropic/v1/messages
+@GLM_API_KEY = {{$dotenv GLM_API_KEY}}
+
+# 通用变量
+@LOCALE = zh-CN
+@main_prompt = You are an intelligent customer service agent named Alice. Your main role is to help users answer their questions.
+@response_language = You must respond in the locale specified by the LOCALE variable ({{LOCALE}}).All your responses should be in the language corresponding to this locale code.Do not use any other language regardless of the user's input language.
+
+### Anthropic 协议调用 (GLM-4.7) - 伪装成 Claude Code
+POST {{GLM_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+x-api-key: {{GLM_API_KEY}}
+anthropic-version: 2023-06-01
+anthropic-beta: claude-code-20250110
+User-Agent: Cursor/1.0.0 (Claude Code Agent)
+X-Cursor-Version: 1.0.0
+X-Request-ID: {{$uuid}}
+
+{
+  "model": "GLM-4.7",
+  "max_tokens": 1024,
+  "system": "{{main_prompt}} {{response_language}}",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello, who are you?"
+    }
+  ]
+}
+
+
+### Function Calling - 初始请求（带工具定义）
+POST {{GLM_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+x-api-key: {{GLM_API_KEY}}
+anthropic-version: 2023-06-01
+anthropic-beta: claude-code-20250110
+User-Agent: Cursor/1.0.0 (Claude Code Agent)
+X-Cursor-Version: 1.0.0
+X-Request-ID: {{$uuid}}
+
+{
+  "model": "GLM-4.7",
+  "max_tokens": 1024,
+  "system": "{{main_prompt}} {{response_language}}",
+  "messages": [
+    {
+      "role": "user",
+      "content": "请查询杭州的天气情况"
+    }
+  ],
+  "tools": [
+    {
+      "name": "get_weather",
+      "description": "获取指定城市的天气信息",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "城市名称（小写拼音），如 beijing, shanghai, hangzhou"
+          },
+          "date": {
+            "type": "string",
+            "description": "日期，格式 YYYY-MM-DD，默认今天"
+          }
+        },
+        "required": ["location"]
+      }
+    }
+  ]
+}
+
+### Function Calling - 第二轮（模型返回 tool_use，需要执行工具）
+POST {{GLM_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+x-api-key: {{GLM_API_KEY}}
+anthropic-version: 2023-06-01
+anthropic-beta: claude-code-20250110
+User-Agent: Cursor/1.0.0 (Claude Code Agent)
+X-Cursor-Version: 1.0.0
+X-Request-ID: {{$uuid}}
+
+{
+  "model": "GLM-4.7",
+  "max_tokens": 1024,
+  "system": "{{main_prompt}} {{response_language}}",
+  "messages": [
+    {
+      "role": "user",
+      "content": "请查询杭州的天气情况"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "我来帮您查询杭州的天气。"
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_01",
+          "name": "get_weather",
+          "input": {
+            "location": "hangzhou"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_01",
+          "content": "杭州今天晴天，温度 15-25°C，空气质量良好"
+        }
+      ]
+    }
+  ],
+  "tools": [
+    {
+      "name": "get_weather",
+      "description": "获取指定城市的天气信息",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "城市名称（小写拼音），如 beijing, shanghai, hangzhou"
+          },
+          "date": {
+            "type": "string",
+            "description": "日期，格式 YYYY-MM-DD，默认今天"
+          }
+        },
+        "required": ["location"]
+      }
+    }
+  ]
+}
+
+### Function Calling - 多工具示例
+POST {{GLM_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+x-api-key: {{GLM_API_KEY}}
+anthropic-version: 2023-06-01
+anthropic-beta: claude-code-20250110
+User-Agent: Cursor/1.0.0 (Claude Code Agent)
+X-Cursor-Version: 1.0.0
+X-Request-ID: {{$uuid}}
+
+{
+  "model": "GLM-4.7",
+  "max_tokens": 2048,
+  "system": "{{main_prompt}} {{response_language}}",
+  "messages": [
+    {
+      "role": "user",
+      "content": "帮我查询杭州的天气，并推荐几个适合的旅游景点"
+    }
+  ],
+  "tools": [
+    {
+      "name": "get_weather",
+      "description": "获取指定城市的天气信息",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "城市名称（小写拼音）"
+          }
+        },
+        "required": ["location"]
+      }
+    },
+    {
+      "name": "get_attractions",
+      "description": "获取指定城市的旅游景点推荐",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "城市名称（小写拼音）"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["outdoor", "indoor", "cultural", "all"],
+            "description": "景点类别：outdoor（户外）、indoor（室内）、cultural（文化）、all（全部）"
+          }
+        },
+        "required": ["location"]
+      }
+    }
+  ]
+}

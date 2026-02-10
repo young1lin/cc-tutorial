@@ -1,0 +1,575 @@
+# ============================================
+# 实用场景示例
+# ============================================
+# 说明：展示 LLM 在实际工作中的应用场景
+# 目的：理解如何将 LLM 集成到实际业务流程
+# 模型：StepFun step-3.5-flash
+# 场景：代码审查、摘要、情感分析、翻译、数据提取
+# ============================================
+
+# 环境变量
+@STEPFUN_BASE_URL = https://api.stepfun.com/v1/chat/completions
+@STEPFUN_BEARER_TOKEN = Bearer {{$dotenv STEPFUN_API_KEY}}
+
+# ============================================
+# 1. 代码审查与重构
+# ============================================
+
+### [场景 1.1] 代码审查 - 发现 Bug
+# 说明：使用 LLM 审查代码，发现潜在问题
+# 场景：Python 代码审查
+# 预期：识别除零错误、类型错误等
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个资深的代码审查专家。请仔细审查以下代码，找出所有潜在问题，包括：\n1. Bug 和逻辑错误\n2. 性能问题\n3. 安全漏洞\n4. 代码风格问题\n\n对每个问题，请说明：位置、问题描述、严重程度、修复建议。"
+    },
+    {
+      "role": "user",
+      "content": "请审查以下 Python 代码：\n\n```python\ndef calculate_average(numbers):\n    total = 0\n    for num in numbers:\n        total += num\n    return total / len(numbers)\n\ndef process_data(data):\n    result = []\n    for item in data:\n        if item['value'] > 0:\n            result.append(item['value'] * 2)\n    return result\n\nusers = [{'name': 'Alice', 'age': 30}, {'name': 'Bob'}]\nfor user in users:\n    print(f\"{user['name']} is {user['age']} years old\")\n```"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [场景 1.2] 代码重构 - 提升可读性
+# 说明：使用 LLM 重构代码，提升质量
+# 场景：重构混乱的代码
+# 预期：返回重构后的代码，并说明改进点
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个代码重构专家。请重构以下代码，要求：\n1. 提升可读性\n2. 遵循最佳实践\n3. 添加必要的类型注解和文档字符串\n4. 改进错误处理\n\n请先给出重构后的代码，再说明改进点。"
+    },
+    {
+      "role": "user",
+      "content": "请重构以下 JavaScript 代码：\n\n```javascript\nfunction f(a,b,c){\n  var x=a+b\n  if(x>c){return x*2}\n  else{return c-x}\n}\n\nvar d=[1,2,3,4,5]\nvar r=[]\nfor(var i=0;i<d.length;i++){\n  if(d[i]%2==0){r.push(d[i]*3)}\n}\nconsole.log(r)\n```"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [场景 1.3] 代码解释 - 理解复杂逻辑
+# 说明：使用 LLM 解释复杂代码的工作原理
+# 场景：理解遗留代码
+# 预期：逐步解释代码逻辑
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个代码导师。请用通俗易懂的语言解释代码的工作原理，包括：\n1. 整体功能说明\n2. 逐步执行流程\n3. 关键算法或技巧\n4. 使用示例"
+    },
+    {
+      "role": "user",
+      "content": "请解释以下 Python 代码的工作原理：\n\n```python\ndef memoize(func):\n    cache = {}\n    def wrapper(*args):\n        if args not in cache:\n            cache[args] = func(*args)\n        return cache[args]\n    return wrapper\n\n@memoize\ndef fibonacci(n):\n    if n < 2:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n```"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0.3
+}
+
+### [场景 1.4] 单元测试生成
+# 说明：使用 LLM 为代码生成单元测试
+# 场景：测试驱动开发
+# 预期：返回完整的测试用例
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个测试工程师。请为给定的函数编写完整的单元测试，包括：\n1. 正常情况测试\n2. 边界情况测试\n3. 异常情况测试\n4. 使用 pytest 框架"
+    },
+    {
+      "role": "user",
+      "content": "请为以下 Python 函数生成单元测试：\n\n```python\ndef calculate_discount(price: float, discount_rate: float) -> float:\n    \"\"\"\n    计算折扣后的价格\n    \n    Args:\n        price: 原价（必须 > 0）\n        discount_rate: 折扣率（0-1 之间）\n    \n    Returns:\n        折扣后的价格\n    \"\"\"\n    if price <= 0:\n        raise ValueError(\"Price must be positive\")\n    if not 0 <= discount_rate <= 1:\n        raise ValueError(\"Discount rate must be between 0 and 1\")\n    return price * (1 - discount_rate)\n```"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 2. 文本摘要
+# ============================================
+
+### [场景 2.1] 新闻摘要 - 提取要点
+# 说明：将长新闻压缩为关键要点
+# 场景：新闻聚合、信息提取
+# 预期：返回 3-5 条要点
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个新闻编辑。请将新闻内容总结为 3-5 条关键要点，每条不超过 30 字。"
+    },
+    {
+      "role": "user",
+      "content": "请总结以下新闻：\n\n杭州市政府今天宣布，将在未来三年内投资 50 亿元打造智慧城市项目。该项目包括建设城市大脑、智能交通系统和数字政务平台。市长表示，这将大幅提升城市管理效率，改善市民生活质量。项目预计将创造 2000 个就业岗位，并吸引更多科技企业入驻。目前已有 10 家知名科技公司签约参与项目建设。专家认为，此举将使杭州成为全国智慧城市建设的标杆。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [场景 2.2] 技术文档摘要 - 结构化输出
+# 说明：将技术文档总结为结构化摘要
+# 场景：技术调研、文档管理
+# 预期：返回结构化的摘要（背景、方法、结果、结论）
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个技术文档分析师。请将文档总结为结构化摘要，包含：\n1. 背景（1-2 句）\n2. 核心方法（2-3 句）\n3. 主要结果（2-3 句）\n4. 关键结论（1 句）"
+    },
+    {
+      "role": "user",
+      "content": "请总结以下技术文档：\n\nReAct（Reasoning and Acting）是一种将推理和行动结合的 Agent 框架。传统的 Agent 要么只进行推理，要么只执行行动，而 ReAct 通过交替进行思考（Thought）、行动（Action）和观察（Observation），实现了更智能的问题解决。实验表明，ReAct 在多个基准测试中优于传统方法。在 HotpotQA 问答任务中，ReAct 的准确率达到 34.5%，比 Chain-of-Thought 提升 7%。在 ALFWorld 游戏任务中，ReAct 的成功率为 75%，比基线方法提升 25%。研究表明，通过显式的推理步骤，模型能够更好地处理复杂任务。ReAct 已被广泛应用于 LangChain 等 Agent 框架中。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [场景 2.3] 会议记录摘要 - 行动项提取
+# 说明：从会议记录中提取行动项
+# 场景：会议管理、项目协作
+# 预期：返回待办事项列表
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个会议助手。请从会议记录中提取所有行动项，格式：\n- [ ] 任务描述 | 负责人 | 截止日期"
+    },
+    {
+      "role": "user",
+      "content": "请从以下会议记录提取行动项：\n\n产品会议记录（2026-02-09）\n参会人员：张三（产品）、李四（开发）、王五（设计）\n\n讨论内容：\n1. 新版本功能规划\n   - 张三：下周一前完成需求文档\n   - 李四：评估技术可行性，周三前给出方案\n   - 王五：设计 UI 原型，下周五前完成\n\n2. Bug 修复\n   - 李四：今天下班前修复登录问题\n   - 张三：跟进用户反馈，本周内给出解决方案\n\n3. 测试计划\n   - 全员：下周二参加测试培训\n   - 李四：准备测试环境，下周一完成"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 3. 情感分析
+# ============================================
+
+### [场景 3.1] 用户评论情感分析 - 简单分类
+# 说明：分析用户评论的情感倾向
+# 场景：电商评论、社交媒体监控
+# 预期：返回情感标签（正面/负面/中性）
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个情感分析助手。请分析评论的情感倾向，只返回以下格式：\n情感：正面/负面/中性"
+    },
+    {
+      "role": "user",
+      "content": "这家餐厅的菜品质量不错，服务态度也很好，但价格有点贵，性价比一般。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [场景 3.2] 细粒度情感分析 - 多维度评分
+# 说明：对评论的多个方面进行情感分析
+# 场景：产品评价、服务质量监控
+# 预期：返回多维度评分
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个情感分析专家。请对评论进行多维度分析，以 JSON 格式返回：\n```json\n{\n  \"overall\": \"正面/负面/中性\",\n  \"aspects\": {\n    \"质量\": {\"sentiment\": \"正面/负面/中性\", \"score\": 1-5},\n    \"服务\": {\"sentiment\": \"正面/负面/中性\", \"score\": 1-5},\n    \"价格\": {\"sentiment\": \"正面/负面/中性\", \"score\": 1-5}\n  },\n  \"summary\": \"一句话总结\"\n}\n```"
+    },
+    {
+      "role": "user",
+      "content": "这款手机性能强悍，拍照效果很棒，但电池续航一般，而且价格偏高。客服态度不错，物流也很快。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [场景 3.3] 批量情感分析 - 趋势分析
+# 说明：批量分析多条评论，输出整体趋势
+# 场景：舆情监控、品牌管理
+# 预期：返回统计结果
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个舆情分析师。请分析以下评论的整体趋势，返回：\n1. 正面/负面/中性评论数量\n2. 主要正面反馈（2-3 条）\n3. 主要负面反馈（2-3 条）\n4. 总体评价"
+    },
+    {
+      "role": "user",
+      "content": "请分析以下用户评论：\n\n1. 这家店的服务真好，下次还会来！\n2. 价格太贵了，不值这个价。\n3. 菜品一般，没有特色。\n4. 环境很棒，适合约会。\n5. 等了半小时才上菜，体验很差。\n6. 味道不错，分量也足。\n7. 服务员态度不好，不推荐。\n8. 性价比很高，值得推荐！"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 4. 文本翻译
+# ============================================
+
+### [场景 4.1] 基础翻译 - 中译英
+# 说明：将中文翻译为英文
+# 场景：文档翻译、国际化
+# 预期：返回准确、流畅的译文
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个专业翻译。请将中文准确、流畅地翻译为英文，保持原文的语气和风格。"
+    },
+    {
+      "role": "user",
+      "content": "请将以下中文翻译为英文：\n\n人工智能正在深刻改变我们的生活方式。从智能手机到自动驾驶汽车，AI 技术无处不在。然而，我们也需要关注 AI 带来的伦理和安全问题。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0.3
+}
+
+### [场景 4.2] 专业术语翻译 - 技术文档
+# 说明：翻译包含专业术语的技术文档
+# 场景：技术文档本地化
+# 预期：准确翻译术语，保持技术准确性
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个技术文档翻译专家。请准确翻译专业术语，必要时保留英文原文（加括号）。"
+    },
+    {
+      "role": "user",
+      "content": "请将以下技术文档翻译为英文：\n\nReAct 框架通过交替执行推理（Reasoning）和行动（Acting）来解决问题。它使用思维链（Chain-of-Thought）提示词引导大语言模型（LLM）输出推理过程，然后调用外部工具（Tools）执行行动。这种方法在 HotpotQA 基准测试中取得了最先进（SOTA）的结果。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [场景 4.3] 风格适配翻译 - 保留文化语境
+# 说明：翻译时考虑文化差异和语境
+# 场景：营销文案、文学作品翻译
+# 预期：译文符合目标语言的表达习惯
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个文化适配翻译专家。请翻译时考虑文化差异，必要时调整表达方式以符合目标语言习惯。对于文化特定概念，提供简短解释。"
+    },
+    {
+      "role": "user",
+      "content": "请将以下中文翻译为英文，注意文化适配：\n\n春节是中国最重要的传统节日，家家户户都会贴春联、吃团圆饭、放鞭炮。长辈会给小孩发压岁钱，寓意平安吉祥。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0.3
+}
+
+# ============================================
+# 5. 数据提取与结构化
+# ============================================
+
+### [场景 5.1] 实体提取 - 命名实体识别
+# 说明：从文本中提取人名、地名、机构名等
+# 场景：信息抽取、知识图谱构建
+# 预期：返回结构化的实体列表
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个实体提取助手。请从文本中提取所有实体，以 JSON 格式返回：\n```json\n{\n  \"persons\": [\"人名1\", \"人名2\"],\n  \"locations\": [\"地名1\", \"地名2\"],\n  \"organizations\": [\"机构1\", \"机构2\"],\n  \"dates\": [\"日期1\", \"日期2\"]\n}\n```"
+    },
+    {
+      "role": "user",
+      "content": "请从以下文本提取实体：\n\n2026 年 2 月 9 日，阿里巴巴集团 CEO 张勇在杭州总部宣布，公司将投资 10 亿美元在美国硅谷建立 AI 研究院。该研究院将与斯坦福大学合作，重点研究大语言模型技术。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [场景 5.2] 表格数据提取 - 从文本生成表格
+# 说明：将非结构化文本转换为表格
+# 场景：数据整理、报表生成
+# 预期：返回 Markdown 表格
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个数据整理助手。请将文本中的信息整理为 Markdown 表格。"
+    },
+    {
+      "role": "user",
+      "content": "请将以下信息整理为表格：\n\niPhone 15 售价 5999 元，内存 128GB，颜色黑色。\niPhone 15 Pro 售价 7999 元，内存 256GB，颜色白色。\niPhone 15 Pro Max 售价 9999 元，内存 512GB，颜色蓝色。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [场景 5.3] 关键信息提取 - 简历解析
+# 说明：从简历中提取关键信息
+# 场景：招聘管理、候选人筛选
+# 预期：返回结构化的简历信息
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个简历解析助手。请从简历中提取关键信息，以 JSON 格式返回：\n```json\n{\n  \"name\": \"姓名\",\n  \"contact\": {\"phone\": \"电话\", \"email\": \"邮箱\"},\n  \"education\": [{\"degree\": \"学位\", \"major\": \"专业\", \"school\": \"学校\", \"year\": \"毕业年份\"}],\n  \"work_experience\": [{\"company\": \"公司\", \"position\": \"职位\", \"duration\": \"时长\"}],\n  \"skills\": [\"技能1\", \"技能2\"]\n}\n```"
+    },
+    {
+      "role": "user",
+      "content": "请解析以下简历：\n\n张三\n电话：13800138000\n邮箱：zhangsan@example.com\n\n教育背景：\n浙江大学，计算机科学与技术，本科，2018-2022\n\n工作经历：\n阿里巴巴，前端工程师，2022-2024（2年）\n腾讯，高级前端工程师，2024-至今\n\n技能：React、TypeScript、Node.js、Python"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 6. 内容生成
+# ============================================
+
+### [场景 6.1] 邮件撰写 - 商务邮件
+# 说明：根据要点生成正式的商务邮件
+# 场景：商务沟通、客户关系
+# 预期：返回格式规范的邮件
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个商务写作助手。请根据用户提供的要点，撰写正式的商务邮件，包括：称呼、正文、结尾。"
+    },
+    {
+      "role": "user",
+      "content": "请撰写一封邮件，要点如下：\n- 收件人：李总\n- 目的：邀请参加产品发布会\n- 时间：2026年2月15日下午3点\n- 地点：杭州国际会议中心\n- 内容：介绍公司最新 AI 产品"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0.3
+}
+
+### [场景 6.2] 社交媒体文案 - 产品推广
+# 说明：生成吸引人的社交媒体文案
+# 场景：营销推广、品牌宣传
+# 预期：返回简短、有吸引力的文案
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个社交媒体文案专家。请生成简短、有吸引力的文案，要求：\n1. 长度不超过 100 字\n2. 包含 1-2 个 emoji\n3. 有明确的行动号召（CTA）"
+    },
+    {
+      "role": "user",
+      "content": "为新款智能手表撰写推广文案，卖点：\n- 7 天续航\n- 健康监测\n- 防水设计\n- 限时优惠 500 元"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0.7
+}
+
+### [场景 6.3] FAQ 生成 - 客户服务
+# 说明：根据产品特性生成常见问题解答
+# 场景：客户服务、产品文档
+# 预期：返回结构化的 FAQ
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个客户服务专家。请根据产品信息，生成 5-8 条常见问题及解答，格式：\n\nQ: 问题\nA: 回答"
+    },
+    {
+      "role": "user",
+      "content": "请为以下产品生成 FAQ：\n\n产品：云存储服务\n特点：\n- 免费 10GB 空间\n- 付费版 100GB，月费 9.9 元\n- 支持多设备同步\n- 文件自动备份\n- 分享链接功能"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0.3
+}
+
+# ============================================
+# 总结
+# ============================================
+#
+# 实用场景应用指南：
+#
+# 1. 代码审查与重构
+#    - 发现 Bug、性能问题、安全漏洞
+#    - 提升代码可读性和可维护性
+#    - 生成单元测试
+#    - 推荐配置：temperature=0, max_tokens=1000
+#
+# 2. 文本摘要
+#    - 新闻摘要、技术文档摘要
+#    - 会议记录行动项提取
+#    - 推荐配置：temperature=0, max_tokens=300
+#
+# 3. 情感分析
+#    - 用户评论分析、舆情监控
+#    - 多维度情感评分
+#    - 批量分析趋势
+#    - 推荐配置：temperature=0, 结构化输出
+#
+# 4. 文本翻译
+#    - 基础翻译、专业术语翻译
+#    - 文化适配、风格保留
+#    - 推荐配置：temperature=0.3, max_tokens=1000
+#
+# 5. 数据提取与结构化
+#    - 实体提取（NER）
+#    - 表格数据提取
+#    - 简历解析、信息抽取
+#    - 推荐配置：temperature=0, JSON 输出
+#
+# 6. 内容生成
+#    - 商务邮件、社交媒体文案
+#    - FAQ、产品描述
+#    - 推荐配置：temperature=0.3-0.7, max_tokens=500
+#
+# 集成建议：
+# - 使用 Function Calling 集成业务系统
+# - 设置合理的 max_tokens 控制成本
+# - 对关键业务使用 temperature=0 提高一致性
+# - 添加后处理验证（如 JSON Schema 验证）
+# - 记录失败案例，迭代优化提示词
+#
+# 成本优化：
+# - 缓存常见问题的回答
+# - 批量处理相似任务
+# - 使用高效模型（step-3.5-flash）
+# - 精简提示词，去除冗余信息
+#
+# 质量保障：
+# - 人工审核关键输出
+# - A/B 测试不同提示词
+# - 收集用户反馈，持续改进
+# - 设置输出质量监控指标
+#
+# 参考资料：
+# - LangChain Use Cases: https://python.langchain.com/docs/use_cases/
+# - OpenAI Cookbook: https://cookbook.openai.com/
+# - Prompt Engineering for Developers: https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/
+# ============================================
