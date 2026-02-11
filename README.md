@@ -134,7 +134,11 @@ cc-tutorial/
 
 如需使用自定义 API 端点或模型，可设置以下环境变量：
 
-#### 示例 1：本地部署服务
+#### 示例 1：本地/自建代理
+
+适用于本地部署的 OpenAI-compatible API（如 Nginx 代理、LiteLLM 等）。
+
+**PowerShell:**
 
 **PowerShell:**
 ```powershell
@@ -210,6 +214,44 @@ export ANTHROPIC_SMALL_FAST_MODEL="GLM-4.7"
 export ANTHROPIC_DEFAULT_SONNET_MODEL="GLM-4.7"
 export ANTHROPIC_DEFAULT_OPUS_MODEL="GLM-4.7"
 export ANTHROPIC_DEFAULT_HAIKU_MODEL="GLM-4.7"
+```
+
+#### 示例 3：DeepSeek
+
+DeepSeek 提供的 Anthropic API 兼容接口。
+
+**PowerShell:**
+```powershell
+# API 配置（请替换为你的实际值）
+$env:ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
+$env:ANTHROPIC_AUTH_TOKEN="sk-your-deepseek-api-key-here"
+
+# 禁用非必要流量（推荐）
+$env:CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
+
+# 模型映射
+$env:ANTHROPIC_MODEL="deepseek-chat"
+$env:ANTHROPIC_SMALL_FAST_MODEL="deepseek-chat"
+$env:ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-chat"
+$env:ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-chat"
+$env:ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-chat"
+```
+
+**Bash/Zsh (类 Unix 系统):**
+```bash
+# API 配置（请替换为你的实际值）
+export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
+export ANTHROPIC_AUTH_TOKEN="sk-your-deepseek-api-key-here"
+
+# 禁用非必要流量（推荐）
+export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
+
+# 模型映射
+export ANTHROPIC_MODEL="deepseek-chat"
+export ANTHROPIC_SMALL_FAST_MODEL="deepseek-chat"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-chat"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-chat"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-chat"
 ```
 
 > **注意:** 将上述配置添加到你的 Shell 配置文件中永久生效：

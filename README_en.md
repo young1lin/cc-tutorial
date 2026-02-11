@@ -134,7 +134,11 @@ The `.mcp.json` file can be configured to add Model Context Protocol servers for
 
 To use a custom API endpoint or model, set the following environment variables:
 
-#### Example 1: Local Deployment
+#### Example 1: Local/Self-hosted Proxy
+
+For local OpenAI-compatible API deployments (e.g., Nginx proxy, LiteLLM, etc.).
+
+**PowerShell:**
 
 **PowerShell:**
 ```powershell
@@ -210,6 +214,44 @@ export ANTHROPIC_SMALL_FAST_MODEL="GLM-4.7"
 export ANTHROPIC_DEFAULT_SONNET_MODEL="GLM-4.7"
 export ANTHROPIC_DEFAULT_OPUS_MODEL="GLM-4.7"
 export ANTHROPIC_DEFAULT_HAIKU_MODEL="GLM-4.7"
+```
+
+#### Example 3: DeepSeek
+
+DeepSeek's Anthropic-compatible API endpoint.
+
+**PowerShell:**
+```powershell
+# API Configuration (replace with your actual values)
+$env:ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
+$env:ANTHROPIC_AUTH_TOKEN="sk-your-deepseek-api-key-here"
+
+# Disable non-essential traffic (recommended)
+$env:CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
+
+# Model mapping
+$env:ANTHROPIC_MODEL="deepseek-chat"
+$env:ANTHROPIC_SMALL_FAST_MODEL="deepseek-chat"
+$env:ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-chat"
+$env:ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-chat"
+$env:ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-chat"
+```
+
+**Bash/Zsh (Unix-like systems):**
+```bash
+# API Configuration (replace with your actual values)
+export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
+export ANTHROPIC_AUTH_TOKEN="sk-your-deepseek-api-key-here"
+
+# Disable non-essential traffic (recommended)
+export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
+
+# Model mapping
+export ANTHROPIC_MODEL="deepseek-chat"
+export ANTHROPIC_SMALL_FAST_MODEL="deepseek-chat"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-chat"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-chat"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-chat"
 ```
 
 > **Note:** Add the above to your Shell configuration file for persistence:

@@ -428,10 +428,16 @@ TODO 放视频号视频，Web 上放 Bilibili 的视频链接
 
 | 场景 | 推荐模型 |
 |------|---------|
-| 日常开发 | Claude Opus 4.6 > GPT-4o > StepFun |
+| 日常开发 | Claude Opus 4.6 > GPT-5.3 > GLM ≈ StepFun |
 | 成本敏感 | StepFun step-3.5-flash、DeepSeek |
 | 隐私合规 | 内网部署 StepFun 开源版 |
 | 中文任务 | DeepSeek、GLM 表现不错 |
+
+> **编码环境慎用 MiniMax M2.1**：MiniMax M2.1 采用**混合注意力机制**——每 8 层中 7 层使用 Lightning Attention（线性注意力），1 层使用传统 Full Attention。虽然支持 200K token 上下文，但线性注意力的 trade-off 是在需要精确记住之前细节的编码任务中，会"模糊"掉早期信息，导致代码质量不稳定。非编程场景（如对话、摘要）可以使用，但不推荐用于 AI 编程。
+
+> **StepFun step-3.5-flash 值得关注**：虽然采用**滑动窗口+全量注意力混合机制**（每 3 个 SWA 层 + 1 个全量注意力层），但通过**强推理能力**弥补了滑动窗口的上下文记忆不足。2026年2月发布的旗舰推理模型，专为大 Agent 场景设计，稀疏 MoE 架构（总参数 96B-196B，每 token 激活约 11B），推理速度高达 350 tokens/秒，在代码任务中表现出色。
+
+**注意力机制对比**：GLM-4.7 使用双向非因果注意力（可看到过去+未来），Claude Opus 4.6 使用标准因果注意力（仅看过去），两者在编码场景下都比 MiniMax 的线性注意力更精确。StepFun step-3.5-flash 通过强推理弥补了滑动窗口的局限。
 
 ---
 
