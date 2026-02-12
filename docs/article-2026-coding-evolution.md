@@ -457,7 +457,7 @@ Claude Max 账号 (1×) → VPS（美国静态 IP）→ new-api / claude-relay-s
 ```
 
 常用中转方案：
-- **new-api**：`https://github.com/Calcium-Ion/new-api`（one-api 的活跃维护 fork）
+- **new-api**：`https://github.com/Calcium-Ion/new-api`（one-api 的活跃维护 fork）。**[Tutorial perspective]** 项目是 Go 写的，但代码风格是典型的 Java 思维——包结构、分层方式都照着 Spring 那套来，不符合标准 Go 项目布局。吐槽归吐槽，人家把功能做出来了，各种 AnyRouter 这类 API 中转收费站用的都是这个部署的，生产可用。
 - **claude-relay-service**：专门针对 Claude 的中转，支持负载均衡多账号
 
 > **坑**：VPS 的 IP 质量至关重要。Anthropic 会检测数据中心 IP，VPS 上最好挂上干净的美国住宅代理出口，而不是直接用数据中心 IP 登录 claude.ai。
@@ -495,6 +495,52 @@ Claude 的风控比 ChatGPT 严格得多，以下行为容易触发封号：
 - 项目地址：`https://github.com/lbjlaq/Antigravity-Manager`
 - 原理：借助 Gemini Pro 订阅额度换取 Claude 调用能力
 - 限制：**额度非常少**，仅适合偶发性体验，不适合日常重度使用
+
+还有一个**白嫖思路**（**亲测可用**）：如果你已经有 GitHub Copilot 订阅（公司发、学生免费、或个人 $10/月），可以用 **copilot-api** 把 Copilot 转成 Anthropic 兼容协议，再接 Claude Code：
+
+- 项目地址：`https://github.com/ericc-ch/copilot-api`
+- 原理：反向代理 GitHub Copilot API，同时暴露 OpenAI 和 Anthropic 格式端点
+- **Node.js 要求：22 版本以上**。没有的话用 nvm 安装：
+  ```bash
+  nvm use 24   # 或 nvm install 24
+  ```
+- 一条命令启动（npx 会自动安装）：
+  ```bash
+  npx copilot-api@latest start --claude-code
+  ```
+  启动后按提示选择模型，终端会自动输出需要设置的环境变量命令，复制粘贴到新终端执行即可。
+
+启动成功后，Claude Code 的环境变量配置如下：
+
+**Windows PowerShell：**
+```powershell
+$env:ANTHROPIC_BASE_URL="http://<LOCAL_IP>:4141"
+$env:ANTHROPIC_AUTH_TOKEN="dummy"
+$env:ANTHROPIC_MODEL="claude-sonnet-4.5"
+$env:ANTHROPIC_DEFAULT_SONNET_MODEL="claude-sonnet-4.5"
+$env:ANTHROPIC_DEFAULT_OPUS_MODEL="claude-opus-4.6"
+$env:ANTHROPIC_SMALL_FAST_MODEL="claude-haiku-4.5"
+$env:ANTHROPIC_DEFAULT_HAIKU_MODEL="claude-haiku-4.5"
+$env:DISABLE_NON_ESSENTIAL_MODEL_CALLS="1"
+$env:CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
+```
+
+**macOS / Linux（bash / zsh）：**
+```bash
+export ANTHROPIC_BASE_URL="http://<LOCAL_IP>:4141"
+export ANTHROPIC_AUTH_TOKEN="dummy"
+export ANTHROPIC_MODEL="claude-sonnet-4.5"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="claude-sonnet-4.5"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="claude-opus-4.6"
+export ANTHROPIC_SMALL_FAST_MODEL="claude-haiku-4.5"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="claude-haiku-4.5"
+export DISABLE_NON_ESSENTIAL_MODEL_CALLS="1"
+export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
+```
+
+> `<LOCAL_IP>` 替换成运行 copilot-api 的机器 IP（本机则用 `127.0.0.1`）。`ANTHROPIC_AUTH_TOKEN` 填 `dummy` 即可，鉴权由 copilot-api 代理处理。
+
+额外功能：内置 Web 控制台查看 Copilot 用量和配额统计。适合本来就有 Copilot 订阅、不想再多花钱的开发者。底层是 Copilot 的模型，非原生 Claude，能力有差距，但比没有强。
 
 ### 方案七：国内模型平替——GLM Coding（最省事）
 
