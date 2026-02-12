@@ -29,7 +29,7 @@
 
 ### 什么是黄金工作流？
 
-**"探索 → 计划 → 编码 → 提交"** 是 Anthropic 内部团队使用最多、效果最好的工作模式。
+**[Tutorial perspective]** **"探索 → 计划 → 编码 → 提交"** 是 Boris Cherny 推荐的工作流程（[Best Practices Guide](../../research/01-claude-code-best-practices-anthropic-official.md), 2025-01），也是本教程认为最适合初学者建立良好习惯的工作模式。
 
 ```
 ┌─────────────────────────────────────────────────────────────┐

@@ -1,13 +1,14 @@
 ---
 title: Claude Code: Best practices for agentic coding
-original_link: https://www.anthropic.com/engineering/claude-code-best-practices
+url: https://www.anthropic.com/engineering/claude-code-best-practices
 author: Boris Cherny and Anthropic Engineering Team
-date: 2025
+date: 2025-01
+tier: T1
 why_important: |
   这是 Anthropic 官方发布的 Claude Code 最佳实践指南，由 Claude Code 创建者 Boris Cherny 主笔。
   涵盖了在各种代码库、语言和环境中被证明有效的提示和技巧。
   这是使用 Claude Code 的权威指南，包含了从基础设置到高级工作流的所有内容。
-tags: [official, best-practices, claude-code, boris-cherny, anthropic]
+topics: [official, best-practices, claude-code, boris-cherny, anthropic]
 ---
 
 # Claude Code: Best practices for agentic coding

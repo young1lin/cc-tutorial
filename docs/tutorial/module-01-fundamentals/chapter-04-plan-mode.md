@@ -672,7 +672,7 @@ Claude: [按计划执行]
 ## 进一步阅读
 
 ### 官方文档
-- [Plan Mode 官方指南](https://claude-ai.chat/blog/plan-mode-in-claude-code-when-to-use-it/)
+- [Plan Mode 社区指南](https://claude-ai.chat/blog/plan-mode-in-claude-code-when-to-use-it/)（社区来源 T3，非 Anthropic 官方域名）
 
 ### 研究材料
 - `docs/research/02-plan-mode-guide-official.md` - Plan Mode 完整指南

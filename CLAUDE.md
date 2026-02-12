@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A comprehensive Claude Code tutorial project for video script production. Contains 10 modules (39+ chapters) of tutorial content, video scripts, example code, and research materials. The companion real-world case study project is at `C:\PythonProject\mybatis-boost`.
+A comprehensive Claude Code tutorial project for video script production. Contains 11 modules (39+ chapters) of tutorial content, video scripts, example code, and research materials. Module 11 (Git Mastery) is work-in-progress. The companion real-world case study project is at `C:\PythonProject\mybatis-boost`.
 
 ## Architecture
 

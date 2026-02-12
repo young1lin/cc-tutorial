@@ -1,14 +1,15 @@
 ---
 title: My LLM coding workflow going into 2026
-original_link: https://addyosmani.com/blog/ai-coding-workflow/
+url: https://addyosmani.com/blog/ai-coding-workflow/
 author: Addy Osmani (Chrome Engineer at Google)
 date: 2026-01-04
+tier: T2
 why_important: |
   Addy Osmani 是 Google Chrome 团队的资深工程师，也是知名的技术作家和演讲者。
   这篇文章总结了他一年多来使用 AI 编程助手的经验，提供了实战的最佳实践指南。
   文章强调"AI 辅助工程"而非"AI 自动化工程"，体现了资深工程师的成熟观点。
   包含从规划到编码到测试的完整工作流，以及多模型使用、人在循环等重要原则。
-tags: [addy-osmani, google, workflow, best-practices, 2026, ai-assisted-engineering]
+topics: [addy-osmani, google, workflow, best-practices, 2026, ai-assisted-engineering]
 ---
 
 # My LLM coding workflow going into 2026

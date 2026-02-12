@@ -1,13 +1,14 @@
 ---
 title: Claude Code: A Highly Agentic Coding Assistant (Course Outline)
-original_link: https://www.deeplearning.ai/short-courses/claude-code-a-highly-agentic-coding-assistant/
+url: https://www.deeplearning.ai/short-courses/claude-code-a-highly-agentic-coding-assistant/
 author: Elie Schoppik (Head of Technical Education at Anthropic), Andrew Ng (DeepLearning.AI)
 date: 2025-08-05
+tier: T2
 why_important: |
   这是 Andrew Ng 的 DeepLearning.AI 与 Anthropic 官方合作的 Claude Code 权威课程。
   由 Anthropic 技术教育主管 Elie Schoppik 讲授，是学习 Claude Code 最佳实践的权威资源。
   课程涵盖了从基础到高级的所有内容，包括实际项目案例。
-tags: [andrew-ng, course, deep-learning-ai, anthropic, elie-schoppik, official]
+topics: [andrew-ng, course, deep-learning-ai, anthropic, elie-schoppik]
 ---
 
 # Claude Code: A Highly Agentic Coding Assistant

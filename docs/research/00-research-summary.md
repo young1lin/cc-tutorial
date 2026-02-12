@@ -1,13 +1,14 @@
 ---
 title: Claude Code 最佳实践研究总结
-original_link: N/A (Research Summary)
+url: N/A (Research Summary)
 author: Research Compilation
 date: 2026-01-10
+tier: T4
 why_important: |
   这是对 Claude Code 最佳实践、教程和专家建议的全面研究总结。
-  汇集了官方文档、知名专家（Boris Power、Andrew Ng、Addy Osmani、Ethan Mollick、Zvi Mowshowitz）的建议，
+  汇集了官方文档、知名专家（Boris Cherny、Andrew Ng、Addy Osmani、Ethan Mollick、Zvi Mowshowitz）的建议，
   以及关于架构模式（DDD、六边形架构、洋葱架构）的实践指南。
-tags: [summary, research, best-practices, claude-code, compilation]
+topics: [summary, research, best-practices, claude-code, compilation]
 ---
 
 # Claude Code 最佳实践研究总结
@@ -601,8 +602,8 @@ def test_user_login():
    - 最全面的 Claude Code 使用指南
 
 2. ✅ **02-plan-mode-guide-official.md**
-   - Plan Mode 官方完整指南
-   - 作者：Claude AI Team
+   - Plan Mode 社区整理指南（T3，非 Anthropic 官方）
+   - 来源：claude-ai.chat（第三方域名）
    - 日期：2025-11-30
    - 何时使用以及何时不使用 Plan Mode
 
@@ -618,7 +619,14 @@ def test_user_login():
    - 日期：2026-01-04
    - 十大最佳实践的详细指南
 
-5. ✅ **00-research-summary.md**（本文档）
+5. ✅ **05-boris-cherny-workflow-x-thread.md**
+   - Boris Cherny 在 X（Twitter）发布的 Claude Code 工作流分享（T2）
+   - 作者：Boris Cherny（Claude Code 创建者，Anthropic）
+   - 日期：2026-01
+   - 来源：https://x.com/bcherny/status/2007179833990885678
+   - 内容：并行实例、CLAUDE.md 配置、自动化工作流、Hooks 等个人工作流展示
+
+6. ✅ **00-research-summary.md**（本文档）
    - 研究总结和综合
 
 ### 待获取文档（中优先级）
@@ -751,7 +759,7 @@ def test_user_login():
 
 ### 官方文档
 - [Claude Code: Best practices for agentic coding](https://www.anthropic.com/engineering/claude-code-best-practices)
-- [Plan Mode in Claude Code: When to Use It (and When Not To)](https://claude-ai.chat/blog/plan-mode-in-claude-code-when-to-use-it/)
+- [Plan Mode in Claude Code: When to Use It (and When Not To)](https://claude-ai.chat/blog/plan-mode-in-claude-code-when-to-use-it/)（社区来源 T3，非 Anthropic 官方；官方文档见 https://docs.anthropic.com/en/docs/claude-code/overview）
 - [Claude Code Documentation](https://claude.ai/code)
 
 ### 课程和教程

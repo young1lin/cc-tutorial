@@ -1,3 +1,12 @@
+---
+title: Boris Cherny's Claude Code Workflow - Original X Thread
+url: https://x.com/bcherny/status/2007179833990885678
+author: Boris Cherny (Creator of Claude Code at Anthropic)
+date: 2026-01
+tier: T2
+topics: [boris-cherny, workflow, parallel-instances, claude-code, x-thread]
+---
+
 # Boris Cherny's Claude Code Workflow - Original X Thread
 
 **Source**: https://x.com/bcherny/status/2007179833990885678

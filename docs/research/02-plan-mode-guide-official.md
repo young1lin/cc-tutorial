@@ -1,13 +1,15 @@
 ---
 title: Plan Mode in Claude Code: When to Use It (and When Not To)
-original_link: https://claude-ai.chat/blog/plan-mode-in-claude-code-when-to-use-it/
-author: Claude AI Team
+url: https://claude-ai.chat/blog/plan-mode-in-claude-code-when-to-use-it/
+author: claude-ai.chat (community source, not Anthropic official)
 date: 2025-11-30
+tier: T3
 why_important: |
-  这是官方发布的关于 Claude Code Plan Mode 的完整指南。
+  这是一篇关于 Claude Code Plan Mode 的社区整理指南（来源：claude-ai.chat，非 Anthropic 官方域名）。
   Plan Mode 是 Claude Code 的核心特性之一，允许 AI 在编写代码之前先规划变更。
   本文详细说明了何时使用 Plan Mode、何时不使用，以及如何在不同场景（VS Code、CLI、API）中有效使用它。
-tags: [official, plan-mode, claude-code, guide, vs-code]
+  注意：Anthropic 官方 Plan Mode 文档见 https://docs.anthropic.com/en/docs/claude-code/overview
+topics: [plan-mode, claude-code, guide, vs-code, community]
 ---
 
 # Plan Mode in Claude Code: When to Use It (and When Not To)
