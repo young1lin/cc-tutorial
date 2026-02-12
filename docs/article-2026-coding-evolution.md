@@ -421,6 +421,12 @@ Claude 的风控比 ChatGPT 严格得多，以下行为容易触发封号：
 
 如果订阅实在搞不定，还可以参考前文提到的 **claude-code-router** 方案（`https://github.com/musistudio/claude-code-router`），用 Gemini Pro 订阅或其他 OpenAI 格式接口中转，先体验 Claude Code 的核心工作流，等订阅问题解决后再切回官方渠道。
 
+另一个方式是 **Gemini Pro + AntigravityTool**，可以通过 Gemini Pro 订阅中转调用 Opus 4.6：
+
+- 项目地址：`https://github.com/lbjlaq/Antigravity-Manager`
+- 原理：借助 Gemini Pro 订阅额度换取 Claude 调用能力
+- 限制：**额度非常少**，仅适合偶发性体验，不适合日常重度使用
+
 ### 方案七：国内模型平替——GLM Coding（最省事）
 
 上面六条路都搞不定？**国内开发者目前最省事的选择是智谱 GLM Coding 订阅**。
