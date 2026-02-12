@@ -470,6 +470,37 @@ Claude 的风控比 ChatGPT 严格得多，以下行为容易触发封号：
 
 ---
 
+### 国内可接入 Claude Code 的模型横评（截至 2026 年初）
+
+除了 GLM，还有其他几个国内模型支持 Claude Code 接入，但体验差异极大。**[Tutorial perspective]** 以下是个人实测后的坦诚评价：
+
+| 模型 | 推荐度 | 核心问题 |
+|------|--------|---------|
+| **Claude Opus 4.6**（官方） | ⭐⭐⭐⭐⭐ | 标杆，其他一切都在追它 |
+| **阶跃星辰（强制推理）** | ⭐⭐⭐⭐ | 目前国内编程最强之一 |
+| **GLM-5** | ⭐⭐⭐⭐ | 专项适配好，日常任务胜任 |
+| **Kimi**（Moonshot） | ⭐⭐⭐ | 可以接入，能用，但未专项优化 |
+| **MiniMax** | ⭐ | 不推荐，见下方说明 |
+
+**关于 MiniMax，需要说清楚**
+
+**[Tutorial perspective]** 亲测 9.9 元/月套餐后的结论：**编程场景下国内最差**。
+
+核心问题不是价格，是模型本身的 Attention 机制缺陷：它**非常容易忘记 CLAUDE.md 和 Rules 里的内容**，意味着你设置的项目约定、编码规范、架构说明，它写着写着就丢了。编出来的计划一坨，代码质量也差。
+
+工具能力同样拉跨：
+- **WebSearch** 只能搜 CSDN、博客园这类内容质量极低的站点
+- **图片识别**走的是 MCP，不是原生能力，体验割裂
+- 虽然不限次数，但"无限次的垃圾"不是优势
+
+网上能看到一些人力推"MiniMax + Claude Code"组合，**自己试试，9.9 元，买个教训或者惊喜，都行**。
+
+**Kimi** 可以接入但没有专项优化 Claude Code 协议，日常可用，重度编程场景不如 GLM-5 和阶跃星辰。
+
+**总结：国内选模型，目前只认 GLM-5 和阶跃星辰（强制推理）。其他的，有便宜套餐就试试，别当主力用。**
+
+---
+
 **参考资料：**
 
 - [Claude Code: Best practices for agentic coding](https://www.anthropic.com/engineering/claude-code-best-practices) - Boris Cherny & Anthropic Team
