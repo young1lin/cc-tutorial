@@ -12,7 +12,7 @@ A comprehensive Claude Code tutorial project for video script production. Contai
 - `docs/video-scripts/` - Video scripts per module; use `episode-outline-template.md` as the template
 - `docs/examples/` - Example code: HTTP API examples, official skills docs, recommended plugins
 - `docs/research/` - Completed research materials (Anthropic official, Boris Cherny, Andrew Ng, Addy Osmani)
-- `.claude/commands/` - Custom slash commands (`/commit-push`, `/setup`)
+- `.claude/commands/` - Custom slash commands (`/commit-push`)
 
 ## Vector Knowledge Base
 
@@ -168,4 +168,3 @@ Each research file should include YAML front matter with `title`, `author`, `dat
 ## Custom Commands
 
 - `/commit-push` - Stage, commit (conventional commits format), and push. Auto-excludes debug files, binaries, logs, temp files.
-- `/setup` - Install claude-token-monitor statusline plugin from GitHub releases.

@@ -4,6 +4,40 @@
 
 在安装 Claude Code 之前，必须安装最新的 Node.js，官网推荐的原生安装方式，国内安装有问题。安装好后，执行 `claude install` 命令来安装原生的。如果你没有代理，不知道怎么设置代理环境变量，那就不用原生的安装方式，npm 安装的方式也能用，只是会有警告提示而已。Win10 用户，强烈建议安装 [Windows Terminal](https://github.com/microsoft/terminal/releases) 安装中间的 msixbundle，然后安装 Powershell7 版本是 7.4 版本，Win10 用户不要安装最新的版本，有 BUG，会闪退，不兼容。Win10 自带的终端有兼容问题，Win11 自带终端没有这种问题，Win11 只需要安装 Powershell7 最新版本就行。
 
+## Windows 踩坑一：PowerShell 脚本执行策略
+
+Windows 默认禁止运行未签名脚本（执行策略 Restricted）。`claude install` 依赖 npm 脚本，需先以普通用户权限在 PowerShell 7 中运行：
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+只影响当前用户，无需管理员权限，不降低系统安全性。
+
+## Windows 踩坑二：PowerShell UTF-8 乱码
+
+Claude Code 的 TUI 使用 Unicode 绘制边框，默认代码页 GBK 会导致乱码。两步解决：
+
+**临时（当前会话）：**
+
+```powershell
+chcp 65001
+$OutputEncoding = [System.Text.Encoding]::UTF8
+```
+
+**永久（写入 PowerShell Profile）：**
+
+```powershell
+# 查看 Profile 路径
+echo $PROFILE
+
+# 追加到 Profile（没有 Profile 先创建）
+Add-Content $PROFILE "`nchcp 65001"
+Add-Content $PROFILE "`n`$OutputEncoding = [System.Text.Encoding]::UTF8"
+```
+
+**注意**：不含 API Key，用户自行配置 `ANTHROPIC_API_KEY` 环境变量（System → 高级系统设置 → 环境变量）。
+
 # IDE 安装 Claude Code
 
 选择你合适的 IDE，IDEA、VSCode、Cursor 等等里面都有对应的 Claude Code 插件，可以直接在这里运行，更改对应的环境变量，也可以和终端联动。安装好后，在 IDE 中选中某行，看右下角会出现 xx lines selected，如果没有，输入 `/config` 把 IDE-auto-connect 打开。如果还没有，检查下版本是否一致，并且你这个当前的窗口是当前项目路径第一个打开的，同一个项目路径有多个窗口，只有一个第一个 Claude Code 能和 IDE 联动。

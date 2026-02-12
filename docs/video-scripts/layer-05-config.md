@@ -29,6 +29,36 @@ Claude Code 的配置采用三级覆盖系统（前面讲的 CLAUDE.md 和 Rules
 - 这些文件优先级最高，但**不应提交到 git**（加入 `.gitignore`）
 - 用于本地环境特有的配置（如本地数据库端口、API 密钥等）
 
+## settings.json 主要可配置项
+
+在 `~/.claude/settings.json`（全局）或 `.claude/settings.json`（项目）中可配置：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `model` | string | 默认模型（`"sonnet"` / `"opus"` / `"haiku"`） |
+| `cleanupPeriodDays` | number | 会话历史保留天数（默认 30，设大值避免清理） |
+| `permissions.defaultMode` | string | `"default"` / `"bypassPermissions"` / `"plan"` |
+| `permissions.allow` / `deny` | array | 细粒度工具白/黑名单 |
+| `statusLine` | object | 状态栏插件配置（`type: "command"`，`command: "路径"`） |
+| `hooks` | object | 生命周期 Hook 配置（见第六层） |
+
+不是每个字段都要配，只填你需要改的。
+
+## .gitignore 规范
+
+项目根 `.gitignore` 应包含：
+
+```gitignore
+# Claude Code 本地配置（含个人 API Key 路径、本地 statusLine 等）
+.claude/*.local.*
+.claude/CLAUDE.local.md
+
+# 环境变量（绝对不提交）
+**/.env
+```
+
+项目级 `CLAUDE.md` 和 `settings.json`（不含敏感信息的）应提交到 git，供团队共享。
+
 ## Rules
 
 Rules 和 CLAUDE.md 文件本质相同，每次对话都会加载到 System Prompt。区别在于：CLAUDE.md 偏向项目信息（"这是什么项目、怎么构建"），Rules 偏向行为约束和编码规范（"拒绝蓝紫色主题"、"所有函数必须有 JSDoc 注释"）。
