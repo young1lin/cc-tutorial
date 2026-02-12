@@ -56,7 +56,6 @@ cc-tutorial/
 ### 自定义斜杠命令
 
 - **`/commit-push`** - 暂存、提交（约定式提交格式）、推送，智能排除调试文件
-- **`/setup`** - 安装 claude-token-monitor 状态栏插件
 
 ### 示例代码库
 
@@ -189,11 +188,11 @@ $env:API_TIMEOUT_MS="3000000"
 $env:CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
 
 # 模型映射
-$env:ANTHROPIC_MODEL="GLM-4.7"
-$env:ANTHROPIC_SMALL_FAST_MODEL="GLM-4.7"
-$env:ANTHROPIC_DEFAULT_SONNET_MODEL="GLM-4.7"
-$env:ANTHROPIC_DEFAULT_OPUS_MODEL="GLM-4.7"
-$env:ANTHROPIC_DEFAULT_HAIKU_MODEL="GLM-4.7"
+$env:ANTHROPIC_MODEL="glm-5"
+$env:ANTHROPIC_SMALL_FAST_MODEL="glm-5"
+$env:ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5"
+$env:ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5"
+$env:ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-5"
 ```
 
 **Bash/Zsh (类 Unix 系统):**
@@ -209,11 +208,11 @@ export API_TIMEOUT_MS="3000000"
 export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
 
 # 模型映射
-export ANTHROPIC_MODEL="GLM-4.7"
-export ANTHROPIC_SMALL_FAST_MODEL="GLM-4.7"
-export ANTHROPIC_DEFAULT_SONNET_MODEL="GLM-4.7"
-export ANTHROPIC_DEFAULT_OPUS_MODEL="GLM-4.7"
-export ANTHROPIC_DEFAULT_HAIKU_MODEL="GLM-4.7"
+export ANTHROPIC_MODEL="glm-5"
+export ANTHROPIC_SMALL_FAST_MODEL="glm-5"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-5"
 ```
 
 #### 示例 3：DeepSeek
@@ -230,11 +229,11 @@ $env:ANTHROPIC_AUTH_TOKEN="sk-your-deepseek-api-key-here"
 $env:CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
 
 # 模型映射
-$env:ANTHROPIC_MODEL="deepseek-chat"
-$env:ANTHROPIC_SMALL_FAST_MODEL="deepseek-chat"
-$env:ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-chat"
-$env:ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-chat"
-$env:ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-chat"
+$env:ANTHROPIC_MODEL="deepseek-reasoner"
+$env:ANTHROPIC_SMALL_FAST_MODEL="deepseek-reasoner"
+$env:ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-reasoner"
+$env:ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-reasoner"
+$env:ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-reasoner"
 ```
 
 **Bash/Zsh (类 Unix 系统):**
@@ -247,17 +246,20 @@ export ANTHROPIC_AUTH_TOKEN="sk-your-deepseek-api-key-here"
 export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
 
 # 模型映射
-export ANTHROPIC_MODEL="deepseek-chat"
-export ANTHROPIC_SMALL_FAST_MODEL="deepseek-chat"
-export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-chat"
-export ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-chat"
-export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-chat"
+export ANTHROPIC_MODEL="deepseek-reasoner"
+export ANTHROPIC_SMALL_FAST_MODEL="deepseek-reasoner"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-reasoner"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-reasoner"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-reasoner"
 ```
 
-> **注意:** 将上述配置添加到你的 Shell 配置文件中永久生效：
-> - PowerShell: `$PROFILE`
-> - Bash: `~/.bashrc`
-> - Zsh: `~/.zshrc`
+> **注意:** 环境变量可通过以下方式永久生效：
+> - **全局配置**: `~/.claude/settings.json`（所有项目生效）
+> - **项目配置**: 项目目录下的 `.claude/settings.json`（仅当前项目生效）
+> - **Shell 配置文件**:
+>   - PowerShell: `$PROFILE`
+>   - Bash: `~/.bashrc`
+>   - Zsh: `~/.zshrc`
 
 ---
 
