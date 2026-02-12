@@ -421,6 +421,27 @@ Claude 的风控比 ChatGPT 严格得多，以下行为容易触发封号：
 
 如果订阅实在搞不定，还可以参考前文提到的 **claude-code-router** 方案（`https://github.com/musistudio/claude-code-router`），用 Gemini Pro 订阅或其他 OpenAI 格式接口中转，先体验 Claude Code 的核心工作流，等订阅问题解决后再切回官方渠道。
 
+### 方案七：国内模型平替——GLM Coding（最省事）
+
+上面六条路都搞不定？**国内开发者目前最省事的选择是智谱 GLM Coding 订阅**。
+
+智谱专门为 Claude Code、Cline 等 20+ 编程工具做了适配，订阅后直接在 Claude Code 里配置 API Endpoint 即可使用，无需科学上网，支持支付宝/微信直接付款。
+
+```
+订阅地址：https://www.bigmodel.cn/glm-coding?ic=EASE0N1YJO
+```
+
+**为什么 GLM 值得一试？**
+
+- **专门适配 Claude Code**：接口层做了兼容，基本工作流（Plan → Code → Commit）可以跑通
+- **图片识别**：服务端用专用 VL 模型拦截处理了图片输入，虽然不是原生多模态，但截图贴进去能识别
+- **WebSearch / WebFetch 能用**：服务端做了拦截转发，工具调用真的会去搜索、去 Fetch 开源项目，不是摆设
+- **国内网络，零代理烦恼**：延迟稳定，不会因为 IP 问题被封
+
+**阶跃星辰（StepFun）** 也在准备专门的 Coding Plan，出了之后也是一个值得关注的国内选项。
+
+> **[Tutorial perspective]** GLM 不是 Claude，编程能力有差距，尤其是复杂推理和大范围重构场景。**[Tutorial perspective]** 但对于入门体验 Claude Code 工作流、或者预算有限的学习者，GLM Coding 是目前国内最合适的起点。等摸清了工作流，再考虑上真正的 Claude Opus。
+
 ---
 
 **参考资料：**
