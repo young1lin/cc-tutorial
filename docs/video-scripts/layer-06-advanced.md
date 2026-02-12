@@ -44,7 +44,7 @@ Every test must also follow the **F.I.R.S.T.** principles (Robert C. Martin, "Cl
 
 ### 推荐插件
 
-详细的插件推荐和安装指南见 [docs/examples/recommended-plugins/](docs/examples/recommended-plugins/)。
+详细的插件推荐和安装指南见 [docs/examples/recommended-plugins/](../examples/recommended-plugins/)。
 
 | 插件 | 用途 | 安装方式 |
 |------|------|----------|
