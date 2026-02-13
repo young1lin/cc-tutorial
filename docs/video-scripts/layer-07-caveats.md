@@ -111,7 +111,7 @@ Viacheslav Vasipenok 在 [The Hidden Dangers of AI Coding Agents](https://quasa.
 5. **物理隔断**：Claude 跑的时候站起来走走、倒杯水。别盯着终端等输出——这和盯着进度条一样浪费精力
 6. **记录 AI 在哪帮了忙、在哪添了乱**：Khare 建议 "log where AI helps versus creates friction"，这样你能理性评估而不是凭感觉
 
-> **[Tutorial perspective]** AI 时代最重要的技能不是 prompt 工程，而是知道**什么时候该停下来**。（Khare 原文："the real skill of the AI age isn't prompt engineering—it's knowing when to stop."）
+> AI 时代最重要的技能不是 prompt 工程，而是知道**什么时候该停下来**。—— Siddhant Khare 原文："the real skill of the AI age isn't prompt engineering—it's knowing when to stop."
 
 **参考来源：**
 - Siddhant Khare，[AI Fatigue Is Real](https://siddhantkhare.com/writing/ai-fatigue-is-real)（2026-02-08）

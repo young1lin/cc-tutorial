@@ -830,7 +830,7 @@ Zero-Shot（零样本）:
 
 > **来源**：[Hacker News 讨论](https://news.ycombinator.com/item?id=38545663)、[Reddit 分析](https://www.reddit.com/r/singularity/comments/18dxszz/so_gemini_ultra_beats_gpt4_in_30_of_32_benchmarks/)、本地截图证据 [Gemini Report Table 2](../research/evidence/gemini-1-report-page8-benchmark-table.png)
 
-**[Tutorial perspective]** 这个争议给我们的启示是：不要盲目相信 benchmark 排名。评估模型时，应该：
+这个争议给我们的启示是：不要盲目相信 benchmark 排名。根据 [arXiv 论文](https://arxiv.org/html/2506.12286v3)，SWE-bench 存在数据污染问题（94% 的测试用例在模型训练数据中出现过），导致"可疑的高性能"。评估模型时，应该：
 1. 确认评估方法是否一致（few-shot 数量、prompt 格式）
 2. 关注第三方独立评估（如 [LMSYS Chatbot Arena](https://chat.lmsys.org/) 的盲测）
 3. 在自己的实际场景中测试
@@ -1662,9 +1662,9 @@ Final Answer: "Bug 已修复：登录表单验证逻辑从 OR 改为 AND..."
 | 隐私合规 | 内网部署 StepFun 开源版 |
 | 中文任务 | DeepSeek、GLM 表现不错 |
 
-> **[Tutorial perspective]** MiniMax M2.1 在编码场景表现欠佳。根据 MiniMax 官方博客 [Why Did M2 End Up as a Full Attention Model?](https://www.minimax.io/news/why-did-m2-end-up-as-a-full-attention-model)，M2 最终采用的是 Full Attention，但在实测中其代码生成质量和长距离依赖处理仍有提升空间。
+> MiniMax M2.1 在编码场景表现垃圾
 
-> **[Tutorial perspective]** StepFun step-3.5-flash 值得关注：2026 年 2 月发布，稀疏 MoE（总参 96B-196B，激活约 11B），推理速度 350 tokens/秒。具体注意力机制细节未公开。
+> StepFun step-3.5-flash 值得关注：2026 年 2 月发布，稀疏 MoE（总参 196B，激活约 11B），推理速度可达 350 tokens/秒，上下文窗口 256K。注意力机制采用 **3:1 混合设计**——3 层滑动窗口注意力（SWA）+ 1 层全注意力，兼顾效率与长距离依赖。在多个 coding benchmark 上表现优于 GLM-4.7 和 DeepSeek v3.2。（来源：[StepFun 官方博客](https://static.stepfun.com/blog/step-3.5-flash/)、[arXiv 论文](https://www.arxiv.org/pdf/2602.10604)）
 
 ## 10.2 模型选择 = 注意力机制 + 实际表现
 
