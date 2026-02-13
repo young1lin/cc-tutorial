@@ -350,80 +350,688 @@ Vibe Kanban 可以直接在网页中，和 Claude Code、CodeX、Copilot-CLI 进
 
 ## Claude Code SDK / Agent SDK
 
-Claude Code CLI 是面向开发者的交互工具；Agent SDK 是面向**构建 Agent 平台**的编程库。两者定位不同，互为补充。
+### CLI vs SDK：架构关系
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        你的应用层                                │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
+│  │  Web 前端    │  │  CLI 工具    │  │  CI/CD Pipeline      │  │
+│  └──────┬───────┘  └──────┬───────┘  └──────────┬───────────┘  │
+└─────────┼─────────────────┼─────────────────────┼──────────────┘
+          │                 │                     │
+          ▼                 ▼                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     Agent SDK (可选)                            │
+│  Python: claude-code-sdk    TypeScript: @anthropic-ai/claude-code-sdk │
+│  • 类型安全的 API                                             │
+│  • 流式消息处理                                               │
+│  • 自定义工具 / Hook 拦截                                     │
+│  • Session 管理 + **消息队列**                                │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │ 启动子进程 + stdio 通信
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   Claude Code CLI                               │
+│  @anthropic-ai/claude-code                                     │
+│  • 工具调用循环 (Read → LLM → Edit → LLM → ...)               │
+│  • MCP 协议处理                                                │
+│  • 文件系统访问                                                │
+│  • Shell 命令执行                                              │
+│  • 权限管理                                                    │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**核心原理：Agent SDK 不是独立运行时，而是 CLI 的"编程遥控器"**
+
+1. SDK 启动一个 CLI 子进程
+2. 通过 stdio (JSON-RPC) 与 CLI 通信
+3. CLI 负责工具调用循环、文件操作、MCP 管理
+4. SDK 提供 Python/TypeScript 的类型安全封装
+
+### CLI vs SDK 详细对比
 
 | 维度 | Claude Code CLI | Agent SDK |
 |------|----------------|-----------|
-| 使用方式 | 终端交互 / Headless | Python / TypeScript 代码调用 |
-| 适用场景 | 日常开发、代码审查 | 自定义 Agent、企业集成 |
-| 安装 | `npm i -g @anthropic-ai/claude-code` | `pip install claude-code-sdk` / `npm i @anthropic-ai/claude-code-sdk` |
-| 输出控制 | `--output-format` | 原生对象、回调、流式 |
-| 工具管理 | 内置 + MCP | 自定义 Tool 注册 + MCP 集成 |
+| **本质** | 独立的可执行程序 | CLI 的编程封装 |
+| **安装** | `npm i -g @anthropic-ai/claude-code` | `pip install claude-code-sdk` |
+| **依赖关系** | 独立运行 | **依赖 CLI**（必须先装 CLI） |
+| **运行环境** | 终端进程 | 你的 Python/TS 进程 |
+| **工具能力** | 内置 15+ 工具 + MCP | 继承 CLI 全部能力 |
+| **输出格式** | `--output-format json` | 原生对象、类型推断 |
+| **流式输出** | `stream-json` | 原生 async iterator |
+| **Session 管理** | `--resume` / `--continue` | `resume` 参数 + `ClaudeSDKClient` |
+| **权限控制** | 交互式确认 / `--dangerously-skip` | `permissionMode` + `hooks` |
+| **结构化输出** | ❌ 不支持 | ✅ `outputFormat` (JSON Schema) |
+| **自定义工具** | MCP Server（独立进程） | MCP Server **或** 代码内定义 |
+| **Hook 拦截** | `settings.json` 配置 | 代码中定义回调 |
+| **并发控制** | 多开终端 / Git Worktrees | `asyncio.gather` / `Promise.all` |
+| **错误处理** | 退出码 + stderr | 异常 + `result.subtype` |
+| **消息队列** | ❌ 无 | ✅ `ClaudeSDKClient` 支持 |
+| **适合场景** | 日常开发、手动操作 | **自动化、企业集成** |
 
-### Agent SDK 核心组件
+### 什么时候用 SDK？
 
-- **Agent**：主体，定义行为和目标
-- **Tool**：工具定义，Agent 可调用的能力
-- **Session**：状态管理，维护对话上下文
-- **MCP 集成**：可直接复用已有的 MCP Server
-- **SubAgent 调用**：Agent 之间可以互相委托任务
-- **流式输出**：实时获取 Agent 的思考和输出过程
-- **成本追踪**：内置 Token 用量和费用统计
+```
+              需要编程控制？
+                    │
+         ┌─────────┴─────────┐
+         │ 否                │ 是
+         ▼                   ▼
+       用 CLI          需要复杂控制？
+                         │
+                  ┌──────┴──────┐
+                  │ 否          │ 是
+                  ▼             ▼
+            CLI Headless    Agent SDK
+            (-p + json)     (完整控制)
+```
 
-### Python 示例
+**用 CLI 的场景**：日常开发、手动操作
+**用 CLI Headless 的场景**：简单自动化、CI/CD 脚本
+**用 Agent SDK 的场景**：复杂自动化、多 Agent 协作、企业集成、需要消息队列
+
+### Agent SDK 的核心价值
+
+**相比 CLI Headless**：
+- **类型安全** - Python 类型提示 / TypeScript 类型推断
+- **流式消息** - `async for` / `for await` 实时处理
+- **代码内定义工具** - 无需启动独立 MCP Server
+- **Hook 拦截器** - 程序化权限控制
+- **结构化输出** - JSON Schema 强类型
+- **消息队列** - 持续输入，自动入队，下次调用自动带上
+
+### 为什么要用 Agent SDK？
+
+1. **CI/CD 集成** - PR 自动代码审查、批量重构
+2. **企业内部平台** - 定制化 AI 编码助手，集成 SSO/权限
+3. **多 Agent 协作** - 规划 Agent → 编码 Agent → 测试 Agent
+4. **结构化输出** - 需要返回 JSON 给下游系统处理
+5. **自定义工具** - 接入公司内部 API、数据库、监控系统
+
+**什么时候不需要 SDK？**
+
+- 日常开发用 CLI 就够了
+- 简单的自动化用 Headless 模式 (`-p` + `--output-format json`)
+- 只是需要调用 Claude API，不需要文件操作/工具调用 → 直接用 Anthropic API
+
+### 前提条件
+
+**重要**：Agent SDK **必须先安装 Claude Code CLI**，因为 SDK 本质上是 CLI 的编程封装。
+
+```bash
+# macOS/Linux
+curl -fsSL https://claude.ai/install.sh | bash
+
+# macOS (Homebrew)
+brew install --cask claude-code
+
+# Windows (PowerShell)
+winget install Anthropic.ClaudeCode
+
+# npm (全平台)
+npm install -g @anthropic-ai/claude-code
+```
+
+### 安装 SDK
+
+**Python**：
+
+```bash
+pip install claude-code-sdk
+
+# 或使用 uv（推荐）
+uv init && uv add claude-code-sdk
+```
+
+**TypeScript**：
+
+```bash
+npm install @anthropic-ai/claude-code-sdk
+```
+
+### API 密钥配置
+
+**方式一：CLI 已登录（推荐）**
+
+如果你已经在终端运行过 `claude` 并登录，SDK 会自动复用认证，无需额外配置。
+
+**方式二：环境变量**
+
+```bash
+# macOS / Linux
+export ANTHROPIC_API_KEY="sk-ant-..."
+
+# Windows (PowerShell)
+$env:ANTHROPIC_API_KEY="sk-ant-..."
+
+# 或创建 .env 文件
+echo "ANTHROPIC_API_KEY=sk-ant-..." > .env
+```
+
+**方式三：第三方提供商（企业用户）**
+
+```bash
+# Amazon Bedrock
+export CLAUDE_CODE_USE_BEDROCK=1
+export AWS_ACCESS_KEY_ID=...
+export AWS_SECRET_ACCESS_KEY=...
+
+# Google Vertex AI
+export CLAUDE_CODE_USE_VERTEX=1
+export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
+
+# Microsoft Foundry (Azure)
+export CLAUDE_CODE_USE_FOUNDRY=1
+export AZURE_API_KEY=...
+```
+
+### URL / 代理配置（国内用户）
+
+**方法一：环境变量代理**
+
+```bash
+# HTTP 代理
+export HTTPS_PROXY="http://127.0.0.1:7890"
+
+# SOCKS5 代理
+export HTTPS_PROXY="socks5://127.0.0.1:1080"
+```
+
+**方法二：自定义 API Base URL（中转服务）**
+
+如果你使用第三方中转（如 OpenRouter、自建代理），需要在 CLI 配置中设置：
+
+```bash
+# 设置中转地址（实际配置方式请参考你的中转服务文档）
+# SDK 会继承 CLI 的配置
+```
+
+**方法三：直接在代码中指定（部分 SDK 版本支持）**
 
 ```python
-import anyio
-from claude_code_sdk import query, ClaudeCodeOptions, Message
+# Python - 通过环境变量
+import os
+os.environ["ANTHROPIC_BASE_URL"] = "https://your-proxy.com/v1"
+```
+
+### 完整参数参考
+
+```typescript
+query({
+  prompt: string | Message[],  // 输入指令或消息数组
+  options: {
+    // === 模型配置 ===
+    model?: string,              // "opus" | "sonnet" | "haiku" 或完整模型名
+    fallbackModel?: string,      // 主模型失败时的备用
+
+    // === 工具配置 ===
+    allowedTools?: string[],     // 工具白名单，["*"] 表示全部
+    disallowedTools?: string[],  // 工具黑名单
+
+    // === 权限控制 ===
+    permissionMode?: "default" | "acceptEdits" | "bypassPermissions" | "plan",
+    allowDangerouslySkipPermissions?: boolean,  // 配合 bypassPermissions 使用
+
+    // === 行为控制 ===
+    maxTurns?: number,           // 最大轮数，防止无限循环
+    maxBudgetUsd?: number,       // 预算上限（美元）
+    maxThinkingTokens?: number,  // 思考 token 上限
+
+    // === 输出配置 ===
+    systemPrompt?: string | { type: "preset", preset: "claude_code", append?: string },
+    outputFormat?: { type: "json_schema", schema: object },
+
+    // === 会话管理 ===
+    resume?: string,             // 恢复的 session ID
+    forkSession?: boolean,       // true = 创建新分支，false = 追加到原会话
+    continue?: boolean,          // 继续最近一次对话
+
+    // === MCP 集成 ===
+    mcpServers?: Record<string, McpServerConfig>,
+
+    // === 高级选项 ===
+    cwd?: string,                // 工作目录
+    additionalDirectories?: string[],  // 额外可访问目录
+    hooks?: Record<HookEvent, HookCallback[]>,  // 事件钩子
+    settingSources?: ("project" | "user" | "policy")[],  // 加载哪些 CLAUDE.md
+  }
+})
+```
+
+**参数详解**：
+
+| 参数 | 说明 | 推荐值 |
+|------|------|--------|
+| `model` | `opus` 最强、`sonnet` 平衡、`haiku` 快速 | 学习阶段用 `sonnet` |
+| `allowedTools` | `["Read", "Glob"]` 只读，`["*"]` 全部 | 按需限制 |
+| `permissionMode` | `bypassPermissions` 跳过确认 | 开发环境跳过，生产环境用 Hook 控制 |
+| `maxTurns` | 简单 10，一般 50，复杂 250 | 宁大勿小 |
+| `maxBudgetUsd` | 防止意外高额消费 | 测试时设置 1-5 美元上限 |
+| `settingSources` | 加载 CLAUDE.md 等配置 | `["project"]` 加载项目级配置 |
+
+### Python 完整示例
+
+```python
+import asyncio
+from claude_code_sdk import query, ClaudeCodeOptions
 
 async def main():
-    messages: list[Message] = []
-    # 流式获取结果
+    session_id = None
+
     async for message in query(
         prompt="分析当前项目的架构并给出优化建议",
         options=ClaudeCodeOptions(
-            max_turns=10,
-            system_prompt="你是一个资深架构师",
+            model="sonnet",
+            max_turns=50,
+            allowed_tools=["Read", "Glob", "Grep"],
+            system_prompt="你是一个资深架构师，用中文回答",
         ),
     ):
-        if message.type == "text":
-            print(message.content)
-        messages.append(message)
+        # 1. 系统消息 - 获取 session_id
+        if message.type == "system" and message.subtype == "init":
+            session_id = message.session_id
+            print(f"会话 ID: {session_id}")
 
-anyio.run(main)
+        # 2. 助手消息 - Claude 的思考和工具调用
+        if message.type == "assistant":
+            for block in message.message.get("content", []):
+                if block.get("type") == "text":
+                    print(f"Claude: {block['text']}")
+                if block.get("type") == "tool_use":
+                    print(f"使用工具: {block['name']}")
+
+        # 3. 结果消息 - 任务完成
+        if message.type == "result":
+            if message.subtype == "success":
+                print(f"\n花费: ${message.total_cost_usd:.4f}")
+            else:
+                print(f"错误: {message.error}")
+
+    # 恢复会话继续对话
+    if session_id:
+        async for message in query(
+            prompt="刚才的分析中，哪个建议优先级最高？",
+            options=ClaudeCodeOptions(resume=session_id),
+        ):
+            if message.type == "assistant":
+                for block in message.message.get("content", []):
+                    if block.get("type") == "text":
+                        print(block["text"])
+
+asyncio.run(main())
 ```
 
-### TypeScript 示例
+### TypeScript 完整示例
 
 ```typescript
-import { query, type Message } from "@anthropic-ai/claude-code-sdk";
+import { query } from "@anthropic-ai/claude-code-sdk";
 
 async function main() {
-  const messages: Message[] = [];
+  let sessionId: string | undefined;
 
   for await (const message of query({
     prompt: "Review the code in src/ and suggest improvements",
     options: {
-      maxTurns: 10,
+      model: "sonnet",
+      maxTurns: 50,
+      allowedTools: ["Read", "Glob", "Grep"],
       systemPrompt: "You are a senior code reviewer",
     },
   })) {
-    if (message.type === "text") {
-      console.log(message.content);
+    // 1. 系统消息
+    if (message.type === "system" && message.subtype === "init") {
+      sessionId = message.session_id;
+      console.log(`Session ID: ${sessionId}`);
     }
-    messages.push(message);
+
+    // 2. 助手消息
+    if (message.type === "assistant") {
+      for (const block of message.message.content) {
+        if (block.type === "text") {
+          console.log(`Claude: ${block.text}`);
+        }
+        if (block.type === "tool_use") {
+          console.log(`Using tool: ${block.name}`);
+        }
+      }
+    }
+
+    // 3. 结果消息
+    if (message.type === "result") {
+      if (message.subtype === "success") {
+        console.log(`\nCost: $${message.total_cost_usd.toFixed(4)}`);
+      }
+    }
   }
 }
 
-main();
+main().catch(console.error);
 ```
 
-### 适用场景
+### 消息类型详解
 
-- **企业内部 Agent 平台**：用 SDK 构建定制化的 AI 编码助手，集成到内部工具链
-- **批量代码审查系统**：结合 CI/CD，对多个 PR 并行执行代码审查
-- **自动化测试流水线**：Agent 自动编写测试、运行测试、修复失败的测试
-- **自定义 IDE 插件后端**：作为 VSCode / JetBrains 插件的后端引擎
-- **多 Agent 协作**：一个 Agent 负责规划，一个负责编码，一个负责测试
+```typescript
+// SDK 返回的消息类型
+type SDKMessage =
+  | SDKSystemMessage      // 会话初始化
+  | SDKAssistantMessage   // Claude 的回复
+  | SDKUserMessage        // 用户消息（回放）
+  | SDKResultMessage      // 任务结果
+  | SDKPartialAssistantMessage  // 流式输出（可选开启）
+```
 
-**选型建议**：日常开发直接用 Claude Code CLI（包括 Headless 模式）就够了。只有当你需要在自己的程序中嵌入 Claude Code 的能力、或者构建面向团队的 Agent 平台时，才需要 Agent SDK。
+**各类型结构**：
+
+```typescript
+// System - 会话启动
+{
+  type: "system",
+  subtype: "init",
+  session_id: "abc123...",
+  tools: ["Read", "Write", "Bash", ...],
+  model: "claude-sonnet-4-5",
+  permission_mode: "default"
+}
+
+// Assistant - Claude 回复
+{
+  type: "assistant",
+  message: {
+    content: [
+      { type: "text", text: "我来分析..." },
+      { type: "tool_use", name: "Read", input: { file_path: "..." } }
+    ]
+  }
+}
+
+// Result - 任务结束
+{
+  type: "result",
+  subtype: "success" | "error_max_turns" | "error_during_execution",
+  total_cost_usd: 0.0234,
+  num_turns: 5,
+  structured_output: { ... }  // 仅当使用 outputFormat 时
+}
+```
+
+### 结构化输出 (JSON Schema)
+
+当需要 Agent 返回可被程序直接处理的 JSON 时：
+
+```typescript
+import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
+
+// 用 Zod 定义 Schema（类型安全）
+const CodeReviewSchema = z.object({
+  issues: z.array(z.object({
+    severity: z.enum(["low", "medium", "high"]),
+    file: z.string(),
+    line: z.number().optional(),
+    description: z.string(),
+    suggestion: z.string().optional(),
+  })),
+  score: z.number().min(0).max(100),
+  summary: z.string(),
+});
+
+for await (const message of query({
+  prompt: "审查 src/ 目录的代码质量问题",
+  options: {
+    model: "opus",
+    allowedTools: ["Read", "Glob", "Grep"],
+    outputFormat: {
+      type: "json_schema",
+      schema: zodToJsonSchema(CodeReviewSchema),
+    },
+  },
+})) {
+  if (message.type === "result" && message.structured_output) {
+    const result = CodeReviewSchema.parse(message.structured_output);
+    console.log(`评分: ${result.score}/100`);
+    console.log(`问题数: ${result.issues.length}`);
+  }
+}
+```
+
+**Python 版本（Pydantic）**：
+
+```python
+from pydantic import BaseModel
+from typing import Optional
+
+class Issue(BaseModel):
+    severity: str  # 'low' | 'medium' | 'high'
+    file: str
+    line: Optional[int] = None
+    description: str
+
+class CodeReviewResult(BaseModel):
+    issues: list[Issue]
+    score: int
+    summary: str
+
+# 在 query 中使用
+options=ClaudeCodeOptions(
+    output_format={
+        "type": "json_schema",
+        "schema": CodeReviewResult.model_json_schema()
+    }
+)
+
+# 解析结果
+if message.type == "result" and message.structured_output:
+    result = CodeReviewResult.model_validate(message.structured_output)
+```
+
+### 自定义工具（MCP Server）
+
+SDK 支持在代码中直接定义工具，无需外部 MCP Server：
+
+**TypeScript**：
+
+```typescript
+import { query, tool, createSdkMcpServer } from "@anthropic-ai/claude-code-sdk";
+import { z } from "zod";
+
+const myTools = createSdkMcpServer({
+  name: "my-tools",
+  version: "1.0.0",
+  tools: [
+    tool(
+      "get_weather",
+      "获取指定坐标的天气",
+      { latitude: z.number(), longitude: z.number() },
+      async (args) => {
+        const res = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${args.latitude}&longitude=${args.longitude}&current=temperature_2m`
+        );
+        const data = await res.json();
+        return { content: [{ type: "text", text: `温度: ${data.current.temperature_2m}°C` }] };
+      }
+    ),
+  ],
+});
+
+for await (const message of query({
+  prompt: "北京（39.9, 116.4）现在多少度？",
+  options: {
+    mcpServers: { "my-tools": myTools },
+    allowedTools: ["mcp__my-tools__get_weather"],
+  },
+})) {
+  // ...
+}
+```
+
+**Python**：
+
+```python
+from claude_code_sdk import tool, create_sdk_mcp_server, query, ClaudeCodeOptions
+
+@tool("get_weather", "获取天气", {"latitude": float, "longitude": float})
+async def get_weather(args: dict):
+    import aiohttp
+    async with aiohttp.ClientSession() as session:
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={args['latitude']}&longitude={args['longitude']}&current=temperature_2m"
+        async with session.get(url) as resp:
+            data = await resp.json()
+            return {"content": [{"type": "text", "text": f"温度: {data['current']['temperature_2m']}°C"}]}
+
+my_tools = create_sdk_mcp_server(name="my-tools", version="1.0.0", tools=[get_weather])
+
+async for message in query(
+    prompt="北京（39.9, 116.4）现在多少度？",
+    options=ClaudeCodeOptions(
+        mcp_servers={"my-tools": my_tools},
+        allowed_tools=["mcp__my-tools__get_weather"],
+    ),
+):
+    pass
+```
+
+### Hook 拦截（高级权限控制）
+
+```typescript
+import { query, HookCallback } from "@anthropic-ai/claude-code-sdk";
+
+// 拦截危险命令
+const validateBash: HookCallback = async (input) => {
+  const command = input.tool_input?.command ?? "";
+  if (command.includes("rm -rf") || command.includes("DROP TABLE")) {
+    return {
+      hookSpecificOutput: {
+        hookEventName: "PreToolUse",
+        permissionDecision: "deny",
+        permissionDecisionReason: "危险命令已被拦截",
+      },
+    };
+  }
+  return {};
+};
+
+for await (const message of query({
+  prompt: "清理项目临时文件",
+  options: {
+    permissionMode: "bypassPermissions",
+    allowDangerouslySkipPermissions: true,
+    hooks: {
+      PreToolUse: [{ matcher: "Bash", hooks: [validateBash] }],
+    },
+  },
+})) {
+  // ...
+}
+```
+
+### 高强度使用模式
+
+**1. ClaudeSDKClient（连续对话）**
+
+`query()` 是一次性调用，每次都是独立的。当你需要**持续交互**时，用 `ClaudeSDKClient`：
+
+```python
+from claude_code_sdk import ClaudeSDKClient, ClaudeCodeOptions
+
+async def interactive_session():
+    async with ClaudeSDKClient() as client:
+        # 第一轮
+        await client.query("分析这个项目的结构")
+        async for msg in client.receive_response():
+            if hasattr(msg, "content"):
+                print(msg.content)
+
+        # 第二轮 - 自动保持上下文
+        await client.query("重点看安全方面")
+        async for msg in client.receive_response():
+            if hasattr(msg, "content"):
+                print(msg.content)
+
+        # 第三轮
+        await client.query("生成修复建议")
+        # ...
+```
+
+**query() vs ClaudeSDKClient 对比**：
+
+| 特性 | `query()` | `ClaudeSDKClient` |
+|------|-----------|-------------------|
+| 调用方式 | 一次性 | 持续连接 |
+| 上下文 | 需要手动 `resume` | 自动保持 |
+| 适用场景 | 单次任务 | 多轮交互 |
+
+**2. 并发任务（多 Agent 协作）**
+
+```python
+import asyncio
+from claude_code_sdk import query, ClaudeCodeOptions
+
+async def analyze_module(module_path: str):
+    results = []
+    async for msg in query(
+        prompt=f"分析 {module_path} 的代码质量",
+        options=ClaudeCodeOptions(
+            allowed_tools=["Read", "Glob", "Grep"],
+            max_turns=20,
+        ),
+    ):
+        if msg.type == "result":
+            return msg.result
+    return None
+
+async def main():
+    # 并发分析多个模块
+    modules = ["src/auth", "src/api", "src/db", "src/utils"]
+    results = await asyncio.gather(*[analyze_module(m) for m in modules])
+
+    for module, result in zip(modules, results):
+        print(f"{module}: {result[:100]}...")
+
+asyncio.run(main())
+```
+
+**3. 预算控制 + 超时**
+
+```typescript
+import { query } from "@anthropic-ai/claude-code-sdk";
+
+const controller = new AbortController();
+const timeout = setTimeout(() => controller.abort(), 60000); // 60 秒超时
+
+try {
+  for await (const message of query({
+    prompt: "大规模重构项目",
+    options: {
+      maxBudgetUsd: 5.0,  // 最多花费 5 美元
+      maxTurns: 100,
+      abortController: controller,
+    },
+  })) {
+    if (message.type === "result") {
+      console.log(`花费: $${message.total_cost_usd}`);
+    }
+  }
+} finally {
+  clearTimeout(timeout);
+}
+```
+
+### 常见陷阱
+
+| 陷阱 | 问题 | 解决 |
+|------|------|------|
+| 忘记检查 result.subtype | 任务失败但程序继续 | 始终检查 `subtype === "success"` |
+| maxTurns 过低 | 复杂任务被截断 | 简单 10，一般 50，复杂 250 |
+| 阻塞消息流 | 同步操作卡住迭代器 | 用 `await` 异步操作 |
+| Schema 过于复杂 | Agent 难以生成正确输出 | 扁平化，最多 2-3 层嵌套 |
+| 未设置预算上限 | 意外高额消费 | 测试时设置 `maxBudgetUsd` |
+| CLI 未安装 | SDK 报错找不到命令 | 先 `npm i -g @anthropic-ai/claude-code` |
+
+### 选型建议
+
+- **日常开发** → 直接用 Claude Code CLI
+- **简单自动化** → CLI Headless 模式 (`-p` + `--output-format json`)
+- **企业集成 / CI/CD** → Agent SDK
+- **需要自定义工具** → Agent SDK + MCP Server
+- **只调用 Claude API，不需要文件操作** → 直接用 Anthropic API（更轻量）

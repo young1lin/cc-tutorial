@@ -113,6 +113,12 @@ cc-tutorial/
 ## 快速开始
 
 1. **安装 Claude Code** - 参考 [模块 01，第 02 章](docs/tutorial/module-01-fundamentals/chapter-02-setup.md)
+
+   > **国内用户**: 原生安装可能遇到网络问题，推荐使用 npm 全局安装：
+   > ```bash
+   > npm install -g @anthropic-ai/claude-code
+   > ```
+
 2. **学习基础知识** - 从 [模块 01：基础入门](docs/tutorial/module-01-fundamentals/) 开始
 3. **练习示例代码** - 探索 [`docs/examples/`](docs/examples/) 中的代码
 4. **观看视频脚本** - 查看 [`docs/video-scripts/`](docs/video-scripts/) 了解制作大纲
