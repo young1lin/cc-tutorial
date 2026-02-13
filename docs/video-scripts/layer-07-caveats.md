@@ -6,7 +6,7 @@ AI 辅助编程不是万能的，清楚它的能力边界，才能用好它。
 
 ## 能做到什么？
 
-**深度介入的情况下，是能写出 8 万行代码的现代 IM 系统的**（Opus 4.6 做规划，GLM 负责执行和测试，后面开源出来）。但注意关键词：**深度介入**——不是丢一句话就跑，而是你全程做架构决策、拆分任务、审查代码、处理 AI 搞不定的边界情况。
+**[Tutorial perspective]** 在深度介入的情况下，可以构建大型系统（例如 8 万行代码的 IM 系统，使用 Opus 4.6 做规划，GLM 负责执行和测试）。但注意关键词：**深度介入**——不是丢一句话就跑，而是全程做架构决策、拆分任务、审查代码、处理 AI 搞不定的边界情况。
 
 **实际能力范围：**
 
@@ -94,9 +94,7 @@ HN 用户 ericmcer 一针见血："I love the flow state, and I'm pretty sure it
 
 ### FOMO 跑步机
 
-**FOMO**（Fear Of Missing Out，错失恐惧症）——害怕自己错过了什么、被别人甩在后面的焦虑感。在 AI 工具领域，这种焦虑被无限放大了。
-
-除了写代码本身的疲劳，还有工具迭代带来的焦虑。Claude Code 先发 sub-agents，再发 skills，再发 Agent SDK；OpenAI 上线 Codex CLI；Google 推出 Gemini CLI……LinkedIn 上有人说："2026 年不做 sub-agent orchestration，你就已经过时了。" 你周末评测新工具，周一焦虑自己落后，下个周末又开始迁移。现实是每次迁移耗掉一个周末，换来大概 5% 的提升。Siddhant Khare 称之为"FOMO 跑步机"（FOMO treadmill）。
+**FOMO**（Fear Of Missing Out）——错失恐惧症在 AI 工具领域被无限放大。Claude Code 发 sub-agents、skills、Agent SDK；OpenAI 上线 Codex CLI；Google 推出 Gemini CLI……每次迁移耗掉一个周末，换来大概 5% 的提升。Siddhant Khare 称之为"FOMO 跑步机"（FOMO treadmill）。
 
 ### 怎么避免 Burnout？
 

@@ -82,7 +82,7 @@ $env:PATH -split ';' | Where-Object { $_ -like '*claude*' }
 
 如果还不行，输入 `/ide` 确保连接上了，重启 IDE。
 
-选中，并且询问。
+连接成功后，在 IDE 中选中代码，Claude Code 即可获取上下文进行对话。
 
 # /init —— 让 Claude 认识你的项目
 
@@ -149,7 +149,7 @@ TypeScript-based MyBatis SQL formatter and language support for VSCode.
 
 ## 允许所有权限（生产勿用）
 
-允许这个前，先说明，生产上不要使用这个，明确需要禁止 `rm -rf /` 这种命令出现，如果你 Fetch 网站有提示词注入，触发了这个，你的整个电脑都被 Claude Code 删除了。
+**警告**：生产环境禁用此选项。如果通过 Fetch 访问恶意网站遭遇提示词注入，攻击者可能诱导 Claude 执行 `rm -rf /` 等危险命令，导致系统文件被删除。
 
 有两种方式配置允许所有权限，一种是 `claude --dangerously-skip-permissions` 启动会话，一种是 .claude 文件夹下，设置 `settings.local.json` 或者 `settings.json` 文件中，设置下面这样的内容来允许所有权限。
 

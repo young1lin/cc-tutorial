@@ -6,7 +6,7 @@
 
 从 ChatGPT 3.5 刚出来，到现在已经过去了接近三年，这三年出了很多模型和很多编程助手。从最开始的 GPT-3.5，到 GPT-4，GPT-4o（omni 全模态），GPT-5（2025 年 8 月发布），还有 Claude Haiku 4.5、Claude Sonnet 4.5、Claude Opus 4.6（Haiku、Sonnet、Opus 三个档次）。还有国产的大模型 DeepSeek、GLM、MiniMax、QWen、豆包（不要在编程领域使用豆包）。
 
-编程助手 Cursor 依然坚挺，Codex、Kilo Code、Cline、Copilot、Trae 等等都还行，但如果你要评选个最佳的、最好的编程助手，**目前只有 Claude Code**。
+编程助手 Cursor 依然坚挺，Codex、Kilo Code、Cline、Copilot、Trae 等等都还行，但如果你要评选个最佳的、最好的编程助手，**[Tutorial perspective]** 截至 2026 年初，Claude Code 在综合体验上领先。
 
 你可以去 BigModel 也就是智谱的大模型开放平台、小米的开放平台 `https://platform.xiaomimimo.com/#/docs/integration/claude-code`，可以看到，Claude Code 是单独拿出来展示的。或者去任意平台搜索编程工具排行，只要他真的深度用过，就会评价出，Claude Code 是第一编程助手。
 
@@ -124,7 +124,7 @@ OpenAI 首席公关官 Hannah Wong 的回应：
 
 时间线的讽刺性：8 月 2 日 Anthropic 切断访问权，8 月 7 日 GPT-5 正式发布。**仅差 5 天**——OpenAI 在发布自家王牌产品的最后关头，工程师们用的是对手的工具。
 
-来源：[TechCrunch - Anthropic cuts off OpenAI's access to its Claude models](https://techcrunch.com/2025/08/02/anthropic-cuts-off-openais-access-to-its-claude-models/)（2025-08-02）、[Wired](https://www.wired.com/story/anthropic-revokes-openais-access-to-claude/)、[VentureBeat](https://venturebeat.com/technology/anthropic-cracks-down-on-unauthorized-claude-usage-by-third-party-harnesses/)
+来源：[WIRED - Anthropic Revokes OpenAI's Access to Claude](https://www.wired.com/story/anthropic-revokes-openais-access-to-claude/)（2025-08-02）、[VentureBeat](https://venturebeat.com/technology/anthropic-cracks-down-on-unauthorized-claude-usage-by-third-party-harnesses/)
 
 ---
 
@@ -226,7 +226,9 @@ Fortune 杂志标题（2026-01-29）：[Top engineers at Anthropic, OpenAI say A
 
 ### 基准测试（参考，勿迷信）
 
-Claude Opus 4.5 在 SWE-Bench Verified 上首次突破 80% 行业门槛（80.9%）；最新的 **Opus 4.6（2026 年 2 月 5 日发布）** 维持在 **80.8%**（优化提示词后达 81.42%），编码能力持平的同时，抽象推理（ARC-AGI-2）从 37.6% 跃升至 68.8%，是单代最大推理能力飞跃。目前 SWE-Bench Verified 前三名——Opus 4.6（80.8%）、Opus 4.5（80.9%）、GPT-5.2（80.0%）——聚集在 1 个百分点以内，该基准已接近天花板。数据来源：[vellum.ai Claude Opus 4.6 Benchmarks](https://www.vellum.ai/blog/claude-opus-4-6-benchmarks)
+Claude Opus 4.5 在 SWE-Bench Verified 上首次突破 80% 行业门槛（80.9%）；最新的 **Opus 4.6（2026 年 2 月 5 日发布）** 维持在 **80.8%**（优化提示词后达 81.42%），编码能力持平的同时，抽象推理（ARC-AGI-2）从 37.6% 跃升至 68.8%，是单代最大推理能力飞跃。目前 SWE-Bench Verified 前三名——Opus 4.6（80.8%）、Opus 4.5（80.9%）、GPT-5.2（80.0%）——聚集在 1 个百分点以内，该基准已接近天花板。
+
+数据来源：[Anthropic 官方公告](https://www.anthropic.com/news/claude-opus-4-6)（2026-02-05）、[vellum.ai Claude Opus 4.6 Benchmarks](https://www.vellum.ai/blog/claude-opus-4-6-benchmarks)
 
 ---
 

@@ -76,7 +76,16 @@ Token序列: [今天, 天气]
 
 ## 1.3 Context Window 上下文窗口
 
-上下文窗口是一个固定长度的数组，根据前面输入的内容，一个个 Token 输出，直到数组被填满。比如 Claude Opus 4.6 的上下文窗口是 200K Token。
+上下文窗口是一个固定长度的数组，根据前面输入的内容，一个个 Token 输出，直到数组被填满。
+
+根据 [Anthropic 官方公告](https://www.anthropic.com/news/claude-opus-4-6)（2026-02-05），Claude Opus 4.6 的上下文窗口配置如下：
+
+| 订阅类型 | 上下文窗口 |
+|---------|-----------|
+| Pro / Max / Team | 200K Token |
+| API / pay-as-you-go | **1M Token** |
+
+超过 200K 的上下文有额外定价（$10/$37.50 per million tokens）。
 
 ```
 ┌──────────────────────────────────────────────┐
@@ -806,6 +815,28 @@ Zero-Shot（零样本）:
 
 **在 Claude Code 中的应用**：这就是 CLAUDE.md 中放示例代码的原因——给模型看你项目的代码风格，它就会按你的风格写新代码。Boris Cherny 称之为"对牛弹琴不如抛砖引玉"（Pearls Before Swine）。
 
+### Benchmark 中的 Few-Shot vs Zero-Shot 争议
+
+**评估方法差异会显著影响 benchmark 结果**。一个经典的例子是 Gemini 1 发布时的争议：
+
+根据 [Google Gemini 1 技术报告](https://storage.googleapis.com/deepmind-media/gemini/gemini_1_report.pdf)（2023-12）第 8 页的 benchmark 表格，Gemini 在多项测试中声称超越了 GPT-4。但社区很快发现了一个关键问题：
+
+| 评估方式 | 说明 | 对结果的影响 |
+|---------|------|-------------|
+| **CoT@32** | 运行 32 次 Chain-of-Thought，取最好的结果 | 显著提升分数（相当于给 32 次机会） |
+| **5-shot** | 给 5 个示例，单次运行 | 标准评估方式，一次机会 |
+
+争议点在于：**Gemini Ultra 使用 CoT@32（32次运行取最好），而对比的 GPT-4 使用 5-shot（单次运行）**。这种"best-of-32 vs single-run"的不对等比较让 benchmark 数值失去了直接可比性。
+
+> **来源**：[Hacker News 讨论](https://news.ycombinator.com/item?id=38545663)、[Reddit 分析](https://www.reddit.com/r/singularity/comments/18dxszz/so_gemini_ultra_beats_gpt4_in_30_of_32_benchmarks/)、本地截图证据 [Gemini Report Table 2](../research/evidence/gemini-1-report-page8-benchmark-table.png)
+
+**[Tutorial perspective]** 这个争议给我们的启示是：不要盲目相信 benchmark 排名。评估模型时，应该：
+1. 确认评估方法是否一致（few-shot 数量、prompt 格式）
+2. 关注第三方独立评估（如 [LMSYS Chatbot Arena](https://chat.lmsys.org/) 的盲测）
+3. 在自己的实际场景中测试
+
+> **延伸阅读**：[Hacker News 讨论](https://news.ycombinator.com/item?id=38545663)详细分析了 Gemini benchmark 的方法论问题。
+
 > **动手练习** → [05-prompt-engineering.http](../examples/http/05-prompt-engineering.http)：
 > - Zero-Shot vs 3-Shot 情感分析对比
 > - Few-Shot 代码生成（带类型标注和文档字符串）
@@ -833,11 +864,11 @@ Zero-Shot（零样本）:
 
 | 关键词 | 思考 Token 数 | 适用场景 |
 |--------|-------------|---------|
-| `think` | ~10K | 普通多步骤任务 |
-| `think harder` | ~32K | 复杂架构设计 |
-| `ultrathink` | ~128K | 极其复杂的多文件重构 |
+| `think` | ~4K | 普通多步骤任务 |
+| `think harder` | ~10K | 复杂架构设计 |
+| `ultrathink` | ~32K | 极其复杂的多文件重构 |
 
-> **注意**：思考 Token 按**输出 Token 费率**计费，不消耗上下文窗口。
+> **注意**：思考 Token 按**输出 Token 费率**计费，不消耗上下文窗口。上述数值可能随版本更新而变化（详见 [Claude Code Guide](https://www.claude-code-guide.com/)）。
 
 > **动手练习** → [05-prompt-engineering.http](../examples/http/05-prompt-engineering.http)：
 > - Zero-Shot CoT（"Let's think step by step"）
@@ -1037,7 +1068,7 @@ max_tokens=1000:  详细解释（~500-700 中文字）
 
 ## 7.2 多头注意力（Multi-Head Attention）
 
-实际的 Transformer 不是只算一组注意力，而是**同时运行多组**，每组叫一个"头"（Head）。比如 Claude 可能有 128 个头并行工作。
+实际的 Transformer 不是只算一组注意力，而是**同时运行多组**，每组叫一个"头"（Head）。**[Author's analysis]** Claude 具体的注意力头数量未公开，但主流大模型通常有 64-128 个头。
 
 **为什么要多个头？** 因为语言中的关联关系不止一种。单独一组注意力很难同时捕捉所有维度的关系，多个头各自分工，最后把结果拼起来。
 
@@ -1079,13 +1110,13 @@ Token:  [1] [2] [3] [4] [5] [6] [7] [8]
 
 **3. 滑动窗口 + Full Attention 混合**
 - 大部分层用滑动窗口（省计算），每隔几层插一层 Full Attention（补回全局信息）
-- 代表：**StepFun step-3.5-flash**（每 3 层 SWA + 1 层 Full Attention）
+- **[Author's analysis]** 未经官方确认的架构信息不应作为事实陈述。StepFun 官方未公开 step-3.5-flash 的具体注意力机制细节。
 - 效果：靠 Full Attention 层"中继"全局信息，让滑动窗口也能"间接看到"远处的内容
 
 **4. 线性注意力（Lightning Attention）**
 - 将 O(n²) 近似降到 O(n)
 - 代价：注意力权重被"模糊化"，精确记忆能力下降
-- 代表：**MiniMax M2.1**（7 层线性 + 1 层 Full Attention）
+- **[Author's analysis]** 早期传言 MiniMax M2.1 使用线性+Full Attention 混合架构，但 MiniMax 官方博客明确说明 **M2 最终是 Full Attention 模型**。详见 [Why Did M2 End Up as a Full Attention Model?](https://www.minimax.io/news/why-did-m2-end-up-as-a-full-attention-model)（MiniMax CEO，2026）
 
 **5. 双向非因果注意力**
 - 每个 Token 可以同时看过去和未来
@@ -1100,7 +1131,7 @@ Token:  [1] [2] [3] [4] [5] [6] [7] [8]
 
 **[Author's analysis]** Anthropic 至今没有发布 Claude 系列（包括 Claude Opus 4.6）的架构论文或技术报告，具体的注意力机制属于未公开信息。
 
-但有一点可以确定：**Claude Opus 4.6 支持 200K~1M Token 上下文，不可能是纯粹的 Full Self-Attention。** 原因很简单——1M token 的完整注意力矩阵是 10^12 个元素，单层单头 FP16 就需要约 2TB 显存，这在工程上不可行。
+根据 [Anthropic 官方公告](https://www.anthropic.com/news/claude-opus-4-6)（2026-02-05），Claude Opus 4.6 通过 API 和 pay-as-you-go 方式支持 **1M Token 上下文窗口**（标准订阅为 200K）。1M token 的完整注意力矩阵是 10^12 个元素，单层单头 FP16 就需要约 2TB 显存，这在工程上不可行——因此它几乎一定使用了上述优化技术的某种组合。
 
 它几乎一定使用了上述优化技术的某种组合（Flash Attention + Ring Attention + GQA/MQA，以及可能的稀疏/混合注意力模式），但具体方案外界无从得知。GPT-4o 同理——OpenAI 也没有公开其架构细节。
 
@@ -1631,9 +1662,9 @@ Final Answer: "Bug 已修复：登录表单验证逻辑从 OR 改为 AND..."
 | 隐私合规 | 内网部署 StepFun 开源版 |
 | 中文任务 | DeepSeek、GLM 表现不错 |
 
-> **编码环境慎用 MiniMax M2.1**：线性注意力为主（7 层 Lightning + 1 层 Full），编码任务中会"模糊"早期信息。详见上方"注意力机制的变体"。
+> **[Tutorial perspective]** MiniMax M2.1 在编码场景表现欠佳。根据 MiniMax 官方博客 [Why Did M2 End Up as a Full Attention Model?](https://www.minimax.io/news/why-did-m2-end-up-as-a-full-attention-model)，M2 最终采用的是 Full Attention，但在实测中其代码生成质量和长距离依赖处理仍有提升空间。
 
-> **StepFun step-3.5-flash 值得关注**：SWA + Full Attention 混合架构，2026 年 2 月发布，稀疏 MoE（总参 96B-196B，激活约 11B），推理速度 350 tokens/秒，通过强推理弥补滑动窗口局限。详见上方"注意力机制的变体"。
+> **[Tutorial perspective]** StepFun step-3.5-flash 值得关注：2026 年 2 月发布，稀疏 MoE（总参 96B-196B，激活约 11B），推理速度 350 tokens/秒。具体注意力机制细节未公开。
 
 ## 10.2 模型选择 = 注意力机制 + 实际表现
 
