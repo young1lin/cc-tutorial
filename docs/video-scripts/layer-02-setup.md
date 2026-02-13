@@ -2,7 +2,14 @@
 
 # 安装 Claude Code
 
-在安装 Claude Code 之前，必须安装最新的 Node.js，官网推荐的原生安装方式，国内安装有问题。安装好后，执行 `claude install` 命令来安装原生的。如果你没有代理，不知道怎么设置代理环境变量，那就不用原生的安装方式，npm 安装的方式也能用，只是会有警告提示而已。Win10 用户，强烈建议安装 [Windows Terminal](https://github.com/microsoft/terminal/releases) 安装中间的 msixbundle，然后安装 Powershell7 版本是 7.4 版本，Win10 用户不要安装最新的版本，有 BUG，会闪退，不兼容。Win10 自带的终端有兼容问题，Win11 自带终端没有这种问题，Win11 只需要安装 Powershell7 最新版本就行。
+在安装 Claude Code 之前，必须安装最新的 Node.js，官网推荐的原生安装方式，国内安装有问题。安装好后，执行 `claude install` 命令来安装原生的。如果你没有代理，不知道怎么设置代理环境变量，那就不用原生的安装方式，npm 安装的方式也能用，只是会有警告提示而已。
+
+**Win10 用户特别注意**：Win10 自带的终端有兼容问题，Win10 用户不要安装最新版本的 Windows Terminal 和 PowerShell 7，有 BUG 会闪退、无法安装。推荐使用以下指定版本：
+
+- **Windows Terminal 1.23.12371.0**：[下载 msixbundle](https://github.com/microsoft/terminal/releases/download/v1.23.12371.0/Microsoft.WindowsTerminal_1.23.12371.0_8wekyb3d8bbwe.msixbundle)
+- **PowerShell 7.4.13**：[下载 msi](https://github.com/PowerShell/PowerShell/releases/download/v7.4.13/PowerShell-7.4.13-win-x64.msi)
+
+Win11 自带终端没有这种问题，Win11 只需要安装 PowerShell 7 最新版本就行。
 
 ## Windows 踩坑一：PowerShell 脚本执行策略
 
@@ -37,6 +44,37 @@ Add-Content $PROFILE "`n`$OutputEncoding = [System.Text.Encoding]::UTF8"
 ```
 
 **注意**：不含 API Key，用户自行配置 `ANTHROPIC_API_KEY` 环境变量（System → 高级系统设置 → 环境变量）。
+
+## Windows 踩坑三：安装目录未加入 PATH
+
+`claude install` 原生安装时，如果安装目录没有自动加入系统 PATH 环境变量，后续执行 `claude` 命令会报"找不到命令"。
+
+**典型情况：**
+- 安装过程中勾选了"不修改 PATH"
+- 安装程序权限不足，无法修改系统环境变量
+- 使用便携版/绿色版安装
+
+**解决方法：**
+
+手动将 Claude Code 安装目录加入 PATH：
+
+1. 找到安装目录（默认是 `%USERPROFILE%\.claude\bin` 或 `%LOCALAPPDATA%\claude`）
+2. 打开"系统属性" → "高级" → "环境变量"
+3. 在"用户变量"中找到 `Path`，点击"编辑"
+4. 点击"新建"，添加 Claude Code 的安装目录
+5. **重启终端**（关闭 PowerShell 再重新打开，环境变量才会生效）
+
+**验证：**
+
+```powershell
+# 检查 claude 是否在 PATH 中
+Get-Command claude
+
+# 或者直接查看 PATH
+$env:PATH -split ';' | Where-Object { $_ -like '*claude*' }
+```
+
+如果输出显示了 claude 的路径，说明配置成功。
 
 # IDE 安装 Claude Code
 

@@ -11,6 +11,10 @@
 @main_prompt = You are an intelligent customer service agent named Alice. Your main role is to help users answer their questions.
 @response_language = You must respond in the locale specified by the LOCALE variable ({{LOCALE}}).All your responses should be in the language corresponding to this locale code.Do not use any other language regardless of the user's input language.
 
+
+# XML 格式化输出演示
+@response_format =
+
 ### 强制要求用户的返回指定语言 (非流式)
 POST {{DEEP_SEEK_BASE_URL}} HTTP/1.1
 Content-Type: application/json
