@@ -4,7 +4,7 @@
 
 ## 简介
 
-本项目包含 **10 个模块（39+ 章节）**的教程内容、视频脚本、示例代码和研究资料，旨在帮助开发者有效使用 Claude Code。课程内容从入门到进阶，基于官方 Anthropic 文档和行业专家的建议编写。
+本项目包含 **8 层深度教程**的视频脚本、示例代码和研究资料，旨在帮助开发者有效使用 Claude Code。课程内容由浅入深：理论基础 → 安装与环境 → 基础操作 → 核心工作流 → 项目配置体系 → 高级功能 → 注意事项 → 实战案例。基于官方 Anthropic 文档和行业专家（Boris Cherny、Addy Osmani、Andrew Ng 等）的建议编写。
 
 ### 配套实战案例
 
@@ -21,8 +21,8 @@ cc-tutorial/
 │   └── settings.json             # 项目设置
 │
 ├── docs/
-│   ├── tutorial/                 # 教程章节（11 个模块）
-│   ├── video-scripts/            # 视频脚本大纲
+│   ├── article-2026-coding-evolution.md  # 公众号文章
+│   ├── video-scripts/            # 视频脚本（8 层结构）
 │   ├── examples/                 # 示例代码和参考资料
 │   └── research/                 # 研究资料
 │
@@ -33,21 +33,18 @@ cc-tutorial/
 
 ---
 
-## 教程模块
+## 视频脚本（八层结构）
 
-| 模块 | 标题 | 章节数 | 重点内容 |
-|------|------|--------|----------|
-| 01 | 基础入门 | 4 | 安装、快捷键、Plan Mode |
-| 02 | 核心工作流 | 4 | 探索-规划-编码-提交、TDD、多实例 |
-| 03 | 高级功能 | 5 | 插件、MCP、技能、钩子、命令 |
-| 04 | 真实案例 | 5 | mybatis-boost 项目分析 |
-| 05 | 架构设计 | 4 | 整洁架构、六边形架构、可测试性 |
-| 06 | LLM 局限性 | 3 | LLM 工作原理、失败模式、辅助与自动化 |
-| 07 | 专家智慧 | 4 | Boris Power、Addy Osmani、Andrew Ng 等 |
-| 08 | 构建工作流 | 4 | 自定义工作流构建 |
-| 09 | 高级主题 | 3 | CI/CD、企业集成、AI 编程的未来 |
-| 10 | 参考资料 | 3 | 速查表、故障排查、资源汇总 |
-| 11 | Git 精通 | 1 | 并行开发工作流 |
+| 层级 | 标题 | 内容概要 |
+|------|------|----------|
+| 第一层 | [理论基础](docs/video-scripts/layer-01-theory.md) | LLM 基础、Token 与上下文窗口、多模态、模型选择 |
+| 第二层 | [安装与环境](docs/video-scripts/layer-02-setup.md) | 安装 Claude Code、IDE 联动、/init、中转、模型切换与费用 |
+| 第三层 | [基础操作](docs/video-scripts/layer-03-basics.md) | 快捷键、深度思考关键词、Resume/Rewind、Compact、图片支持 |
+| 第四层 | [核心工作流](docs/video-scripts/layer-04-workflow.md) | Vibe vs Spec Coding、Plan Mode、CLAUDE.md、Git 工作流、TDD |
+| 第五层 | [项目配置体系](docs/video-scripts/layer-05-config.md) | 配置目录结构、Rules、Memory、Commands、Context Engineering |
+| 第六层 | [高级功能](docs/video-scripts/layer-06-advanced.md) | MCP、SubAgent、插件、Skills、Hooks、Headless、Worktrees、SDK |
+| 第七层 | [注意事项](docs/video-scripts/layer-07-caveats.md) | AI 能力边界、翻车场景、Burnout、数据安全、扩展学习资源 |
+| 第八层 | [实战案例](docs/video-scripts/layer-08-practice.md) | 完整的项目修改流程演示 |
 
 ---
 
@@ -112,16 +109,17 @@ cc-tutorial/
 
 ## 快速开始
 
-1. **安装 Claude Code** - 参考 [模块 01，第 02 章](docs/tutorial/module-01-fundamentals/chapter-02-setup.md)
+1. **安装 Claude Code** - 参考 [第二层：安装与环境](docs/video-scripts/layer-02-setup.md)
 
    > **国内用户**: 原生安装可能遇到网络问题，推荐使用 npm 全局安装：
    > ```bash
    > npm install -g @anthropic-ai/claude-code
    > ```
 
-2. **学习基础知识** - 从 [模块 01：基础入门](docs/tutorial/module-01-fundamentals/) 开始
-3. **练习示例代码** - 探索 [`docs/examples/`](docs/examples/) 中的代码
-4. **观看视频脚本** - 查看 [`docs/video-scripts/`](docs/video-scripts/) 了解制作大纲
+2. **学习基础知识** - 从 [第一层：理论基础](docs/video-scripts/layer-01-theory.md) 开始
+3. **掌握核心工作流** - 重点学习 [第四层：核心工作流](docs/video-scripts/layer-04-workflow.md)
+4. **练习示例代码** - 探索 [`docs/examples/`](docs/examples/) 中的代码
+5. **观看实战案例** - 查看 [第八层：实战案例](docs/video-scripts/layer-08-practice.md)
 
 ---
 
@@ -142,8 +140,6 @@ cc-tutorial/
 #### 示例 1：本地/自建代理
 
 适用于本地部署的 OpenAI-compatible API（如 Nginx 代理、LiteLLM 等）。
-
-**PowerShell:**
 
 **PowerShell:**
 ```powershell
@@ -277,7 +273,9 @@ MIT License - 详见 [LICENSE](LICENSE)
 
 ## 相关资源
 
-- [教程总览](docs/tutorial/00-tutorial-overview.md)
+- [文档导航](docs/README.md)
+- [公众号文章：2026 年古法编程注定被淘汰](docs/article-2026-coding-evolution.md)
 - [研究摘要](docs/research/00-research-summary.md)
-- [命令速查表](docs/tutorial/module-10-reference/chapter-37-command-cheatsheet.md)
-- [故障排查](docs/tutorial/module-10-reference/chapter-38-troubleshooting.md)
+- [视频脚本总览](docs/video-scripts/README.md)
+- [官方 Skills 文档](docs/examples/official-skills/README.md)
+- [推荐插件列表](docs/examples/recommended-plugins/README.md)

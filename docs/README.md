@@ -4,11 +4,11 @@
 
 ## 公众号文章
 
-- [2026 年古法编程注定被淘汰](article-2026-coding-evolution.md) — 主文章（含七层教程内容）
+- [2026 年古法编程注定被淘汰](article-2026-coding-evolution.md) — 主文章
 
 ## 视频脚本
 
-- [视频脚本总览](video-scripts/README.md) — 七层结构索引
+- [视频脚本总览](video-scripts/README.md) — 八层结构索引
 - [第一层：理论基础](video-scripts/layer-01-theory.md) — LLM 基础、Token、多模态、模型选择
 - [第二层：安装与环境](video-scripts/layer-02-setup.md) — 安装、IDE 联动、中转、费用
 - [第三层：基础操作](video-scripts/layer-03-basics.md) — 快捷键、深度思考、Resume/Rewind、Compact
@@ -16,22 +16,8 @@
 - [第五层：项目配置体系](video-scripts/layer-05-config.md) — Rules、Memory、Commands、Context Engineering
 - [第六层：高级功能](video-scripts/layer-06-advanced.md) — MCP、SubAgent、Skills、Hooks、Headless、SDK
 - [第七层：注意事项](video-scripts/layer-07-caveats.md) — AI 边界、Burnout、数据安全、扩展资源
+- [第八层：实战案例](video-scripts/layer-08-practice.md) — 完整的项目修改流程演示
 - [分集脚本模板](video-scripts/episode-outline-template.md) — 单集脚本编写模板
-
-## 教程模块
-
-- [教程总览](tutorial/00-tutorial-overview.md)
-- [Module 01 — 基础概念](tutorial/module-01-fundamentals/)
-- [Module 02 — 核心工作流](tutorial/module-02-core-workflows/)
-- [Module 03 — 高级功能](tutorial/module-03-advanced-features/)
-- [Module 04 — 实战：MyBatis Boost](tutorial/module-04-real-world-mybatis-boost/)
-- [Module 05 — 架构设计](tutorial/module-05-architecture/)
-- [Module 06 — LLM 局限性](tutorial/module-06-llm-limitations/)
-- [Module 07 — 专家经验](tutorial/module-07-expert-wisdom/)
-- [Module 08 — 构建工作流](tutorial/module-08-building-workflows/)
-- [Module 09 — 高级话题](tutorial/module-09-advanced-topics/)
-- [Module 10 — 参考手册](tutorial/module-10-reference/)
-- [Module 11 — Git 精通](tutorial/module-11-git-mastery/)
 
 ## 研究资料
 
