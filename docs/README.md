@@ -8,7 +8,7 @@
 
 ## 视频脚本
 
-- [视频脚本总览](video-scripts/README.md) — 八层结构索引
+- [视频脚本总览](video-scripts/README.md) — 九层结构索引
 - [第一层：理论基础](video-scripts/layer-01-theory.md) — LLM 基础、Token、多模态、模型选择
 - [第二层：安装与环境](video-scripts/layer-02-setup.md) — 安装、IDE 联动、中转、费用
 - [第三层：基础操作](video-scripts/layer-03-basics.md) — 快捷键、深度思考、Resume/Rewind、Compact
@@ -17,7 +17,7 @@
 - [第六层：高级功能](video-scripts/layer-06-advanced.md) — MCP、SubAgent、Skills、Hooks、Headless、SDK
 - [第七层：注意事项](video-scripts/layer-07-caveats.md) — AI 边界、Burnout、数据安全、扩展资源
 - [第八层：实战案例](video-scripts/layer-08-practice.md) — 完整的项目修改流程演示
-- [分集脚本模板](video-scripts/episode-outline-template.md) — 单集脚本编写模板
+- [第九层：补充内容](video-scripts/layer-09-supplement.md) — Web 端、国内订阅、安全提示
 
 ## 研究资料
 

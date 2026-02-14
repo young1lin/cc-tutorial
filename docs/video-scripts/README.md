@@ -18,6 +18,3 @@
 | 第八层 | [layer-08-practice.md](layer-08-practice.md) | 实战案例：完整的项目修改流程演示 |
 | 第九层 | [layer-09-supplement.md](layer-09-supplement.md) | Web 端、Session Teleport、国内订阅指南、安全提示 |
 
-## 其他文件
-
-- [episode-outline-template.md](episode-outline-template.md) — 单集脚本模板

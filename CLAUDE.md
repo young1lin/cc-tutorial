@@ -9,7 +9,6 @@ A comprehensive Claude Code tutorial project for video script production. Contai
 ## Architecture
 
 - `docs/video-scripts/` - Video scripts (9 layers: theory → setup → basics → workflow → config → advanced → caveats → practice → supplement)
-- `docs/video-scripts/episode-outline-template.md` - Template for individual episodes
 - `docs/examples/` - Example code: HTTP API examples, official skills docs, recommended plugins
 - `docs/research/` - Completed research materials (Anthropic official, Boris Cherny, Andrew Ng, Addy Osmani)
 - `.claude/commands/` - Custom slash commands (`/commit-push`)
@@ -43,7 +42,7 @@ Do NOT create VectorStore instances in a loop. GPU memory auto-cleans but system
 Each chapter must include: learning objectives, prerequisites, core concepts, hands-on examples, common pitfalls, further reading, and a video script section.
 
 ### Video Scripts
-Follow `docs/video-scripts/episode-outline-template.md`:
+Each episode follows a standard format:
 1. Intro (30-60s) - what and why
 2. Concept explanation (2-3min) - with diagrams/animations
 3. Live demo (5-8min) - screen recording with code

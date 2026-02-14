@@ -104,7 +104,6 @@ cc-tutorial/
 4. **总结（1-2 分钟）** - 关键要点
 5. **练习（可选）** - 实践活动
 
-完整模板见 `docs/video-scripts/episode-outline-template.md`
 
 ---
 

@@ -97,18 +97,6 @@ This tutorial emphasizes **AI-Assisted Engineering**:
 
 ---
 
-## Video Script Template
-
-Each video follows this standardized format:
-
-1. **Intro (30-60s)** - What and why
-2. **Concept explanation (2-3min)** - With diagrams/animations
-3. **Live demo (5-8min)** - Screen recording with code
-4. **Summary (1-2min)** - Key takeaways
-5. **Exercises (optional)** - Practice activities
-
-See `docs/video-scripts/episode-outline-template.md` for the complete template.
-
 ---
 
 ## Getting Started
