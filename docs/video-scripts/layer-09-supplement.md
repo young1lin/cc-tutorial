@@ -2,7 +2,6 @@
 
 > 本层涵盖 Claude Code Web 端使用、Session Teleport 功能，以及国内开发者的订阅方案。
 
----
 
 ## Claude Code Web 端与 Session Teleport
 
@@ -196,7 +195,6 @@ export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
 
 >  结论：GLM Coding 值得作为**入门练手和日常简单任务**的国内替代，但遇到复杂并发、架构级推理等硬核问题，Opus 4.6 的建议质量不在同一档次。预算允许，上真正的 Claude。
 
----
 
 ### 国内可接入 Claude Code 的模型横评（截至 2026 年初）
 

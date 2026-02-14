@@ -9,7 +9,6 @@
 > - 有 LLM 使用经验 → 跳到「LLM 的局限性」看看你是否真的了解边界
 > - 想直接上手 Agent → 跳到「Agent 模式」，但建议回头补 Function Calling
 
----
 
 ## 全部动手练习一览
 
@@ -26,7 +25,6 @@
 | 09 | [09-api-protocol-compatibility.http](../examples/http/09-api-protocol-compatibility.http) | 协议兼容：OpenAI 格式 vs Anthropic 格式 | 5 | ⭐⭐ |
 | | **合计** | | **128+** | |
 
----
 
 # 一、大语言模型基础
 
@@ -63,51 +61,25 @@ Token序列: [今天, 天气]
 ```
 英文: "Hello World"     → 2 个 Token
 中文: "你好世界"         → 2-4 个 Token（取决于分词器）
-代码: "console.log()"   → 4 个 Token
-混合: "调用 API 接口"    → 3-5 个 Token
+代码: "console.log()"   → 3-4 个 Token
+混合: "调用 API 接口"    → 3-5 个 Token（取决于分词器）
 ```
 
 **为什么 Token 很重要？** 因为：
 1. **计费按 Token**：不是按字数，而是按 Token 数量计费
 2. **上下文按 Token**：200K 的窗口指的是 200K Token，不是 200K 字
-3. **中文更"贵"**：一个中文字通常占 1-2 个 Token，而一个英文单词通常只占 1 个 Token
+3. **中文更"贵"**：一个或者多个中文字通常占 1 个 Token，而一个英文单词通常只占 1 个 Token。例如 “你好” 占用一个 Token，“你好世界” 占用 2 个 Token。
 
 > **动手练习** → [01-main.http](../examples/http/01-main.http)：第一个请求展示了"字数不等于 Token"的概念
 
 ## 1.3 Context Window 上下文窗口
 
-上下文窗口是一个固定长度的数组，根据前面输入的内容，一个个 Token 输出，直到数组被填满。
-
-根据 [Anthropic 官方公告](https://www.anthropic.com/news/claude-opus-4-6)（2026-02-05），Claude Opus 4.6 的上下文窗口配置如下：
-
-| 订阅类型 | 上下文窗口 |
-|---------|-----------|
-| Pro / Max / Team | 200K Token |
-| API / pay-as-you-go | **1M Token** |
-
-超过 200K 的上下文有额外定价（$10/$37.50 per million tokens）。
-
-```
-┌──────────────────────────────────────────────┐
-│              Context Window (200K)            │
-│                                               │
-│  [System Prompt] [User Message] [Assistant]   │
-│  ← 输入 Token →  ← 输出 Token →              │
-│                                               │
-│  输入 + 输出 ≤ 200K Token                     │
-└──────────────────────────────────────────────┘
-```
-
-**直觉感受**：200K Token 大约是：
-- 一本 15 万字的中文小说
-- 500 页英文论文
-- 一个中型项目的全部源代码（约 3000-5000 行）
+你可以简单把上下文窗口是一个固定长度的数组，根据前面输入的内容，一个个 Token 输出，直到数组被填满。理解上下文窗口概念十分重要，后续的所有的包装出来的概念，都和这个有限的上下文窗口概念有关。以及为什么上下文窗口要有这个限制，并且合理构建上下文又被称之为 Context Engineering。
 
 **为什么这很重要？** 因为后面一切的内容——CLAUDE.md、MCP、Skills、SubAgent、LSP、`/compact`——都是围绕一个核心问题：**在有限的上下文窗口中，尽可能实现功能**。
 
 > **核心洞察**：Claude Code 的所有高级功能，本质上都是上下文管理策略。理解了这一点，后面所有概念都会豁然开通。
 
----
 
 # 二、LLM 的局限性
 
@@ -305,7 +277,6 @@ LLM 能快速发现：
 | 数据提取 | 0 | - | JSON Schema |
 | 内容生成 | 0.3-0.7 | 500 | 创意自由 |
 
----
 
 # 四、Function Calling —— LLM 的"手"
 
@@ -785,7 +756,6 @@ def code_review(code: str) -> str:
 
 > **完整教程**：MCP 的详细配置和高级用法在第六层（高级功能）中深入讲解。这里只需要理解：**MCP = Function Calling 的标准化 + Resources + Prompts**。
 
----
 
 # 五、Prompt Engineering —— 与 LLM 对话的艺术
 
@@ -953,7 +923,6 @@ Zero-Shot（零样本）:
 
 > **动手练习** → [05-prompt-engineering.http](../examples/http/05-prompt-engineering.http)：客服风格学习示例
 
----
 
 # 六、参数调优 —— 控制 LLM 的"旋钮"
 
@@ -1039,7 +1008,6 @@ max_tokens=1000:  详细解释（~500-700 中文字）
 > - 模型对比（StepFun vs DeepSeek）
 > - 流式 vs 非流式响应
 
----
 
 # 七、注意力机制 —— LLM 的核心引擎
 
@@ -1145,7 +1113,6 @@ Token:  [1] [2] [3] [4] [5] [6] [7] [8]
 
 **已公开架构的模型**中，Full Attention 能精确记住这些关系，线性注意力会"模糊"掉，滑动窗口可能直接"看不到"。未公开架构的模型（Claude、GPT 等），则需要通过实际编码测试来评估其长距离记忆能力——从实测结果看，Claude Opus 4.6 在这方面表现优秀，但我们无法将其归因于某种具体的注意力机制。
 
----
 
 # 八、Agent 模式 —— 从工具调用到自主决策
 
@@ -1612,7 +1579,6 @@ Final Answer: "Bug 已修复：登录表单验证逻辑从 OR 改为 AND..."
 
 这不是类比——这就是 Claude Code 实际在做的事。理解了 Agent 理论，你就能**预测 Claude Code 的行为**，知道什么时候该给它更多上下文，什么时候该让它自己探索。
 
----
 
 # 九、原生多模态 vs 非原生多模态
 
@@ -1647,7 +1613,6 @@ Final Answer: "Bug 已修复：登录表单验证逻辑从 OR 改为 AND..."
 2. **UI 问题**: 描述问题或提供 HTML 代码
 3. **设计稿**: 使用 Figma MCP 获取结构化信息
 
----
 
 # 十、模型选择建议
 
@@ -1672,7 +1637,6 @@ Final Answer: "Bug 已修复：登录表单验证逻辑从 OR 改为 AND..."
 3. **格式遵循能力**：能否稳定输出 JSON、遵循 CLAUDE.md 规则
 4. **工具调用可靠性**：Function Calling 的成功率
 
----
 
 # 十一、从零实现简易版
 
@@ -1704,7 +1668,6 @@ Final Answer: "Bug 已修复：登录表单验证逻辑从 OR 改为 AND..."
 07-agent-patterns.http → 08-legacy-tool-calling.http → 09-api-protocol-compatibility.http
 ```
 
----
 
 # 十二、延伸阅读与参考资料
 
@@ -1741,7 +1704,6 @@ Final Answer: "Bug 已修复：登录表单验证逻辑从 OR 改为 AND..."
 | [docs/research/04-addy-osmani-2026-workflow.md](../research/04-addy-osmani-2026-workflow.md) | Addy Osmani 2026 工作流 |
 | [docs/examples/http/](../examples/http/) | 128+ 可执行 HTTP 示例 |
 
----
 
 # 本层小结
 
