@@ -34,16 +34,18 @@ Follows conventional commits format:
 
 [optional body]
 
-Co-Authored-By: {Model Name}
+Co-Authored-By: {Model Name} <noreply@anthropic.com>
 ```
 
-**重要**: Co-Authored-By 使用当前会话的实际模型名称。从系统消息 "You are powered by the model XXX" 中获取。
+**重要**:
+- 模型名称使用当前会话的实际模型（从系统消息 "You are powered by the model XXX" 获取）
+- 邮箱始终使用 `noreply@anthropic.com`（工具是 Claude Code，属于 Anthropic）
 
 **示例：**
-- `glm-5` → `Co-Authored-By: GLM-5`
-- `claude-opus-4-6` → `Co-Authored-By: Claude Opus 4.6`
-- `gpt-4o` → `Co-Authored-By: GPT-4o`
-- `deepseek-reasoner` → `Co-Authored-By: DeepSeek Reasoner`
+- `glm-5` → `Co-Authored-By: GLM-5 <noreply@anthropic.com>`
+- `claude-opus-4-6` → `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
+- `gpt-4o` → `Co-Authored-By: GPT-4o <noreply@anthropic.com>`
+- `deepseek-reasoner` → `Co-Authored-By: DeepSeek Reasoner <noreply@anthropic.com>`
 
 **Types:**
 - `feat` - New feature
