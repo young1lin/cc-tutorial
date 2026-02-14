@@ -41,18 +41,27 @@ Co-Authored-By: {Model Name} <{model-email}>
 
 根据当前使用的模型，选择对应的 Co-Authored-By 格式：
 
-| Model | Co-Authored-By |
-|-------|---------------|
-| Claude (claude-*) | `Claude <noreply@anthropic.com>` |
-| GLM (glm-*) | `GLM <noreply@zhipuai.cn>` |
-| DeepSeek (deepseek-*) | `DeepSeek <noreply@deepseek.com>` |
-| Gemini (gemini-*) | `Gemini <noreply@google.com>` |
-| 其他/未知 | `{Model Name} <noreply@example.com>` |
+| Model Prefix | Vendor | Co-Authored-By |
+|--------------|--------|---------------|
+| `claude-*` | Anthropic | `Claude <noreply@anthropic.com>` |
+| `gpt-*`, `o1-*`, `o3-*` | OpenAI | `GPT <noreply@openai.com>` |
+| `glm-*` | 智谱 AI | `GLM <noreply@zhipuai.cn>` |
+| `deepseek-*` | DeepSeek | `DeepSeek <noreply@deepseek.com>` |
+| `gemini-*` | Google | `Gemini <noreply@google.com>` |
+| `step-*` | 阶跃星辰 | `Step <noreply@stepfun.com>` |
+| `qwen-*`, `qwq-*` | 阿里云 | `Qwen <noreply@alibabacloud.com>` |
+| `moonshot-*` | 月之暗面 | `Moonshot <noreply@moonshot.cn>` |
+| `yi-*` | 零一万物 | `Yi <noreply@01.ai>` |
+| `baichuan-*` | 百川智能 | `Baichuan <noreply@baichuan-ai.com>` |
+| `minimax-*` | Minimax | `Minimax <noreply@minimaxi.com>` |
+| 其他/未知 | - | `{Model Name} <noreply@unknown.ai>` |
 
 **示例：**
-- glm-5 → `Co-Authored-By: GLM-5 <noreply@zhipuai.cn>`
-- claude-opus-4-6 → `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
-- deepseek-reasoner → `Co-Authored-By: DeepSeek Reasoner <noreply@deepseek.com>`
+- `glm-5` → `Co-Authored-By: GLM-5 <noreply@zhipuai.cn>`
+- `claude-opus-4-6` → `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
+- `gpt-4o` → `Co-Authored-By: GPT-4o <noreply@openai.com>`
+- `deepseek-reasoner` → `Co-Authored-By: DeepSeek Reasoner <noreply@deepseek.com>`
+- `step-1-8k` → `Co-Authored-By: Step-1-8K <noreply@stepfun.com>`
 
 **Types:**
 - `feat` - New feature
