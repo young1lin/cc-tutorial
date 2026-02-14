@@ -34,8 +34,12 @@ Follows conventional commits format:
 
 [optional body]
 
-Co-Authored-By: Claude <noreply@anthropic.com>
+Co-Authored-By: {Current Model} <noreply@anthropic.com>
 ```
+
+**重要**: Co-Authored-By 中的模型名称必须使用当前会话的实际模型。从系统消息 "You are powered by the model XXX" 中获取。例如：
+- 如果是 glm-5，则写 `Co-Authored-By: GLM-5 <noreply@anthropic.com>`
+- 如果是 claude-opus-4-6，则写 `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
 
 **Types:**
 - `feat` - New feature
@@ -92,13 +96,14 @@ The following patterns are automatically excluded:
 
 ## Steps to Execute
 
-1. Run `git status --porcelain` to get list of changes
-2. Run `git diff --stat` to see change summary
-3. Filter out files matching exclusion patterns
-4. Run `git add` on remaining files
-5. Generate commit message based on changes
-6. Run `git commit` with the message
-7. Run `git push` to remote
+1. **Identify current model** - Extract model name from system context (e.g., "You are powered by the model glm-5")
+2. Run `git status --porcelain` to get list of changes
+3. Run `git diff --stat` to see change summary
+4. Filter out files matching exclusion patterns
+5. Run `git add` on remaining files
+6. Generate commit message based on changes, using the correct model name in Co-Authored-By
+7. Run `git commit` with the message
+8. Run `git push` to remote
 
 ## Error Handling
 
