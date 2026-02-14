@@ -34,12 +34,25 @@ Follows conventional commits format:
 
 [optional body]
 
-Co-Authored-By: {Current Model} <noreply@anthropic.com>
+Co-Authored-By: {Model Name} <{model-email}>
 ```
 
-**重要**: Co-Authored-By 中的模型名称必须使用当前会话的实际模型。从系统消息 "You are powered by the model XXX" 中获取。例如：
-- 如果是 glm-5，则写 `Co-Authored-By: GLM-5 <noreply@anthropic.com>`
-- 如果是 claude-opus-4-6，则写 `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
+### Model to Email Mapping
+
+根据当前使用的模型，选择对应的 Co-Authored-By 格式：
+
+| Model | Co-Authored-By |
+|-------|---------------|
+| Claude (claude-*) | `Claude <noreply@anthropic.com>` |
+| GLM (glm-*) | `GLM <noreply@zhipuai.cn>` |
+| DeepSeek (deepseek-*) | `DeepSeek <noreply@deepseek.com>` |
+| Gemini (gemini-*) | `Gemini <noreply@google.com>` |
+| 其他/未知 | `{Model Name} <noreply@example.com>` |
+
+**示例：**
+- glm-5 → `Co-Authored-By: GLM-5 <noreply@zhipuai.cn>`
+- claude-opus-4-6 → `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
+- deepseek-reasoner → `Co-Authored-By: DeepSeek Reasoner <noreply@deepseek.com>`
 
 **Types:**
 - `feat` - New feature
