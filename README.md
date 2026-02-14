@@ -4,7 +4,7 @@
 
 ## 简介
 
-本项目包含 **8 层深度教程**的视频脚本、示例代码和研究资料，旨在帮助开发者有效使用 Claude Code。课程内容由浅入深：理论基础 → 安装与环境 → 基础操作 → 核心工作流 → 项目配置体系 → 高级功能 → 注意事项 → 实战案例。基于官方 Anthropic 文档和行业专家（Boris Cherny、Addy Osmani、Andrew Ng 等）的建议编写。
+本项目包含 **9 层深度教程**的视频脚本、示例代码和研究资料，旨在帮助开发者有效使用 Claude Code。课程内容由浅入深：理论基础 → 安装与环境 → 基础操作 → 核心工作流 → 项目配置体系 → 高级功能 → 注意事项 → 实战案例 → 补充内容。基于官方 Anthropic 文档和行业专家（Boris Cherny、Addy Osmani、Andrew Ng 等）的建议编写。
 
 ### 配套实战案例
 
@@ -22,7 +22,7 @@ cc-tutorial/
 │
 ├── docs/
 │   ├── article-2026-coding-evolution.md  # 公众号文章
-│   ├── video-scripts/            # 视频脚本（8 层结构）
+│   ├── video-scripts/            # 视频脚本（9 层结构）
 │   ├── examples/                 # 示例代码和参考资料
 │   └── research/                 # 研究资料
 │
@@ -33,7 +33,7 @@ cc-tutorial/
 
 ---
 
-## 视频脚本（八层结构）
+## 视频脚本（九层结构）
 
 | 层级 | 标题 | 内容概要 |
 |------|------|----------|
@@ -45,6 +45,7 @@ cc-tutorial/
 | 第六层 | [高级功能](docs/video-scripts/layer-06-advanced.md) | MCP、SubAgent、插件、Skills、Hooks、Headless、Worktrees、SDK |
 | 第七层 | [注意事项](docs/video-scripts/layer-07-caveats.md) | AI 能力边界、翻车场景、Burnout、数据安全、扩展学习资源 |
 | 第八层 | [实战案例](docs/video-scripts/layer-08-practice.md) | 完整的项目修改流程演示 |
+| 第九层 | [补充内容](docs/video-scripts/layer-09-supplement.md) | Web 端、Session Teleport、国内订阅指南、安全提示 |
 
 ---
 

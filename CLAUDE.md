@@ -4,12 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A comprehensive Claude Code tutorial project for video script production. Contains 11 modules (39+ chapters) of tutorial content, video scripts, example code, and research materials. Module 11 (Git Mastery) is work-in-progress. The companion real-world case study project is at `C:\PythonProject\mybatis-boost`.
+A comprehensive Claude Code tutorial project for video script production. Contains 9 layers of video scripts, example code, and research materials. The companion real-world case study project is at `C:\PythonProject\mybatis-boost`.
 
 ## Architecture
 
-- `docs/tutorial/module-{01..11}-*/chapter-*.md` - Tutorial chapters (primary content)
-- `docs/video-scripts/` - Video scripts per module; use `episode-outline-template.md` as the template
+- `docs/video-scripts/` - Video scripts (9 layers: theory → setup → basics → workflow → config → advanced → caveats → practice → supplement)
+- `docs/video-scripts/episode-outline-template.md` - Template for individual episodes
 - `docs/examples/` - Example code: HTTP API examples, official skills docs, recommended plugins
 - `docs/research/` - Completed research materials (Anthropic official, Boris Cherny, Andrew Ng, Addy Osmani)
 - `.claude/commands/` - Custom slash commands (`/commit-push`)
