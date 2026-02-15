@@ -1,4 +1,4 @@
-@GLM_BASE_URL = https://open.bigmodel.cn/api/anthropic/v1/messages
+@GLM_BASE_URL = https://open.bigmodel.cn/api/coding/paas/v4/anthropic/v1/messages
 @GLM_API_KEY = {{$dotenv GLM_API_KEY}}
 
 # 通用变量

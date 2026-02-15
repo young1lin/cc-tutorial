@@ -3,17 +3,17 @@
 # ============================================
 # 说明：展示提示词工程的核心技术和最佳实践
 # 目的：理解如何通过优化提示词提升模型表现
-# 模型：StepFun step-3.5-flash
+# 模型：GLM-4.7
 # 核心技术：Few-Shot、Chain-of-Thought、结构化输出
 # ============================================
 
 # 环境变量
-@STEPFUN_BASE_URL = https://api.stepfun.com/v1/chat/completions
-@STEPFUN_BEARER_TOKEN = Bearer {{$dotenv STEPFUN_API_KEY}}
+@GLM_BASE_URL = https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
+@GLM_BEARER_TOKEN = Bearer {{$dotenv GLM_API_KEY}}
 
 # DeepSeek（用于 CoT 对比的无推理基线）
 # deepseek-chat：普通对话模型，不强制推理
-# deepseek-reasoner：内置推理，与 step-3.5 类似，不适合做"无 CoT"基线
+# deepseek-reasoner：内置推理，与 GLM-4.7 类似，不适合做"无 CoT"基线
 @DEEP_SEEK_BASE_URL = https://api.deepseek.com/chat/completions
 @DEEP_SEEK_BEARER_TOKEN = Bearer {{$dotenv DEEPSEEK_API_KEY}}
 
@@ -25,10 +25,10 @@
 # 说明：不提供示例，直接让模型执行任务
 # 场景：情感分析
 # 预期：模型可能理解任务，但输出格式不统一
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -41,7 +41,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "这家餐厅的环境不错，但菜品一般，价格有点贵。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -50,10 +50,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：提供 3 个示例，引导模型学习任务模式
 # 优势：输出格式统一、准确率提升
 # 预期：模型会模仿示例的格式输出
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -66,7 +66,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "这家餐厅的环境不错，但菜品一般，价格有点贵。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -75,10 +75,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：通过示例引导模型生成特定风格的代码
 # 场景：生成带注释和类型提示的 Python 函数
 # 预期：模型会遵循示例的代码风格
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -91,7 +91,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "生成一个计算斐波那契数列第 n 项的函数。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -100,10 +100,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：对比 Few-Shot 和 Zero-Shot 在实体提取任务上的表现
 # 场景：从文本中提取人名、地名、机构名
 # 预期：Few-Shot 的准确率和格式一致性更高
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -116,7 +116,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "杨幂在杭州的西湖边拍摄新电影，制作公司是华谊兄弟。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -127,14 +127,14 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 #
 # ⚠️  对比实验说明（重要）：
 #
-#   step-3.5-flash   → 内置强制推理，无论 prompt 怎么写都会先思考再回答
+#   GLM-4.7          → 内置强制推理，无论 prompt 怎么写都会先思考再回答
 #   deepseek-chat    → 普通对话模型，不强制推理，适合做"无 CoT"基线
-#   deepseek-reasoner→ 内置推理（同 step-3.5 类型），不适合基线
+#   deepseek-reasoner→ 内置推理（同 GLM-4.7 类型），不适合基线
 #
 #   因此：
 #   - "无 CoT 基线" → 使用 deepseek-chat
 #   - "有 CoT 对比" → 使用 deepseek-chat + 显式 CoT 提示
-#   - "强制推理示例"→ 使用 step-3.5-flash（体验内置推理效果）
+#   - "强制推理示例"→ 使用 GLM-4.7（体验内置推理效果）
 #
 # ============================================
 
@@ -190,15 +190,15 @@ Authorization: {{DEEP_SEEK_BEARER_TOKEN}}
   "temperature": 0
 }
 
-### [提示词 2.3] 内置强制推理（step-3.5-flash）
-# 说明：step-3.5-flash 内部强制走思维链，即使 prompt 不要求也会推理
-# 模型：step-3.5-flash（推理内置，无法关闭）
+### [提示词 2.3] 内置强制推理（GLM-4.7）
+# 说明：GLM-4.7 内部强制走思维链，即使 prompt 不要求也会推理
+# 模型：GLM-4.7（推理内置，无法关闭）
 # 对比 2.1：体验内置推理 vs 普通模型的差异
-# 注意：用 step-3.5 做"无 CoT 基线"是无效的，因为它总会推理
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+# 注意：用 GLM-4.7 做"无 CoT 基线"是无效的，因为它总会推理
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -211,7 +211,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "一个孩子存了 21 元，如果又得到 15 元，用这些钱可以买多少个单价 6 元的玩具？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -302,10 +302,10 @@ Authorization: {{DEEP_SEEK_BEARER_TOKEN}}
 # 说明：强制模型返回 JSON 格式
 # 场景：信息提取，需要结构化数据
 # 预期：模型返回有效的 JSON
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -318,7 +318,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "提取以下文本的关键信息，以 JSON 格式返回，包含 name, age, occupation, city 字段：\n\n李明，35 岁，软件工程师，住在杭州。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -328,10 +328,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 优势：输出格式更严格、可预测
 # 场景：API 集成、数据处理
 # 预期：模型严格遵循 Schema
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -344,7 +344,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "提取信息：\n\n张三，28 岁，前端工程师，在上海工作。擅长 React、TypeScript 和 Node.js。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -353,10 +353,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：测试模型处理复杂嵌套 JSON 的能力
 # 场景：电商订单、文档结构等
 # 预期：模型返回嵌套的 JSON 结构
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -369,7 +369,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "订单号：ORD-20260209-001\n客户：李明，电话 13800138000\n商品：iPhone 15（2 台，单价 5999 元）、AirPods Pro（1 个，单价 1999 元）\n总价：13997 元"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -378,10 +378,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：生成格式化的 Markdown 文档
 # 场景：文档生成、报告撰写
 # 预期：模型返回结构良好的 Markdown
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -394,7 +394,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "生成一个关于 Python 快速排序算法的技术文档，包括：原理说明、代码实现、时间复杂度分析。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0.3
 }
@@ -403,10 +403,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：生成 Markdown 表格
 # 场景：数据对比、特性矩阵
 # 预期：模型返回格式正确的表格
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -419,7 +419,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "对比 Python、JavaScript、Java 三种编程语言的特点，生成一个表格，包含以下维度：类型系统、运行环境、主要应用场景、学习难度。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -432,10 +432,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：通过角色设定提升回答质量
 # 场景：技术咨询
 # 预期：模型会使用更专业的术语和更深入的分析
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -448,7 +448,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "如何设计一个高并发的电商秒杀系统？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0.3
 }
@@ -456,10 +456,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 ### [提示词 4.2] 对比 - 无角色设定
 # 说明：对比有无角色设定的差异
 # 预期：回答更泛化、缺少深度
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -472,7 +472,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "如何设计一个高并发的电商秒杀系统？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0.3
 }
@@ -481,10 +481,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：角色扮演用于创意写作
 # 场景：内容创作
 # 预期：输出更有文学性和创意
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -497,7 +497,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "写一首关于杭州西湖春天的短诗（4-6 行）。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0.7
 }
@@ -510,10 +510,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：明确告知模型"不要做什么"
 # 场景：只要结果，不要过程
 # 预期：模型只返回答案，不解释
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -526,7 +526,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "写一个 Python 函数，判断一个数是否为质数。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -535,10 +535,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：要求模型避免使用专业术语
 # 场景：面向非技术用户的解释
 # 预期：模型使用通俗语言
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -551,7 +551,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "解释一下什么是「云计算」？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0.3
 }
@@ -560,10 +560,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：限制回答长度，避免啰嗦
 # 场景：快速问答
 # 预期：模型给出简短的回答
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -576,7 +576,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "什么是 React？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -589,10 +589,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：模型从对话历史中学习模式
 # 场景：客户服务，学习回复风格
 # 预期：模型会模仿之前的回复风格
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -621,7 +621,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "退款要多久？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0.3
 }

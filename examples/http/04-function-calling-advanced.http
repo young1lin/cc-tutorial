@@ -3,13 +3,13 @@
 # ============================================
 # 说明：展示 Function Calling 的高级用法和实战场景
 # 目的：理解如何设计和使用工具调用解决复杂问题
-# 模型：StepFun step-3.5-flash
-# 文档：https://platform.stepfun.com/docs/guide/tool_call
+# 模型：GLM-4.7
+# 文档：https://open.bigmodel.cn/dev/api
 # ============================================
 
 # 环境变量
-@STEPFUN_BASE_URL = https://api.stepfun.com/v1/chat/completions
-@STEPFUN_BEARER_TOKEN = Bearer {{$dotenv STEPFUN_API_KEY}}
+@GLM_BASE_URL = https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
+@GLM_BEARER_TOKEN = Bearer {{$dotenv GLM_API_KEY}}
 
 # ============================================
 # 1. 多工具组合调用
@@ -19,10 +19,10 @@
 # 说明：定义多个工具，让模型根据需求智能选择
 # 场景：用户询问天气并可能需要调整日程
 # 预期：模型会先调用 get_weather，再根据天气情况调用日程工具
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -35,7 +35,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "明天杭州天气怎么样？如果会下雨，帮我取消下午 3 点的户外活动。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -104,10 +104,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 ### [高级 1.2] 多工具组合 - 第二轮对话（模拟工具返回）
 # 说明：模拟第一次工具调用后的响应，继续对话
 # 场景：天气返回下雨，模型需要查询日程
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -139,7 +139,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "{\"location\": \"hangzhou\", \"date\": \"2026-02-10\", \"weather\": \"Rainy\", \"temperature\": \"15°C\", \"description\": \"中雨，建议携带雨具\"}"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -198,10 +198,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：一次请求同时调用多个独立工具
 # 场景：查询多个城市的天气，可以并行执行
 # 预期：模型的 tool_calls 数组包含多个调用
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -214,7 +214,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请分别查询北京、上海、杭州的天气情况。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -241,10 +241,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 ### [高级 2.2] 并行调用响应 - 处理多个工具结果
 # 说明：模拟并行调用后，返回所有结果
 # 预期：模型整合所有天气信息，给出综合回复
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -302,7 +302,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "{\"location\": \"hangzhou\", \"weather\": \"Rainy\", \"temperature\": \"15°C\"}"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -331,10 +331,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：工具返回错误时，模型如何恢复
 # 场景：查询不支持的城市
 # 预期：模型会提示用户更换城市或说明限制
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -347,7 +347,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请查询火星的天气。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -374,10 +374,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 ### [高级 3.2] 错误恢复 - 工具返回错误后的处理
 # 说明：模拟工具返回错误，测试模型的恢复能力
 # 预期：模型会向用户解释错误，并建议替代方案
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -409,7 +409,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "{\"error\": \"不支持的城市\", \"message\": \"仅支持地球上的城市，如 beijing, shanghai, hangzhou 等\"}"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -438,10 +438,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：根据对话上下文，决定是否调用工具
 # 场景：用户先陈述事实，不需要调用工具
 # 预期：模型不调用工具，直接回复
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -454,7 +454,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "今天杭州天气不错啊！"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -479,10 +479,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：继续对话，用户询问"明天呢？"
 # 场景：需要根据上下文理解用户指的是"明天杭州的天气"
 # 预期：模型调用 get_weather(hangzhou, 明天)
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -503,7 +503,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "明天呢？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -536,10 +536,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：演示复杂的嵌套对象参数
 # 场景：查询数据库，包含过滤条件、排序、分页等
 # 预期：模型正确解析用户需求，构造复杂参数
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -552,7 +552,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "查询所有价格在 100-500 元之间的商品，按销量降序排列，每页显示 20 条，显示第 1 页。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -612,10 +612,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：演示数组类型的参数
 # 场景：批量创建用户
 # 预期：模型将多个用户信息组织成数组
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -628,7 +628,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "帮我创建三个用户：张三（admin 角色）、李四（editor 角色）、王五（viewer 角色）。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -671,10 +671,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：流式模式下的 Function Calling
 # 场景：在流式响应中调用工具
 # 预期：返回 SSE 格式，包含 tool_calls 信息
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: text/event-stream
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -687,7 +687,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "杭州天气怎么样？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -716,10 +716,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：设计一个代码执行工具
 # 场景：用户要求执行 Python 代码
 # 预期：模型识别需要执行代码，调用工具
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -732,7 +732,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "帮我计算斐波那契数列的第 10 项。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -786,6 +786,6 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # - 记录工具调用日志，便于调试和优化
 #
 # 参考资料：
-# - StepFun Function Calling: https://platform.stepfun.com/docs/guide/tool_call
+# - 智谱 GLM Function Calling: https://open.bigmodel.cn/dev/api
 # - OpenAI Function Calling Guide: https://platform.openai.com/docs/guides/function-calling
 # ============================================
