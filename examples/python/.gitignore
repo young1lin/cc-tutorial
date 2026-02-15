@@ -1,0 +1,17 @@
+uv.lock
+
+# Python
+__pycache__/
+
+.venv/
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+*.pywz
+*.pyzw
+*.pyzwz
+*.pyzwzw
+*.pyzwzwz
+*.pyzwzwzw

@@ -1,0 +1,791 @@
+# ============================================
+# Function Calling 高级示例
+# ============================================
+# 说明：展示 Function Calling 的高级用法和实战场景
+# 目的：理解如何设计和使用工具调用解决复杂问题
+# 模型：StepFun step-3.5-flash
+# 文档：https://platform.stepfun.com/docs/guide/tool_call
+# ============================================
+
+# 环境变量
+@STEPFUN_BASE_URL = https://api.stepfun.com/v1/chat/completions
+@STEPFUN_BEARER_TOKEN = Bearer {{$dotenv STEPFUN_API_KEY}}
+
+# ============================================
+# 1. 多工具组合调用
+# ============================================
+
+### [高级 1.1] 多工具定义 - 天气 + 日程管理
+# 说明：定义多个工具，让模型根据需求智能选择
+# 场景：用户询问天气并可能需要调整日程
+# 预期：模型会先调用 get_weather，再根据天气情况调用日程工具
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个智能助手，可以帮助用户查询天气和管理日程。"
+    },
+    {
+      "role": "user",
+      "content": "明天杭州天气怎么样？如果会下雨，帮我取消下午 3 点的户外活动。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "获取指定城市的天气信息",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "城市名称（小写拼音），如 beijing, shanghai, hangzhou"
+            },
+            "date": {
+              "type": "string",
+              "description": "日期，格式 YYYY-MM-DD，默认今天"
+            }
+          },
+          "required": ["location"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_calendar",
+        "description": "获取指定日期的日程安排",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": "string",
+              "description": "日期，格式 YYYY-MM-DD"
+            }
+          },
+          "required": ["date"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "cancel_event",
+        "description": "取消日程中的某个事件",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "event_id": {
+              "type": "string",
+              "description": "事件 ID"
+            },
+            "reason": {
+              "type": "string",
+              "description": "取消原因"
+            }
+          },
+          "required": ["event_id"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+### [高级 1.2] 多工具组合 - 第二轮对话（模拟工具返回）
+# 说明：模拟第一次工具调用后的响应，继续对话
+# 场景：天气返回下雨，模型需要查询日程
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个智能助手，可以帮助用户查询天气和管理日程。"
+    },
+    {
+      "role": "user",
+      "content": "明天杭州天气怎么样？如果会下雨，帮我取消下午 3 点的户外活动。"
+    },
+    {
+      "role": "assistant",
+      "content": "我先帮您查询明天杭州的天气。",
+      "tool_calls": [
+        {
+          "id": "call_weather_001",
+          "type": "function",
+          "function": {
+            "name": "get_weather",
+            "arguments": "{\"location\": \"hangzhou\", \"date\": \"2026-02-10\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_weather_001",
+      "content": "{\"location\": \"hangzhou\", \"date\": \"2026-02-10\", \"weather\": \"Rainy\", \"temperature\": \"15°C\", \"description\": \"中雨，建议携带雨具\"}"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "获取指定城市的天气信息",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"},
+            "date": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_calendar",
+        "description": "获取指定日期的日程安排",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "date": {"type": "string"}
+          },
+          "required": ["date"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "cancel_event",
+        "description": "取消日程中的某个事件",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "event_id": {"type": "string"},
+            "reason": {"type": "string"}
+          },
+          "required": ["event_id"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 2. 并行工具调用
+# ============================================
+
+### [高级 2.1] 并行调用 - 多城市天气查询
+# 说明：一次请求同时调用多个独立工具
+# 场景：查询多个城市的天气，可以并行执行
+# 预期：模型的 tool_calls 数组包含多个调用
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个天气助手。"
+    },
+    {
+      "role": "user",
+      "content": "请分别查询北京、上海、杭州的天气情况。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "获取指定城市的天气信息",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "城市名称（小写拼音）"
+            }
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+### [高级 2.2] 并行调用响应 - 处理多个工具结果
+# 说明：模拟并行调用后，返回所有结果
+# 预期：模型整合所有天气信息，给出综合回复
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个天气助手。"
+    },
+    {
+      "role": "user",
+      "content": "请分别查询北京、上海、杭州的天气情况。"
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "call_001",
+          "type": "function",
+          "function": {
+            "name": "get_weather",
+            "arguments": "{\"location\": \"beijing\"}"
+          }
+        },
+        {
+          "id": "call_002",
+          "type": "function",
+          "function": {
+            "name": "get_weather",
+            "arguments": "{\"location\": \"shanghai\"}"
+          }
+        },
+        {
+          "id": "call_003",
+          "type": "function",
+          "function": {
+            "name": "get_weather",
+            "arguments": "{\"location\": \"hangzhou\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_001",
+      "content": "{\"location\": \"beijing\", \"weather\": \"Sunny\", \"temperature\": \"8°C\"}"
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_002",
+      "content": "{\"location\": \"shanghai\", \"weather\": \"Cloudy\", \"temperature\": \"12°C\"}"
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_003",
+      "content": "{\"location\": \"hangzhou\", \"weather\": \"Rainy\", \"temperature\": \"15°C\"}"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "获取指定城市的天气信息",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 3. 工具调用错误处理
+# ============================================
+
+### [高级 3.1] 参数验证 - 不支持的城市
+# 说明：工具返回错误时，模型如何恢复
+# 场景：查询不支持的城市
+# 预期：模型会提示用户更换城市或说明限制
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个天气助手。如果工具返回错误，请友好地告知用户。"
+    },
+    {
+      "role": "user",
+      "content": "请查询火星的天气。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "获取指定城市的天气信息。仅支持地球上的城市。",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "城市名称（小写拼音），如 beijing, shanghai, hangzhou"
+            }
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+### [高级 3.2] 错误恢复 - 工具返回错误后的处理
+# 说明：模拟工具返回错误，测试模型的恢复能力
+# 预期：模型会向用户解释错误，并建议替代方案
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个天气助手。如果工具返回错误，请友好地告知用户。"
+    },
+    {
+      "role": "user",
+      "content": "请查询火星的天气。"
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "call_error_001",
+          "type": "function",
+          "function": {
+            "name": "get_weather",
+            "arguments": "{\"location\": \"mars\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_error_001",
+      "content": "{\"error\": \"不支持的城市\", \"message\": \"仅支持地球上的城市，如 beijing, shanghai, hangzhou 等\"}"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "获取指定城市的天气信息",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 4. 条件工具调用
+# ============================================
+
+### [高级 4.1] 基于上下文的工具选择 - 第一轮
+# 说明：根据对话上下文，决定是否调用工具
+# 场景：用户先陈述事实，不需要调用工具
+# 预期：模型不调用工具，直接回复
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个天气助手。"
+    },
+    {
+      "role": "user",
+      "content": "今天杭州天气不错啊！"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "获取指定城市的天气信息",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+### [高级 4.2] 基于上下文的工具选择 - 第二轮
+# 说明：继续对话，用户询问"明天呢？"
+# 场景：需要根据上下文理解用户指的是"明天杭州的天气"
+# 预期：模型调用 get_weather(hangzhou, 明天)
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个天气助手。"
+    },
+    {
+      "role": "user",
+      "content": "今天杭州天气不错啊！"
+    },
+    {
+      "role": "assistant",
+      "content": "是的，今天杭州的天气确实很好！有什么我可以帮您的吗？"
+    },
+    {
+      "role": "user",
+      "content": "明天呢？"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "获取指定城市的天气信息",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"},
+            "date": {
+              "type": "string",
+              "description": "日期，如 'tomorrow', 'today' 或 YYYY-MM-DD"
+            }
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 5. 复杂工具参数
+# ============================================
+
+### [高级 5.1] 嵌套对象参数 - 数据库查询
+# 说明：演示复杂的嵌套对象参数
+# 场景：查询数据库，包含过滤条件、排序、分页等
+# 预期：模型正确解析用户需求，构造复杂参数
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个数据查询助手。"
+    },
+    {
+      "role": "user",
+      "content": "查询所有价格在 100-500 元之间的商品，按销量降序排列，每页显示 20 条，显示第 1 页。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "query_database",
+        "description": "查询数据库",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "table": {
+              "type": "string",
+              "description": "表名"
+            },
+            "filters": {
+              "type": "array",
+              "description": "过滤条件数组",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": {"type": "string"},
+                  "operator": {
+                    "type": "string",
+                    "enum": ["=", ">", "<", ">=", "<=", "BETWEEN"]
+                  },
+                  "value": {}
+                }
+              }
+            },
+            "sort": {
+              "type": "object",
+              "properties": {
+                "field": {"type": "string"},
+                "order": {
+                  "type": "string",
+                  "enum": ["ASC", "DESC"]
+                }
+              }
+            },
+            "pagination": {
+              "type": "object",
+              "properties": {
+                "page": {"type": "integer"},
+                "page_size": {"type": "integer"}
+              }
+            }
+          },
+          "required": ["table"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+### [高级 5.2] 数组参数 - 批量操作
+# 说明：演示数组类型的参数
+# 场景：批量创建用户
+# 预期：模型将多个用户信息组织成数组
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个系统管理员助手。"
+    },
+    {
+      "role": "user",
+      "content": "帮我创建三个用户：张三（admin 角色）、李四（editor 角色）、王五（viewer 角色）。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "batch_create_users",
+        "description": "批量创建用户",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "users": {
+              "type": "array",
+              "description": "用户列表",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {"type": "string"},
+                  "role": {
+                    "type": "string",
+                    "enum": ["admin", "editor", "viewer"]
+                  }
+                },
+                "required": ["name", "role"]
+              }
+            }
+          },
+          "required": ["users"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 6. 工具调用的流式响应
+# ============================================
+
+### [高级 6.1] 流式输出 - Function Calling
+# 说明：流式模式下的 Function Calling
+# 场景：在流式响应中调用工具
+# 预期：返回 SSE 格式，包含 tool_calls 信息
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: text/event-stream
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个天气助手。"
+    },
+    {
+      "role": "user",
+      "content": "杭州天气怎么样？"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "获取指定城市的天气信息",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "stream": true,
+  "temperature": 0
+}
+
+# ============================================
+# 7. 实战场景：代码执行器
+# ============================================
+
+### [实战 7.1] 代码执行 - Python 代码工具
+# 说明：设计一个代码执行工具
+# 场景：用户要求执行 Python 代码
+# 预期：模型识别需要执行代码，调用工具
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个编程助手。当用户需要执行代码时，使用 execute_code 工具。"
+    },
+    {
+      "role": "user",
+      "content": "帮我计算斐波那契数列的第 10 项。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "execute_code",
+        "description": "执行 Python 代码并返回结果",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "要执行的 Python 代码"
+            },
+            "language": {
+              "type": "string",
+              "enum": ["python", "javascript"],
+              "description": "编程语言"
+            }
+          },
+          "required": ["code", "language"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 总结
+# ============================================
+#
+# Function Calling 高级技巧：
+# 1. 多工具组合：定义多个工具，让模型智能选择和组合
+# 2. 并行调用：独立任务可以并行执行，提升效率
+# 3. 错误处理：工具返回错误时，模型应友好提示并尝试恢复
+# 4. 条件调用：根据上下文判断是否需要调用工具
+# 5. 复杂参数：支持嵌套对象、数组等复杂参数结构
+# 6. 流式响应：Function Calling 也支持流式输出
+#
+# 设计原则：
+# - 工具描述要清晰准确，包含参数的详细说明
+# - 参数类型和约束要明确（使用 enum、required 等）
+# - 返回的错误信息要结构化，便于模型理解
+# - 工具应该是原子性的，一个工具只做一件事
+#
+# 实战建议：
+# - 先设计工具接口（JSON Schema），再实现后端逻辑
+# - 使用 TypeScript/Pydantic 等工具自动生成 Schema
+# - 测试各种边界情况（缺失参数、错误输入等）
+# - 记录工具调用日志，便于调试和优化
+#
+# 参考资料：
+# - StepFun Function Calling: https://platform.stepfun.com/docs/guide/tool_call
+# - OpenAI Function Calling Guide: https://platform.openai.com/docs/guides/function-calling
+# ============================================
