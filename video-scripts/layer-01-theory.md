@@ -2,7 +2,7 @@
 
 要想充分发挥 Claude Code 能力，必须要理解什么是大语言模型，以及它的局限性是什么。上下文、提示词、Function Calling、Agent 模式等基础概念非常重要，后面所有的所谓的各种各样的概念，本质都是为了解决**上下文有限**的问题。如果你已经看完了 Andrej Karpathy 的 *Deep Dive into LLMs Like ChatGPT* 视频，可以跳过下面的大语言模型基础介绍，直接去 Claude Code 使用那一节，我的截图的 Token 的图片也是来自他的视频。
 
-这一层是整个教程最厚的地基。我准备了 **9 个 HTTP 示例文件、128+ 个可执行的 API 请求**，覆盖从 Token 概念到 Agent 模式的完整知识链条。每一节都有对应的动手练习，不是纸上谈兵。
+这一层是整个教程最厚的地基。我准备了 **9 个 HTTP 示例文件、90+ 个可执行的 API 请求**，覆盖从 Token 概念到 Agent 模式的完整知识链条。每一节都有对应的动手练习，不是纸上谈兵。
 
 > **学习路径建议**：
 > - 零基础 → 从头到尾按顺序走
@@ -15,15 +15,15 @@
 | 序号 | 示例文件 | 内容 | 示例数 | 难度 |
 |------|----------|------|--------|------|
 | 01 | [01-main.http](../examples/http/01-main.http) | 基础功能：Token 演示、对话、流式、Function Calling | 7 | ⭐ |
-| 02 | [02-limitations.http](../examples/http/02-limitations.http) | LLM 局限性：数学、幻觉、逻辑、知识截止 | 15 | ⭐⭐ |
-| 03 | [03-practical-scenarios.http](../examples/http/03-practical-scenarios.http) | 实战场景：代码审查、摘要、情感分析、翻译、数据提取 | 18 | ⭐⭐ |
+| 02 | [02-limitations.http](../examples/http/02-limitations.http) | LLM 局限性：数学、幻觉、逻辑、知识截止 | 8 | ⭐⭐ |
+| 03 | [03-practical-scenarios.http](../examples/http/03-practical-scenarios.http) | 实战场景：代码审查、摘要、情感分析、翻译、数据提取 | 9 | ⭐⭐ |
 | 04 | [04-function-calling-advanced.http](../examples/http/04-function-calling-advanced.http) | 高级工具调用：多工具编排、并行调用、错误处理 | 13 | ⭐⭐⭐ |
 | 05 | [05-prompt-engineering.http](../examples/http/05-prompt-engineering.http) | 提示词工程：Few-Shot、CoT、结构化输出、角色扮演 | 20 | ⭐⭐ |
-| 06 | [06-parameter-experiments.http](../examples/http/06-parameter-experiments.http) | 参数调优：Temperature、Top-P、Penalties、模型对比 | 29 | ⭐⭐⭐ |
+| 06 | [06-parameter-experiments.http](../examples/http/06-parameter-experiments.http) | 参数调优：Temperature、Top-P、Penalties、Stream | 15 | ⭐⭐⭐ |
 | 07 | [07-agent-patterns.http](../examples/http/07-agent-patterns.http) | Agent 设计模式：ReAct、Plan-and-Execute、Self-Reflection | 9 | ⭐⭐⭐⭐ |
-| 08 | [08-legacy-tool-calling.http](../examples/http/08-legacy-tool-calling.http) | 传统工具调用：Text ReAct、XML、JSON、Markdown 格式 | 17 | ⭐⭐⭐ |
+| 08 | [08-legacy-tool-calling.http](../examples/http/08-legacy-tool-calling.http) | 传统工具调用：Text ReAct、XML、JSON vs 原生 FC | 6 | ⭐⭐⭐ |
 | 09 | [09-api-protocol-compatibility.http](../examples/http/09-api-protocol-compatibility.http) | 协议兼容：OpenAI 格式 vs Anthropic 格式 | 5 | ⭐⭐ |
-| | **合计** | | **128+** | |
+| | **合计** | | **90+** | |
 
 
 # 一、大语言模型基础
@@ -87,123 +87,64 @@ Token序列: [今天, 天气]
 
 # 二、LLM 的局限性
 
-这是最容易被忽视、却最影响实际使用的部分。不了解局限性，就会对 LLM 有错误预期，写出烂提示词，得到烂结果。
+不了解局限性，就会对 LLM 有错误预期。以下所有结论均来自 2026-02-15 实测（glm-4-flash，无内置推理）。
 
-> **动手练习** → [02-limitations.http](../examples/http/02-limitations.http)：15 个局限性演示，覆盖 5 大类问题
+> **动手练习** → [02-limitations.http](../examples/http/02-limitations.http)：8 个请求，覆盖 5 大类局限性
 
 ### 2.1 数学计算局限
 
-LLM 是语言模型，不是计算器。它"算数"的方式是**根据训练数据中见过的算式模式来预测答案**，而不是真的执行计算。
+LLM 不是计算器，它靠**概率预测**数字，不是真的在算。
 
 ```
-问: 9876 × 5432 = ?
-
-LLM 的处理方式（概率预测）:
-  "嗯，两个四位数相乘，答案应该是八位数...
-   9876 × 5000 ≈ 49380000...
-   再加上 9876 × 432 ≈ 4266432...
-   所以大概是 53646432？"  ← 可能对，也可能错
-
-计算器的处理方式（精确计算）:
-  9876 × 5432 = 53,646,432  ← 永远对
+问: 982717.1211 × 213213.23321 - 321312.777 / 1112.1121 = ?
+正确: 约 2095 亿    模型: 约 20 亿    → 差了 100 倍
 ```
 
-**解决方案**：用 Function Calling 调用外部计算器工具。这正是 02-limitations.http 中演示的方式——让模型意识到它算不了，然后调用 `calculator` 工具。
-
-> **动手练习** → [02-limitations.http](../examples/http/02-limitations.http)：
-> - 大数乘法测试（temperature=0）
-> - 复杂多步运算
-> - Function Calling 计算器方案
+**解决方案**：Function Calling 调用计算器工具。同一个 glm-4-flash，给了工具就能拿到精确结果。
 
 ### 2.2 知识截止（Knowledge Cutoff）
 
-LLM 的知识停留在训练数据的截止日期。训练截止后发生的事，它不知道——但它**不会告诉你它不知道**，而是可能**自信地编造答案**。
+直接问"你知不知道"，模型会承认；但**预设事实再问细节**，模型就会跟着编。
 
 ```
-问: 2026 年春晚的节目单是什么？
-
-错误回答（幻觉）:
-  "2026 年春晚的节目包括：1. 开场舞《XXX》2. 小品《YYY》..."
-  ← 完全编造，但语气自信
-
-正确回答:
-  "我的训练数据截止到 XXXX 年 XX 月，无法提供该信息。
-   建议查询央视官方网站。"
+问: 2026 年 2 月有哪些科技新闻？  → 承认不知道 ✓
+问: Python 3.14 的 compression.zstd 怎么用？ → 编了一套假代码 ✗
 ```
 
-**解决方案**：使用工具获取实时信息。在 Claude Code 中，这就是 MCP（Model Context Protocol）的核心价值之一。
-
-> **动手练习** → [02-limitations.http](../examples/http/02-limitations.http)：知识截止测试 + 工具调用实时信息
+**解决方案**：MCP / Web Search 获取实时信息。
 
 ### 2.3 逻辑推理局限
 
-LLM 在复杂逻辑推理上会犯错，尤其是：
+无推理能力的基础模型在形式逻辑上会犯低级错误（带 CoT 的推理模型已能解决简单逻辑题）。
 
-**否定推理**：
 ```
-问: 小明养了一只猫，没有养鱼。小明养了什么？
-LLM 可能回答: "小明养了猫和鱼" ← 忽略"没有"
-```
-
-**传递性推理**：
-```
-问: A 比 B 高，B 比 C 高，D 比 A 高。谁最高？
-LLM 可能混乱，因为需要多步推理
+问: A<B<C<D<E，C 和 A 谁更高？
+模型: 排成 "D>E>A>B>C"，结论 "C 比 A 矮"  → 完全搞反
 ```
 
-**悖论处理**：
-```
-问: 一个理发师只给不给自己理发的人理发，他给不给自己理发？
-LLM 可能给出一个看似合理但逻辑错误的答案
-```
-
-**解决方案**：Chain-of-Thought（链式思维）提示词——强制模型一步一步推理，而不是直接跳到答案。
-
-> **动手练习** → [02-limitations.http](../examples/http/02-limitations.http)：
-> - 否定推理测试
-> - 传递性关系测试
-> - 理发师悖论测试
+**解决方案**：使用推理模型，或用 CoT 提示词强制分步推理。
 
 ### 2.4 幻觉（Hallucination）
 
-LLM 最危险的特性：**它会非常自信地说出完全错误的内容**。
+2026 年仍然最顽固的问题：**模型会非常自信地说出完全错误的内容**。
 
-三种常见幻觉：
+| 类型 | 实测案例 |
+|------|---------|
+| **事实混淆** | 中文问"林黛玉倒拔垂杨柳"已免疫，换英文问 → 编造"凤姐砍柳树" |
+| **编造统计** | 问 SO 2023 调查数据 → 编了 Kite 23%（2022 年已停服） |
+| **技术幻觉** | 问新 API 用法 → 用第三方包 API 冒充标准库模块 |
 
-| 类型 | 例子 | 危害 |
-|------|------|------|
-| **事实混淆** | "林黛玉倒拔垂杨柳" ← 那是鲁智深 | 知识类任务不可信 |
-| **虚假引用** | 编造不存在的论文、URL、API | 研究和开发中造成误导 |
-| **技术幻觉** | 编造不存在的函数名、参数 | 写出无法运行的代码 |
+**解决方案**：要求引用来源、代码必须运行验证、结合 LSP 检查。
 
-**解决方案**：
-1. 对关键事实**要求引用来源**
-2. 对生成的代码**必须运行验证**
-3. 使用 Claude Code 时，**结合 LSP 检查类型和函数是否存在**
+### 2.5 计数与上下文偏差
 
-> **动手练习** → [02-limitations.http](../examples/http/02-limitations.http)：
-> - 文学事实混淆测试
-> - 虚假学术引用测试
-> - 技术函数名幻觉测试
-
-### 2.5 上下文长度的注意力偏差
-
-即使在上下文窗口内，LLM 对不同位置信息的注意力**不均匀**——开头和结尾的信息记得最清楚，中间的容易"遗忘"（Lost in the Middle 现象）。
+LLM 不会真正"数"东西，对列表中间位置的感知尤其差（Lost in the Middle）。
 
 ```
-测试: 给模型一个 50 个城市的列表，然后问第 25 个城市是什么
-
-开头的城市 → 记得清楚（Primacy Effect）
-中间的城市 → 容易遗漏
-结尾的城市 → 记得清楚（Recency Effect）
+30 个城市列表，问第 15 个 → 模型答第 13 个（差 2 位）
 ```
 
-**对 Claude Code 的影响**：
-- 长对话后模型可能"忘记"早期的指令
-- CLAUDE.md 中**最重要的规则放在开头**
-- 需要 `/compact` 或 SubAgent 来管理上下文
-
-> **动手练习** → [02-limitations.http](../examples/http/02-limitations.http)：城市列表位置回忆测试
+**对 Claude Code 的影响**：CLAUDE.md 最重要的规则放开头，长对话用 `/compact` 管理上下文。
 
 ### 2.6 局限性总结
 
@@ -211,19 +152,19 @@ LLM 最危险的特性：**它会非常自信地说出完全错误的内容**。
 |--------|---------|---------|---------|
 | 数学计算 | 概率预测，非精确计算 | Function Calling | 计算器工具 |
 | 知识截止 | 训练数据有截止日期 | 实时信息检索 | MCP、Web Search |
-| 逻辑推理 | 缺乏形式化推理能力 | CoT 提示词 | Extended Thinking |
+| 逻辑推理 | 缺乏形式化推理能力 | 推理模型 / CoT | Extended Thinking |
 | 幻觉 | 概率生成，无真实性验证 | 验证 + 引用 | LSP、测试 |
-| 注意力偏差 | 注意力分布不均匀 | 上下文管理 | /compact、SubAgent |
+| 计数偏差 | 不会逐个数，靠感觉猜 | 代码执行 | /compact、SubAgent |
 
-> **核心认知**：LLM 是**语言专家**，不是知识库，不是计算器。理解这个定位，才能正确使用 Claude Code。
+> **核心认知**：LLM 是**语言专家**，不是知识库，不是计算器。Function Calling 让同一个模型从"算不对"变成"精确计算"——理解这个定位，才能正确使用 Claude Code。
 
 # 三、实战应用场景
 
 知道了 LLM 能做什么、不能做什么之后，来看看它在实际工作中最擅长的场景。
 
-> **动手练习** → [03-practical-scenarios.http](../examples/http/03-practical-scenarios.http)：18 个实战场景，覆盖 6 大类
+> **动手练习** → [03-practical-scenarios.http](../examples/http/03-practical-scenarios.http)：9 个实战场景，覆盖 6 大类
 
-### 3.1 代码审查与重构（4 个示例）
+### 3.1 代码审查与测试（2 个示例）
 
 LLM 最强的能力之一是代码理解和审查：
 
@@ -244,29 +185,21 @@ LLM 能快速发现：
 
 > **动手练习** → [03-practical-scenarios.http](../examples/http/03-practical-scenarios.http)：
 > - Bug 发现（Python 除零、键错误）
-> - 代码重构（JavaScript 嵌套函数可读性）
-> - 代码解释（Python 装饰器/记忆化）
-> - 单元测试生成
+> - 单元测试生成（pytest）
 
-### 3.2 文本处理（9 个示例）
+### 3.2 文本处理（4 个示例）
 
 | 场景 | 能力 | 推荐 temperature |
 |------|------|------------------|
 | 新闻摘要 | 提取 3-5 个关键点 | 0 |
-| 技术文档摘要 | 分析 ReAct 框架 | 0 |
 | 会议纪要 | 提取待办事项 + 负责人 | 0 |
-| 情感分析 | 正/负/中性分类 | 0 |
-| 多维度评分 | 质量/服务/价格打分 | 0 |
-| 批量分析 | 趋势统计（餐厅评论） | 0 |
-| 基础翻译 | 中英互译 | 0 |
+| 多维度情感分析 | 质量/服务/价格 JSON 评分 | 0 |
 | 术语翻译 | 保留领域术语 | 0 |
-| 文化适配翻译 | 春节解释给老外 | 0.3 |
 
-### 3.3 数据提取与内容生成（5 个示例）
+### 3.3 数据提取与内容生成（3 个示例）
 
 - **命名实体识别**：从文本中提取人名、地名、组织、日期
-- **非结构化 → 结构化**：文本描述 → JSON / 表格
-- **简历解析**：PDF 文本 → 结构化 JSON
+- **简历解析**：文本 → 结构化 JSON
 - **商务邮件**：根据要点生成专业邮件
 - **社交媒体文案**：带表情和 CTA 的营销文案
 
@@ -521,7 +454,7 @@ LLM 应回答: "抱歉，天气服务目前只支持地球上的城市。"
 
 在原生 Function Calling 之前，业界经历了多种"手工"方案。理解这些历史有助于理解当前方案为什么是这样。
 
-> **动手练习** → [08-legacy-tool-calling.http](../examples/http/08-legacy-tool-calling.http)：17 个示例，覆盖 4 种传统格式
+> **动手练习** → [08-legacy-tool-calling.http](../examples/http/08-legacy-tool-calling.http)：6 个示例，覆盖 3 种传统格式 + 原生 FC 对比
 
 ### 技术演进时间线
 
@@ -883,7 +816,7 @@ Zero-Shot（零样本）:
 
 不同参数组合对输出质量影响巨大。这不是理论，是必须动手调的。
 
-> **动手练习** → [06-parameter-experiments.http](../examples/http/06-parameter-experiments.http)：29 个参数实验，覆盖 7 大参数
+> **动手练习** → [06-parameter-experiments.http](../examples/http/06-parameter-experiments.http)：15 个参数实验，覆盖核心参数
 
 ## 6.1 Temperature（温度）
 
@@ -910,7 +843,7 @@ temperature=2.0:   极端随机（基本不可用）
 | 头脑风暴 | 1.0-1.2 |
 
 > **动手练习** → [06-parameter-experiments.http](../examples/http/06-parameter-experiments.http)：
-> - temperature=0 到 2.0 的 6 级对比实验
+> - temperature=0 / 0.7 / 1.5 三级对比实验
 > - 同一首诗在不同温度下的变化
 
 ## 6.2 Top-P（核采样）
@@ -959,8 +892,8 @@ max_tokens=1000:  详细解释（~500-700 中文字）
 | 数据分析 | 0 | 1 | - | 0 |
 
 > **动手练习** → [06-parameter-experiments.http](../examples/http/06-parameter-experiments.http)：
-> - 参数组合实验（创意写作、技术文档、头脑风暴）
-> - 模型对比（StepFun vs DeepSeek）
+> - 参数组合实验（创意写作、技术文档）
+> - 流式 vs 非流式对比
 > - 流式 vs 非流式响应
 
 

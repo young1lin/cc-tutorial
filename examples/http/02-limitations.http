@@ -1,34 +1,24 @@
 # ============================================
-# 大模型局限性演示
+# 大模型局限性演示（精简版）
 # ============================================
-# 说明：这些示例展示了大语言模型的固有局限性
-# 目的：帮助理解 LLM 的工作原理和边界
-# 模型：GLM-4.7（智谱 AI）、DeepSeek
-# 注意：不同模型的局限性程度不同，以下测试基于 2026 年初的模型能力
+# 说明：8 个请求，覆盖 5 大局限性 + 1 个解决方案
+# 模型：glm-4-flash（无内置推理，能清晰暴露 LLM 原始局限性）
+# 测试日期：2026-02-15
 # ============================================
 
 @LOCALE = zh-CN
 @response_language = You must respond in the locale specified by the LOCALE variable ({{LOCALE}}).All your responses should be in the language corresponding to this locale code.Do not use any other language regardless of the user's input language.
 
-# 环境变量
 @GLM_BASE_URL = https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
 @GLM_BEARER_TOKEN = Bearer {{$dotenv GLM_API_KEY}}
 
-@STEPFUN_BASE_URL = https://api.stepfun.com/v1/chat/completions
-@STEPFUN_BEARER_TOKEN = Bearer {{$dotenv STEPFUN_API_KEY}}
-
-@DEEP_SEEK_BASE_URL = https://api.deepseek.com/chat/completions
-@DEEP_SEEK_BEARER_TOKEN = Bearer {{$dotenv DEEPSEEK_API_KEY}}
-
 # ============================================
-# 1. 数学计算局限性
+# 1. 数学计算 —— LLM 不是计算器
 # ============================================
 
-### [局限性 1.1] GLM-4.6 复杂小数计算 - 即使有推理也可能出错
-# 说明：LLM 通过统计模式预测数字，不是真正的计算器
-# 即使模型有内置推理（reasoning_content），复杂小数计算仍可能出错
-# 正确答案（Python）：209528294431.6329
-# GLM-4.6 错误答案：209543721753.0411（相差约 1540 万）
+### [1.1] 复杂小数计算 - 数量级都能算错
+# 正确答案（Python）：209,528,294,431.6329（约 2095 亿）
+# glm-4-flash 回答：2,084,909,917（约 20 亿，差了约 100 倍）
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -45,17 +35,14 @@ Authorization: {{GLM_BEARER_TOKEN}}
       "content": "Calculate: 982717.1211 * 213213.23321 - 321312.777 / 1112.1121. Do NOT use any tools. Do NOT show reasoning. Just give the final number directly."
     }
   ],
-  "max_tokens": 100,
-  "model": "GLM-4.6",
+  "max_tokens": 200,
+  "model": "glm-4-flash",
   "stream": false,
   "temperature": 0
 }
 
-### [局限性 1.2] 解决方案：Function Calling + 计算器
-# 说明：通过工具调用解决计算问题
-# 原理：模型识别需要计算，调用外部计算器工具
-# 预期：模型会调用 calculator 工具，返回精确结果
-# 9876 × 5432 = 53646432
+### [1.2] 解决方案：Function Calling + 计算器
+# 同一个 glm-4-flash，给了工具就会调用，拿到精确结果
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -69,10 +56,10 @@ Authorization: {{GLM_BEARER_TOKEN}}
     },
     {
       "role": "user",
-      "content": "请计算：9876 × 5432 = ?"
+      "content": "请计算：982717.1211 * 213213.23321 - 321312.777 / 1112.1121"
     }
   ],
-  "model": "GLM-4.7",
+  "model": "glm-4-flash",
   "tools": [
     {
       "type": "function",
@@ -84,7 +71,7 @@ Authorization: {{GLM_BEARER_TOKEN}}
           "properties": {
             "expression": {
               "type": "string",
-              "description": "要计算的数学表达式，如 '9876 * 5432'"
+              "description": "要计算的数学表达式"
             }
           },
           "required": ["expression"]
@@ -97,13 +84,11 @@ Authorization: {{GLM_BEARER_TOKEN}}
 }
 
 # ============================================
-# 2. 知识截止日期局限性
+# 2. 知识截止 —— 训练数据有保质期
 # ============================================
 
-### [局限性 2.1] 知识截止 - 2025 年后事件
-# 说明：模型训练数据截止于特定日期，无法获取之后的信息
-# 测试时间：2026-02-09
-# 预期：模型会承认不知道，或基于旧信息推测
+### [2.1] 知识截止 - 2025 年后事件
+# glm-4-flash 回答：承认数据截止于 2023 年（表现正确）
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -120,135 +105,18 @@ Authorization: {{GLM_BEARER_TOKEN}}
       "content": "请问 2026 年 2 月发生了哪些重大科技新闻？"
     }
   ],
-  "model": "GLM-4.7",
+  "model": "glm-4-flash",
   "stream": false,
   "temperature": 0
-}
-
-### [局限性 2.2] 实时信息缺失 - 当前时间
-# 说明：模型无法获取实时信息（时间、天气、股票等）
-# 预期：模型可能编造一个时间，或承认无法获取
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个助手。"
-    },
-    {
-      "role": "user",
-      "content": "现在几点了？"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-### [局限性 2.3] 解决方案：Function Calling + 实时 API
-# 说明：通过工具调用获取实时信息
-# 预期：模型调用 get_current_time 工具
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个助手。当需要获取实时信息时，请使用相应的工具。"
-    },
-    {
-      "role": "user",
-      "content": "现在几点了？"
-    }
-  ],
-  "model": "GLM-4.7",
-  "tools": [
-    {
-      "type": "function",
-      "function": {
-        "name": "get_current_time",
-        "description": "获取当前时间（北京时间）",
-        "parameters": {
-          "type": "object",
-          "properties": {},
-          "required": []
-        }
-      }
-    }
-  ],
-  "stream": false,
-  "temperature": 0
-}
-
-### [局限性 2.4] 解决方案：StepFun Search API - 获取实时网络信息
-# 说明：StepFun 提供内置的搜索 API，可以直接搜索互联网
-# 官方文档：https://platform.stepfun.com/docs/zh/api-reference/Search/search
-# 优势：针对重点场景优化站点权威性，适合深入研究
-# 支持场景：programming（代码）、research（学术）、gov（政务）、business（商业）
-POST https://api.stepfun.com/v1/search HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
-
-{
-  "query": "2026年2月 最新 AI 技术进展",
-  "n": 5,
-  "category": "research"
-}
-
-### [局限性 2.5] StepFun Search API - 代码编程场景
-# 说明：搜索代码相关的技术文档和解决方案
-POST https://api.stepfun.com/v1/search HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
-
-{
-  "query": "Python httpx streaming SSE server-sent events",
-  "n": 3,
-  "category": "programming"
 }
 
 # ============================================
-# 3. 逻辑推理局限性
+# 3. 逻辑推理 —— 形式逻辑是短板
 # ============================================
 
-### [局限性 3.1] 严格逻辑推理 - 否定运算
-# 说明：LLM 不具备基于形式逻辑的严格推理能力
-# 问题：测试否定逻辑的理解
-# 预期：可能出现逻辑错误
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个逻辑推理助手。请严格根据逻辑规则回答。"
-    },
-    {
-      "role": "user",
-      "content": "给定：\n1. 所有的猫都喜欢鱼\n2. Tom 不喜欢鱼\n\n请问：Tom 是不是猫？"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-### [局限性 3.2] 多步推理 - 传递性关系
-# 说明：测试模型处理多步传递性推理的能力
-# 正确答案：C 比 A 高（A<B, B<C => A<C）
-# 预期：可能在多步推理中出错
+### [3.1] 传递性排序 - 完全搞反
+# 正确答案：C 比 A 高（A<B<C<D<E）
+# glm-4-flash 回答：排成 "D>E>A>B>C"，结论 "C 比 A 矮"（完全反了）
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -265,94 +133,18 @@ Authorization: {{GLM_BEARER_TOKEN}}
       "content": "给定：\n1. A 比 B 矮\n2. B 比 C 矮\n3. C 比 D 矮\n4. D 比 E 矮\n\n请问：C 和 A 谁更高？"
     }
   ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-### [局限性 3.3] 经典逻辑陷阱 - 理发师悖论
-# 说明：测试模型处理悖论的能力
-# 问题：自指悖论（Russell 悖论的通俗版）
-# 预期：可能给出矛盾的回答，或回避问题
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个逻辑推理助手。"
-    },
-    {
-      "role": "user",
-      "content": "在一个村庄里，有一个理发师。他的规则是：\n- 他给所有不给自己刮胡子的人刮胡子\n- 他不给给自己刮胡子的人刮胡子\n\n请问：这个理发师给自己刮胡子吗？"
-    }
-  ],
-  "model": "GLM-4.7",
+  "model": "glm-4-flash",
   "stream": false,
   "temperature": 0
 }
 
 # ============================================
-# 4. 幻觉问题
+# 4. 幻觉 —— 最顽固的问题
 # ============================================
 
-### [局限性 4.1] 事实混淆 - 经典案例
-# 说明：模型可能混淆不同来源的知识，产生"幻觉"
-# 经典案例："林黛玉倒拔垂杨柳"（混淆《红楼梦》和《水浒传》）
-# 预期：可能会混淆角色和情节
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个文学知识助手。"
-    },
-    {
-      "role": "user",
-      "content": "请问《红楼梦》中是谁倒拔了垂杨柳？"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-### [局限性 4.2] 编造不存在的 API - 技术幻觉
-# 说明：模型可能编造不存在的函数、API 或技术细节
-# 预期：可能会"创造"一个听起来合理但不存在的 API
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个技术专家。如果不确定，请明确说明。"
-    },
-    {
-      "role": "user",
-      "content": "请问 Python 的 os 模块中有一个叫 os.get_all_processes() 的函数吗？如果有，请说明它的用法。"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-### [局限性 4.2b] GLM-4.6 事实混淆 - 文学幻觉
-# 说明：GLM-4.6 会编造不存在的故事情节
-# 陷阱问题："《红楼梦》中谁倒拔了垂杨柳？"
-# 正确答案：这是《水浒传》中鲁智深的故事，不是《红楼梦》
-# GLM-4.6 错误回答：编造了"贾宝玉命令晴雯拔柳树"的情节
+### [4.1] 事实混淆 - 英文绕过幻觉防护
+# 中文问"林黛玉倒拔垂杨柳"已免疫，换英文就失效
+# glm-4-flash 回答：编造了"凤姐（王熙凤）命人砍掉了柳树"
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -369,15 +161,14 @@ Authorization: {{GLM_BEARER_TOKEN}}
       "content": "In the novel Dream of the Red Chamber, who uprooted the willow tree? Answer briefly."
     }
   ],
-  "model": "GLM-4.6",
+  "model": "glm-4-flash",
   "stream": false,
   "temperature": 0
 }
 
-### [局限性 4.2c] GLM-4.6 训练数据时效性 - Python 3.14 新 API
-# 说明：模型可能不知道训练数据截止后的新 API
-# Python 3.14（2025年10月发布）新增了 compression.zstd 模块
-# 预期：模型可能承认不知道，或编造一个看起来合理的用法
+### [4.2] 技术幻觉 - 编造新 API 用法
+# Python 3.14 新增 compression.zstd 模块，模型训练数据里没有
+# glm-4-flash 回答：用 import zstd（第三方包）冒充标准库，代码全是编的
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -394,14 +185,15 @@ Authorization: {{GLM_BEARER_TOKEN}}
       "content": "Python 3.14 introduced a new compression.zstd module. Please explain how to use compression.zstd.compress() and show an example."
     }
   ],
-  "model": "GLM-4.6",
+  "model": "glm-4-flash",
   "stream": false,
   "temperature": 0
 }
 
-### [局限性 4.3] 虚假引用 - 学术幻觉
-# 说明：模型可能编造不存在的论文、作者或引用
-# 预期：可能会"创造"一个听起来专业的虚假引用
+### [4.3] 编造统计数据
+# 真实数据：ChatGPT 83.3% | GitHub Copilot 27.4% | Bing AI 19.5%
+# glm-4-flash 回答：Copilot 35%、Kite 23%（2022 年已停服）、Replika 20%（聊天机器人）
+# 验证：https://survey.stackoverflow.co/2023/
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -411,51 +203,25 @@ Authorization: {{GLM_BEARER_TOKEN}}
   "messages": [
     {
       "role": "system",
-      "content": "你是一个学术研究助手。"
+      "content": "你是一个技术分析师，直接给出数据"
     },
     {
       "role": "user",
-      "content": "请推荐 3 篇关于'量子纠缠在区块链中的应用'的权威论文，包括作者、标题和发表年份。"
+      "content": "请列出 2023 年 Stack Overflow 开发者调查中，使用率最高的 5 个 AI 编程工具及其具体使用率百分比。"
     }
   ],
-  "model": "GLM-4.7",
+  "model": "glm-4-flash",
   "stream": false,
   "temperature": 0
 }
 
-### [局限性 4.4] 对比测试 - 高 temperature 增加幻觉风险
-# 说明：temperature 越高，模型越"创造性"，幻觉风险也越高
-# 预期：temperature=1.5 可能产生更多不可靠的内容
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个技术专家。"
-    },
-    {
-      "role": "user",
-      "content": "请介绍一下 JavaScript 中的 Array.prototype.superMap() 方法。"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 1.5
-}
-
 # ============================================
-# 5. 上下文长度局限性
+# 5. 计数 —— 靠感觉猜位置
 # ============================================
 
-### [局限性 5.1] 长文本记忆 - 首尾效应
-# 说明：模型对上下文的开头和结尾记忆较好，中间部分容易遗忘
-# 测试：提供一个长列表，询问中间的内容
-# 答案：济南
-# 预期：可能遗忘或混淆中间部分的信息
+### [5.1] 列表计数 - 数到第 15 个差 2 位
+# 正确答案：济南（第 15 个）
+# glm-4-flash 回答：长沙（第 13 个）
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -472,212 +238,7 @@ Authorization: {{GLM_BEARER_TOKEN}}
       "content": "以下是一个城市列表：\n北京、上海、广州、深圳、杭州、南京、武汉、成都、重庆、西安、天津、苏州、长沙、郑州、济南、青岛、大连、沈阳、哈尔滨、长春、厦门、福州、昆明、贵阳、南宁、海口、兰州、银川、西宁、乌鲁木齐。\n\n请问：第 15 个城市是哪个？"
     }
   ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-# ============================================
-# 6. GLM-4.6 Function Calling 演示
-# ============================================
-
-### [Function Calling 6.1] GLM-4.6 非流式 - 多工具调用
-# 说明：GLM-4.6 支持同时调用多个工具
-# 工具：calculator（计算器）、get_current_time（获取时间）
-# 预期：模型会依次调用两个工具，然后整合结果
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个智能助手。当需要数学计算时使用 calculator 工具，需要获取时间时使用 get_current_time 工具。"
-    },
-    {
-      "role": "user",
-      "content": "请帮我计算 (123 + 456) * 789 / 10 的结果，然后告诉我现在几点了。"
-    }
-  ],
-  "model": "GLM-4.6",
-  "tools": [
-    {
-      "type": "function",
-      "function": {
-        "name": "calculator",
-        "description": "执行数学计算表达式，返回精确结果。支持 +、-、*、/ 等运算符。",
-        "parameters": {
-          "type": "object",
-          "properties": {
-            "expression": {
-              "type": "string",
-              "description": "要计算的数学表达式，如 '9876 * 5432'"
-            }
-          },
-          "required": ["expression"]
-        }
-      }
-    },
-    {
-      "type": "function",
-      "function": {
-        "name": "get_current_time",
-        "description": "获取当前时间（北京时间）",
-        "parameters": {
-          "type": "object",
-          "properties": {},
-          "required": []
-        }
-      }
-    }
-  ],
-  "stream": false,
-  "temperature": 0
-}
-
-### [Function Calling 6.2] GLM-4.6 流式 - 多工具调用
-# 说明：GLM-4.6 流式输出，支持 Function Calling
-# 流程：模型会逐步输出思考过程，然后调用工具
-# 注意：流式模式下 tool_calls 是增量传输的，需要收集完整后再执行
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个智能助手。当需要数学计算时使用 calculator 工具，需要获取时间时使用 get_current_time 工具。"
-    },
-    {
-      "role": "user",
-      "content": "计算 9876 * 5432，告诉我结果，还有现在几点。"
-    }
-  ],
-  "model": "GLM-4.6",
-  "tools": [
-    {
-      "type": "function",
-      "function": {
-        "name": "calculator",
-        "description": "执行数学计算表达式，返回精确结果",
-        "parameters": {
-          "type": "object",
-          "properties": {
-            "expression": {
-              "type": "string",
-              "description": "要计算的数学表达式"
-            }
-          },
-          "required": ["expression"]
-        }
-      }
-    },
-    {
-      "type": "function",
-      "function": {
-        "name": "get_current_time",
-        "description": "获取当前时间（北京时间）",
-        "parameters": {
-          "type": "object",
-          "properties": {},
-          "required": []
-        }
-      }
-    }
-  ],
-  "stream": true,
-  "temperature": 0
-}
-
-### [Function Calling 6.3] GLM-4.6 复杂计算 - 解决数学局限性
-# 说明：通过工具调用解决 GLM-4.6 的复杂小数计算问题
-# 对比 [局限性 1.1]，这次使用工具获得精确结果
-# 正确答案：209528294431.6329（约 2095.28 亿）
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个数学助手。请使用 calculator 工具进行精确计算，不要自己计算。"
-    },
-    {
-      "role": "user",
-      "content": "请计算：982717.1211 * 213213.23321 - 321312.777 / 1112.1121"
-    }
-  ],
-  "model": "GLM-4.6",
-  "tools": [
-    {
-      "type": "function",
-      "function": {
-        "name": "calculator",
-        "description": "执行数学计算表达式，返回精确结果",
-        "parameters": {
-          "type": "object",
-          "properties": {
-            "expression": {
-              "type": "string",
-              "description": "要计算的数学表达式"
-            }
-          },
-          "required": ["expression"]
-        }
-      }
-    }
-  ],
-  "stream": false,
-  "temperature": 0
-}
-
-# ============================================
-# 7. 模型对比 - GLM vs DeepSeek
-# ============================================
-
-### [对比 7.1] GLM-4.7 - 大数乘法
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个数学助手。请直接给出计算结果，不需要解释过程。不要推理，不要思考，直接给出答案"
-    },
-    {
-      "role": "user",
-      "content": "请计算：9876 × 5432，只给出数字结果。"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-### [对比 7.2] DeepSeek - 大数乘法
-# 9876 × 5432 = 53646432
-POST {{DEEP_SEEK_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{DEEP_SEEK_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "user",
-      "content": "请计算：9876 × 5432，只给出数字结果。"
-    }
-  ],
-  "model": "deepseek-chat",
+  "model": "glm-4-flash",
   "stream": false,
   "temperature": 0
 }
@@ -685,33 +246,13 @@ Authorization: {{DEEP_SEEK_BEARER_TOKEN}}
 # ============================================
 # 总结
 # ============================================
+# 局限性        | 表现                  | 解决方案
+# 数学计算      | 复杂运算差 100 倍      | Function Calling + 计算器
+# 知识截止      | 训练后的事不知道        | MCP / Web Search
+# 逻辑推理      | 传递排序完全搞反        | 推理模型 / CoT
+# 幻觉          | 编统计、编 API、换语言绕过 | 验证 + 引用 + LSP
+# 计数          | 30 个数第 15 个差 2 位  | 代码执行
 #
-# 大模型的核心局限性：
-# 1. 数学计算：基于概率预测，不是真正的计算器 → 解决：Function Calling + 计算器工具
-#    - 简单整数运算：现代模型（GLM-4.7）通常正确
-#    - 复杂小数运算：即使有内置推理，仍可能出错（如 GLM-4.6 测试）
-# 2. 知识截止：无法获取训练后的新信息 → 解决：RAG、Web Search、实时 API
-# 3. 逻辑推理：缺乏形式逻辑的严格推理能力 → 解决：Chain-of-Thought、外部推理引擎
-# 4. 幻觉问题：可能编造不存在的事实 → 解决：验证机制、低 temperature、Few-Shot 示例
-#    - 事实混淆：GLM-4.6 编造"贾宝玉拔柳树"情节
-#    - 技术幻觉：可能编造不存在的 API 或用法
-# 5. 上下文限制：记忆容量有限，长文本处理能力受限 → 解决：分块处理、摘要、向量检索
-#
-# 模型差异说明（2026 年初测试）：
-# | 模型 | 数学计算 | 幻觉控制 | 内置推理 |
-# |------|---------|---------|---------|
-# | GLM-4.7 | ❌ 复杂出错 | ❌ 有幻觉 | ✅ 有 |
-# | DeepSeek | ✅ 较好 | 较好 | 可选 |
-#
-# 关键启示：
-# - LLM 是"理解和生成语言的专家"，而非"知识库"或"计算器"
-# - 应该将 LLM 作为"协调者"（Agent），调用专业工具完成具体任务
-# - Function Calling 是弥补 LLM 局限性的核心技术
-# - 不同模型的局限性程度不同，需要根据实际场景选择
-#
-# 参考资料：
-# - 大模型的科学解释和逻辑增强: https://www.caa.org.cn/article/345/5045.html
-# - 大模型幻觉及其价值风险: http://www.news.cn/tech/20250411/250a24bfd95c4551869630f53e9584d6/c.html
-# - 智谱 AI 官方文档: https://open.bigmodel.cn/dev/api
-# - DeepSeek 官方文档: https://platform.deepseek.com/api-docs/
+# 核心认知：LLM 是语言专家，不是知识库，不是计算器。
+# Function Calling 是弥补局限性的核心技术。
 # ============================================

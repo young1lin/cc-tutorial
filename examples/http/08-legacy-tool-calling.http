@@ -2,9 +2,8 @@
 # 传统工具调用方法（无 Function Calling）
 # ============================================
 # 说明：展示在原生 Function Calling 出现之前的工具调用方法
-# 历史背景：早期 LLM（如 GPT-3）不支持原生 Function Calling
-# 解决方案：通过结构化文本（XML/JSON）让模型"假装"调用工具
-# 代表：LangChain ReAct、OpenAI 早期 Function Calling
+# 历史背景：早期 LLM 不支持原生 FC，通过结构化文本模拟调用
+# 目的：理解技术演进，知道"为什么需要 Function Calling"
 # ============================================
 
 # 环境变量
@@ -12,18 +11,12 @@
 @GLM_BEARER_TOKEN = Bearer {{$dotenv GLM_API_KEY}}
 
 # ============================================
-# 1. 文本格式 ReAct（LangChain 风格） 适合智能客服系统，一步步获取信息，并且得到信息后执行下一步
+# 1. 文本格式 ReAct（LangChain 风格）
 # ============================================
 
-### [传统 1.1] 文本格式 ReAct - 原始版本
-# 说明：通过提示词让模型输出特定格式的文本，解析后执行工具
-# 格式：
-#   Thought: 思考内容
-#   Action: 工具名称
-#   Action Input: 工具参数（可以是 JSON）
-#   Observation: 工具返回结果（需要人工或程序插入）
-# 历史：这是 LangChain 最早的 ReAct 实现方式
-# 参考：https://python.langchain.com/docs/modules/agents/agent_types/react
+### [传统 1.1] 文本格式 ReAct - 基础
+# 通过提示词让模型输出 Thought/Action/Action Input 格式文本
+# 这是 LangChain 最早的 ReAct 实现方式
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -45,45 +38,8 @@ Authorization: {{GLM_BEARER_TOKEN}}
   "temperature": 0
 }
 
-### [传统 1.2] 文本格式 ReAct - 多轮对话（模拟工具返回）
-# 说明：模拟完整的 ReAct 循环，人工或程序插入 Observation
-# 流程：
-#   1. 模型输出 Thought + Action + Action Input
-#   2. 程序解析，执行工具，插入 Observation
-#   3. 模型继续输出下一轮 Thought + Action
-#   4. 重复直到 Final Answer
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个智能助手，可以使用以下工具：\n\n1. get_weather(location: str) - 获取指定城市的天气\n2. search(query: str) - 搜索信息\n\n请使用以下格式回答问题：\n\nThought: 你对问题的思考\nAction: 工具名称\nAction Input: 工具输入（JSON 格式）\n\n当你有足够信息后，使用：\n\nThought: 我现在知道最终答案了\nFinal Answer: 最终答案"
-    },
-    {
-      "role": "user",
-      "content": "明天杭州天气怎么样？如果下雨，推荐室内景点。"
-    },
-    {
-      "role": "assistant",
-      "content": "Thought: 我需要先查询明天杭州的天气情况\nAction: get_weather\nAction Input: {\"location\": \"hangzhou\", \"date\": \"tomorrow\"}"
-    },
-    {
-      "role": "user",
-      "content": "Observation: {\"location\": \"杭州\", \"date\": \"2026-02-11\", \"weather\": \"Rainy\", \"temperature\": \"10°C\", \"description\": \"中雨\"}"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-### [传统 1.3] 文本格式 ReAct - 完整示例（3 轮循环）
-# 说明：展示完整的多轮 ReAct 对话
-# 演示：查天气 → 根据天气搜索景点 → 给出最终答案
+### [传统 1.2] 文本格式 ReAct - 完整 3 轮循环
+# 查天气 → 根据天气搜索景点 → 给出最终答案
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -122,20 +78,11 @@ Authorization: {{GLM_BEARER_TOKEN}}
 }
 
 # ============================================
-# 2. XML 格式的工具调用
+# 2. XML 格式（Anthropic Claude 早期风格）
 # ============================================
 
-### [传统 2.1] XML 格式 - Anthropic Claude 早期风格
-# 说明：Anthropic Claude（早期）使用 XML 标签来结构化输出
-# 格式：
-#   <thinking>思考过程</thinking>
-#   <action>
-#     <tool>工具名称</tool>
-#     <parameters>参数</parameters>
-#   </action>
-# 优势：结构清晰，易于解析
-# 历史：Claude 2.x 时期的推荐方式
-# 参考：https://docs.anthropic.com/en/docs/build-with-claude/tool-use
+### [传统 2.1] XML 格式 - 结构化标签
+# Claude 2.x 时期的推荐方式，结构清晰易解析
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -157,70 +104,12 @@ Authorization: {{GLM_BEARER_TOKEN}}
   "temperature": 0
 }
 
-### [传统 2.2] XML 格式 - 多工具调用
-# 说明：使用 XML 格式表示多个工具调用
-# 场景：需要同时调用多个工具
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个智能助手。使用 XML 格式调用工具：\n\n<thinking>思考</thinking>\n<actions>\n  <action>\n    <tool>工具1</tool>\n    <parameters>...</parameters>\n  </action>\n  <action>\n    <tool>工具2</tool>\n    <parameters>...</parameters>\n  </action>\n</actions>\n\n可用工具：get_weather, search, calculator"
-    },
-    {
-      "role": "user",
-      "content": "查询北京、上海、杭州的天气。"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-### [传统 2.3] XML 格式 - 工具返回（模拟完整流程）
-# 说明：模拟工具执行后的 XML 格式返回
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个智能助手。使用 XML 格式。"
-    },
-    {
-      "role": "user",
-      "content": "明天北京天气如何？"
-    },
-    {
-      "role": "assistant",
-      "content": "<thinking>需要查询明天北京的天气</thinking>\n<action>\n  <tool>get_weather</tool>\n  <parameters>\n    <location>beijing</location>\n    <date>tomorrow</date>\n  </parameters>\n</action>"
-    },
-    {
-      "role": "user",
-      "content": "<tool_result>\n  <tool>get_weather</tool>\n  <result>\n    <location>北京</location>\n    <weather>Sunny</weather>\n    <temperature>15°C</temperature>\n  </result>\n</tool_result>"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
 # ============================================
-# 3. JSON 格式的工具调用
+# 3. JSON 格式（OpenAI 早期方案）
 # ============================================
 
-### [传统 3.1] JSON 格式 - OpenAI 早期方案
-# 说明：在原生 Function Calling 之前，通过 JSON 格式模拟工具调用
-# 格式：让模型输出 JSON 字符串，程序解析后执行
-# 优势：标准化、易于解析
-# 劣势：需要精确的提示词，模型容易出错
+### [传统 3.1] JSON 格式 - 模拟工具调用
+# 让模型输出 JSON 字符串，程序解析后执行
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -242,100 +131,12 @@ Authorization: {{GLM_BEARER_TOKEN}}
   "temperature": 0
 }
 
-### [传统 3.2] JSON 格式 - 多步骤工作流
-# 说明：使用 JSON 数组表示多步骤计划
-# 场景：Plan-and-Execute 模式的传统实现
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个智能助手。请返回 JSON 格式的执行计划：\n\n{\n  \"plan\": [\n    {\n      \"step\": 1,\n      \"action\": \"工具名称\",\n      \"params\": {...},\n      \"reason\": \"为什么需要这一步\"\n    }\n  ]\n}\n\n可用工具：get_weather, search, calculator"
-    },
-    {
-      "role": "user",
-      "content": "帮我规划明天的杭州一日游，要考虑天气和景点。"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-### [传统 3.3] JSON 格式 - 工具结果处理
-# 说明：模拟工具执行后，将结果以 JSON 格式返回
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个智能助手。使用 JSON 格式调用工具和处理结果。"
-    },
-    {
-      "role": "user",
-      "content": "明天杭州天气如何？"
-    },
-    {
-      "role": "assistant",
-      "content": "{\n  \"thought\": \"需要查询天气\",\n  \"action\": \"get_weather\",\n  \"action_input\": {\n    \"location\": \"hangzhou\",\n    \"date\": \"tomorrow\"\n  }\n}"
-    },
-    {
-      "role": "user",
-      "content": "{\n  \"tool\": \"get_weather\",\n  \"result\": {\n    \"location\": \"杭州\",\n    \"weather\": \"Sunny\",\n    \"temperature\": \"20°C\"\n  }\n}"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
 # ============================================
-# 4. 混合格式（Markdown + JSON）
+# 4. 对比：传统方法 vs 原生 Function Calling
 # ============================================
 
-### [传统 4.1] Markdown + JSON - 用户友好
-# 说明：结合 Markdown 的可读性和 JSON 的结构化
-# 优势：既能让用户理解，又能让程序解析
-# 应用：ChatGPT Plugins 早期实现
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个智能助手。当需要调用工具时，使用以下格式：\n\n**思考**：你的思考过程\n\n**行动**：\n```json\n{\n  \"action\": \"工具名称\",\n  \"parameters\": {...}\n}\n```\n\n可用工具：get_weather, search"
-    },
-    {
-      "role": "user",
-      "content": "明天北京天气怎么样？"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-# ============================================
-# 5. 对比：传统方法 vs 原生 Function Calling
-# ============================================
-
-### [对比 5.1] 传统 ReAct（文本解析）
-# 问题：
-# 1. 解析复杂，容易出错（格式不对、缺少字段）
-# 2. 需要额外的解析逻辑
-# 3. 模型可能"忘记"格式要求
-# 4. 无法保证输出结构化
+### [对比 4.1] 传统 ReAct（文本解析）
+# 问题：解析复杂易出错、模型可能忘记格式、无法保证结构化
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -357,13 +158,8 @@ Authorization: {{GLM_BEARER_TOKEN}}
   "temperature": 0
 }
 
-### [对比 5.2] 原生 Function Calling（现代方案）
-# 优势：
-# 1. 标准化接口，无需解析
-# 2. 模型针对性训练，调用更准确
-# 3. 返回结构化 JSON，直接使用
-# 4. 支持并行调用
-# 5. 错误处理更完善
+### [对比 4.2] 原生 Function Calling（现代方案）
+# 优势：标准化接口、模型针对训练、返回结构化 JSON、支持并行
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -398,129 +194,24 @@ Authorization: {{GLM_BEARER_TOKEN}}
 }
 
 # ============================================
-# 6. 实战：实现传统 ReAct 的完整流程
-# ============================================
-
-### [实战 6.1] 步骤 1：初始请求
-# 说明：用户发起请求，模型输出第一个 Action
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是 ReAct Agent。工具：get_weather, search。\n\n格式：\nThought: ...\nAction: ...\nAction Input: {...}\n\n或：\nThought: 我知道答案了\nFinal Answer: ..."
-    },
-    {
-      "role": "user",
-      "content": "明天杭州会下雨吗？如果下雨，推荐室内活动。"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-# 步骤 2：解析 Action，执行工具（程序代码）
-# ```python
-# import re
-# import json
-#
-# response = "Thought: 需要查天气\nAction: get_weather\nAction Input: {\"location\": \"hangzhou\"}"
-#
-# # 解析
-# action_match = re.search(r'Action: (\w+)', response)
-# input_match = re.search(r'Action Input: ({.*})', response)
-#
-# action = action_match.group(1)  # "get_weather"
-# action_input = json.loads(input_match.group(1))  # {"location": "hangzhou"}
-#
-# # 执行工具
-# result = execute_tool(action, action_input)
-# # result = {"weather": "Rainy", "temperature": "12°C"}
-# ```
-
-### [实战 6.2] 步骤 3：插入 Observation，继续对话
-# 说明：将工具结果插入对话，模型继续推理
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是 ReAct Agent。格式：Thought/Action/Action Input 或 Final Answer"
-    },
-    {
-      "role": "user",
-      "content": "明天杭州会下雨吗？如果下雨，推荐室内活动。"
-    },
-    {
-      "role": "assistant",
-      "content": "Thought: 需要查询明天杭州的天气\nAction: get_weather\nAction Input: {\"location\": \"hangzhou\", \"date\": \"tomorrow\"}"
-    },
-    {
-      "role": "user",
-      "content": "Observation: {\"weather\": \"Rainy\", \"temperature\": \"12°C\", \"description\": \"中雨\"}"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-# ============================================
 # 总结
 # ============================================
 #
-# 传统工具调用方法的演变：
+# 工具调用的演变：
+#   文本 ReAct (2022) → XML (2023) → JSON (2023) → 原生 FC (2024+)
 #
-# 1. **文本格式 ReAct**（2022）
-#    - 代表：LangChain 早期版本
-#    - 方式：通过提示词让模型输出固定格式文本
-#    - 问题：格式不稳定、解析复杂、容易出错
+# 传统方法的共同问题：
+# - 格式不稳定，解析复杂
+# - 模型容易忘记格式要求
+# - 无类型约束，容易出错
 #
-# 2. **XML 格式**（2023）
-#    - 代表：Anthropic Claude 2.x
-#    - 方式：使用 XML 标签结构化输出
-#    - 优势：结构清晰、易于解析
-#    - 问题：仍需手动解析、无类型约束
+# 原生 Function Calling 的优势：
+# - 标准化接口，无需手动解析
+# - 模型针对性训练，调用更准确
+# - 支持并行调用和错误处理
 #
-# 3. **JSON 格式**（2023）
-#    - 代表：OpenAI 早期 Function Calling
-#    - 方式：让模型输出 JSON 字符串
-#    - 优势：标准化、易于集成
-#    - 问题：JSON 格式容易出错（缺少引号、逗号等）
-#
-# 4. **原生 Function Calling**（2024+）
-#    - 代表：OpenAI Function Calling、Anthropic Tool Use
-#    - 方式：API 原生支持，模型针对性训练
-#    - 优势：稳定、准确、支持并行、错误处理完善
-#    - 现状：成为事实标准
-#
-# 为什么需要了解传统方法？
-#
-# 1. **历史理解**：理解技术演进，知道"为什么需要 Function Calling"
-# 2. **兼容性**：某些老模型仍需使用传统方法
-# 3. **调试能力**：理解底层原理，更好地调试 Agent 系统
-# 4. **灵活性**：某些特殊场景可能需要自定义格式
-# 5. **教育价值**：对初学者来说，文本格式更直观
-#
-# 最佳实践：
-#
-# - **新项目**：优先使用原生 Function Calling
-# - **老项目**：逐步迁移到原生 Function Calling
-# - **教学**：从文本格式开始，帮助理解 Agent 原理
-# - **生产**：避免使用文本解析，降低出错风险
-#
-# 参考资料：
-# - LangChain ReAct: https://python.langchain.com/docs/modules/agents/agent_types/react
-# - Anthropic Tool Use: https://docs.anthropic.com/en/docs/build-with-claude/tool-use
-# - OpenAI Function Calling: https://platform.openai.com/docs/guides/function-calling
-# - ReAct Paper: https://arxiv.org/abs/2210.03629
+# 为什么还要了解传统方法？
+# - 理解技术演进和 FC 的设计动机
+# - 某些老模型仍需使用传统方法
+# - 教学价值：文本格式更直观，便于理解 Agent 原理
 # ============================================
