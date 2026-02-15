@@ -259,6 +259,25 @@ Claude Opus 4.5 在 SWE-Bench Verified 上首次突破 80% 行业门槛（80.9%�
 
 > **一句话总结：** OpenAI 工程师偷着用它，Google Gemini 团队工程师公开夸它，xAI 员工被切断后集体"生产力受损"，前 Codex 开发者用它做日常编程，连 OpenAI 联合创始人都说 OpenAI 在这件事上"做错了"。排行榜可以刷，这些事实刷不了。
 
+## Not a Coder, but an Engineer
+
+软件开发并不只是编程，写写代码，如果只有这些那你只能被称为 Coder。从更高维度思考，结构化思维，将看似不可能完成的事情，转化为可执行的步骤，用第一性原理理解本质。你可能会说有很多细节的内容，我不知道怎么做，每个框架、语言都不一样，数据处理和 GUI 桌面软件开发，后端你开发好像都不一样。实际上这些内容，只要你更为底层的知识，Claude Code + Opus 就能助你解决绝大部分问题，编程语言、框架、不同领域内容都不再是问题。
+
+当你碰到问题时，不是说这个做不了，而是说：我尝试把它解决掉。当你开始以这种方式面对问题时，你就不再只是 Coder，而是真正的 **Engineer** —— 问题的解决者。
+
+这不是鸡汤，是 Anthropic 官方研究证实的真实变化。2025 年 12 月，Anthropic 发布内部研究报告《How AI Is Transforming Work at Anthropic》 ([来源](https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic), [本地存档](../research/06-anthropic-internal-ai-transforming-work.md), 2025-12-02)，对132名工程师和研究员进行调研，发现：
+
+> "using Claude helps them **persist on tasks that I previously would've given up on immediately**"
+> （使用 Claude 帮助他们"坚持处理以前会立即放弃的任务"）
+
+> "The tools are definitely making junior engineers **more productive and more bold with the types of projects they will take on**."
+> （这些工具确实让初级工程师更高效，也更**敢于承接更有挑战的项目**。）
+
+> "I can very capably work on front-end, or transactional databases, or API code, **where previously I would've been scared to touch stuff** I'm less of an expert on."
+> （我现在能胜任前端、事务数据库、API 代码，**以前我根本不敢碰这些不擅长的东西**。）
+
+不是能力突然变强了，而是有了底气去尝试。这就是 Engineer 和 Coder 的本质区别。
+
 ## AI 辅助，不是 AI 自动化
 
 Google Chrome 团队资深工程师 Addy Osmani 在他 2026 年的工作流分享中提出了一个关键观点：
@@ -312,7 +331,7 @@ LLM 的上下文窗口是有限的。如果你在一个对话里塞进了多个�
 对话 1："修复登录页面的 Token 过期问题，在 @LoginController.java 文件中的第 XX 行"
 （完成，测试，提交）
 /clear
-对话 2："优化用户列表页的数据库查询性能 @UserService.java "
+对话 2："优化用户列表页的数据库查询性能 @internal/domain/user/dal/dao.go "
 （完成，测试，提交）
 /clear
 对话 3："更新 @README.md 中的安装说明"

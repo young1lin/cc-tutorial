@@ -10,16 +10,38 @@
 @GLM_BASE_URL = https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
 @GLM_BEARER_TOKEN = Bearer {{$dotenv GLM_API_KEY}}
 
+@STEPFUN_BASE_URL = https://api.stepfun.com/v1/chat/completions
+@STEPFUN_BEARER_TOKEN = Bearer {{$dotenv STEPFUN_API_KEY}}
+
 # ============================================
 # 1. 代码审查与测试
 # ============================================
 
 ### [场景 1.1] 代码审查 - 发现 Bug
 # 场景：Python 代码审查，识别除零错误、KeyError 等
-POST {{GLM_BASE_URL}} HTTP/1.1
+#
+# ```python
+# def calculate_average(numbers):
+#     total = 0
+#     for num in numbers:
+#         total += num
+#     return total / len(numbers)
+#
+# def process_data(data):
+#     result = []
+#     for item in data:
+#         if item['value'] > 0:
+#             result.append(item['value'] * 2)
+#     return result
+#
+# users = [{'name': 'Alice', 'age': 30}, {'name': 'Bob'}]
+# for user in users:
+#     print(f"{user['name']} is {user['age']} years old")
+# ```
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
+Authorization: {{STEPFUN_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -32,13 +54,32 @@ Authorization: {{GLM_BEARER_TOKEN}}
       "content": "请审查以下 Python 代码：\n\n```python\ndef calculate_average(numbers):\n    total = 0\n    for num in numbers:\n        total += num\n    return total / len(numbers)\n\ndef process_data(data):\n    result = []\n    for item in data:\n        if item['value'] > 0:\n            result.append(item['value'] * 2)\n    return result\n\nusers = [{'name': 'Alice', 'age': 30}, {'name': 'Bob'}]\nfor user in users:\n    print(f\"{user['name']} is {user['age']} years old\")\n```"
     }
   ],
-  "model": "GLM-4.7",
+  "model": "step-3.5-flash",
   "stream": false,
   "temperature": 0
 }
 
 ### [场景 1.2] 单元测试生成
 # 场景：为给定函数生成 pytest 测试（正常/边界/异常）
+#
+# ```python
+# def calculate_discount(price: float, discount_rate: float) -> float:
+#     """
+#     计算折扣后的价格
+#
+#     Args:
+#         price: 原价（必须 > 0）
+#         discount_rate: 折扣率（0-1 之间）
+#
+#     Returns:
+#         折扣后的价格
+#     """
+#     if price <= 0:
+#         raise ValueError("Price must be positive")
+#     if not 0 <= discount_rate <= 1:
+#         raise ValueError("Discount rate must be between 0 and 1")
+#     return price * (1 - discount_rate)
+# ```
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json

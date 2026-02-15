@@ -626,14 +626,28 @@ def test_user_login():
    - 来源：https://x.com/bcherny/status/2007179833990885678
    - 内容：并行实例、CLAUDE.md 配置、自动化工作流、Hooks 等个人工作流展示
 
-6. ✅ **06-lsp-language-server-protocol.md**
+6. ✅ **06-anthropic-internal-ai-transforming-work.md**
+   - Anthropic 内部 AI 如何改变工作方式研究报告（T1）
+   - 作者：Saffron Huang, Bryan Seethor 等
+   - 日期：2025-12-02
+   - 来源：https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic
+   - 内容：132名工程师调研、生产力数据、技能变化、自信与敢于尝试
+
+7. ✅ **07-hwchase17-react-prompt.md**
+   - ReAct 提示词模板（T2）
+   - 作者：Harrison Chase（LangChain 创始人）
+   - 日期：2023-01-01
+   - 来源：https://smith.langchain.com/hub/hwchase17/react
+   - 内容：经典 ReAct Agent 提示词模板，Thought/Action/Observation 循环
+
+8. ✅ **08-lsp-language-server-protocol.md**
    - LSP (Language Server Protocol) 深度研究（T1）
    - 作者：Research Compilation
    - 日期：2026-02-15
    - 来源：https://microsoft.github.io/language-server-protocol/
    - 内容：LSP 定义、历史、工作原理、功能、支持的语言/编辑器、与 Claude Code 集成、与 Tree-sitter 对比
 
-7. ✅ **00-research-summary.md**（本文档）
+9. ✅ **00-research-summary.md**（本文档）
    - 研究总结和综合
 
 ### 待获取文档（中优先级）
@@ -768,6 +782,7 @@ def test_user_login():
 - [Claude Code: Best practices for agentic coding](https://www.anthropic.com/engineering/claude-code-best-practices)
 - [Plan Mode in Claude Code: When to Use It (and When Not To)](https://claude-ai.chat/blog/plan-mode-in-claude-code-when-to-use-it/)（社区来源 T3，非 Anthropic 官方；官方文档见 https://docs.anthropic.com/en/docs/claude-code/overview）
 - [Claude Code Documentation](https://claude.ai/code)
+- [How AI Is Transforming Work at Anthropic](https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic)（Anthropic 内部研究报告）
 
 ### 课程和教程
 - [Claude Code: A Highly Agentic Coding Assistant](https://www.deeplearning.ai/short-courses/claude-code-a-highly-agentic-coding-assistant/) (Andrew Ng & Elie Schoppik)
@@ -790,6 +805,9 @@ def test_user_login():
 
 ### Agent 模式
 - [hwchase17/react - LangChain Hub](https://smith.langchain.com/hub/hwchase17/react) - 经典 ReAct 提示词模板，218k+ pulls
+
+### 开发工具协议
+- [Language Server Protocol (LSP)](https://microsoft.github.io/language-server-protocol/) - Microsoft 官方 LSP 规范
 
 ---
 
