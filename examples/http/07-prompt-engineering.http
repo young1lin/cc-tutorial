@@ -627,6 +627,137 @@ Authorization: {{GLM_BEARER_TOKEN}}
 }
 
 # ============================================
+# 7. Self-Consistency（自洽性采样）
+# ============================================
+#
+# 核心思想：temperature > 0 + 多次独立采样 → 多数投票取最终答案
+# 与 CoT 的关系：CoT 找最优推理路径，SC 让多条路径"投票"
+# 适用场景：数学题、代码正确性验证、高精度分类
+# 成本权衡：token 消耗 × N 倍，精度换成本
+#
+# 注意：REST Client 无法自动投票，需手动多次运行 7.1/7.2 对比推理路径
+# 参考：https://arxiv.org/abs/2203.11171
+#
+# ============================================
+
+### [提示词 7.1] Self-Consistency - 采样路径 1（temperature=0.7）
+# 说明：同一道数学应用题，高温度采样，强制展示推理过程
+# 模型：deepseek-chat（无内置推理，temperature 实际产生变化）
+# 注：真实 SC 需多次独立运行 → 与 7.2 对比推理路径是否不同
+# 预期：模型展示完整 CoT 推理，答案正确但路径可能与 7.2 不同
+POST {{DEEP_SEEK_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{DEEP_SEEK_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个数学老师。请一步步展示完整的推理过程，最后给出答案。"
+    },
+    {
+      "role": "user",
+      "content": "一家工厂有 5 条生产线，每条生产线每天生产 240 个零件。工厂运营 6 天后，将所有零件平均分配给 8 个仓库。请问每个仓库分到多少个零件？\n\n请一步步思考。"
+    }
+  ],
+  "model": "deepseek-chat",
+  "stream": false,
+  "temperature": 0.7
+}
+
+### [提示词 7.2] Self-Consistency - 采样路径 2（temperature=0.7）
+# 说明：与 7.1 完全相同的请求，二次独立采样
+# 观察：推理路径是否不同？答案是否一致？
+# SC 原则：若两次答案相同，置信度更高；若不同，需第 3 次打破平局
+# 提示：如果答案总相同，说明题目过于简单，换更难的题目来验证
+POST {{DEEP_SEEK_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{DEEP_SEEK_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个数学老师。请一步步展示完整的推理过程，最后给出答案。"
+    },
+    {
+      "role": "user",
+      "content": "一家工厂有 5 条生产线，每条生产线每天生产 240 个零件。工厂运营 6 天后，将所有零件平均分配给 8 个仓库。请问每个仓库分到多少个零件？\n\n请一步步思考。"
+    }
+  ],
+  "model": "deepseek-chat",
+  "stream": false,
+  "temperature": 0.7
+}
+
+# ============================================
+# 8. PAL - 程序辅助推理（Program-Aided LM）
+# ============================================
+#
+# 核心思路：模型生成 Python 代码 → 执行代码 → 得精确结果
+# 与 §2.1 的呼应：02-limitations.http [1.1] 同一道复杂计算题，直接算会差 100 倍
+# 与 Function Calling 的区别：
+#   - Function Calling：调用外部服务/工具
+#   - PAL：LLM 自己写代码，用代码替代文字推理
+# Claude Code 场景：Bash 工具执行 LLM 生成的代码
+#
+# 参考：https://arxiv.org/abs/2211.10435
+#
+# ============================================
+
+### [提示词 8.1] PAL - 数学计算（生成 Python 代码）
+# 说明：同一道复杂计算题（见 02-limitations.http [1.1]），让模型输出代码而非直接算
+# 对比：02-limitations.http [1.1] 模型直接算会出错；这里输出代码可执行验证
+# 预期：模型输出 ```python ... ``` 代码块，不给出文字计算结果
+POST {{DEEP_SEEK_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{DEEP_SEEK_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个编程助手。遇到数学计算题，你必须输出可执行的 Python 代码来计算，不要用文字直接给出答案。代码中要包含完整的计算逻辑和 print 输出。"
+    },
+    {
+      "role": "user",
+      "content": "请计算：982717.1211 * 213213.23321 - 321312.777 / 1112.1121\n\n注意：输出 Python 代码，不要直接给出数字答案。"
+    }
+  ],
+  "model": "deepseek-chat",
+  "stream": false,
+  "temperature": 0
+}
+
+### [提示词 8.2] PAL - 统计分析（数据处理）
+# 说明：给定原始数据，让模型输出 pandas 分析代码，而非文字总结
+# 场景：数据分析任务，用代码确保计算精确
+# 预期：模型输出含 import pandas 的完整分析代码
+POST {{DEEP_SEEK_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{DEEP_SEEK_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个数据分析助手。收到数据分析请求时，你必须输出完整的 Python（pandas）代码来完成分析，不要用文字描述分析结果。代码要包含数据定义、计算逻辑和 print 输出。"
+    },
+    {
+      "role": "user",
+      "content": "以下是某电商平台一周的销售数据：\n\n日期: ['周一','周二','周三','周四','周五','周六','周日']\n销售额（万元）: [12.5, 8.3, 15.7, 11.2, 19.8, 32.4, 28.6]\n订单数: [125, 83, 157, 112, 198, 324, 286]\n\n请分析：1) 总销售额和平均日销售额；2) 销售额最高和最低的日期；3) 周末（周六+周日）vs 工作日的销售额占比。\n\n注意：输出 pandas 代码，不要直接给出文字分析。"
+    }
+  ],
+  "model": "deepseek-chat",
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
 # 总结
 # ============================================
 #
@@ -663,16 +794,33 @@ Authorization: {{GLM_BEARER_TOKEN}}
 #    - 从对话历史中学习模式
 #    - 保持风格一致性
 #
+# 7. Self-Consistency（自洽性采样）
+#    - temperature > 0 + 多次独立采样 → 多数投票
+#    - 原理：同一问题多条推理路径，正确答案出现频率更高
+#    - 成本：token 消耗 × N 倍；精度提升显著
+#    - 适用：数学题、代码验证、高精度分类
+#    - 参考：https://arxiv.org/abs/2203.11171
+#
+# 8. PAL - 程序辅助推理（Program-Aided LM）
+#    - 让模型生成可执行代码，而非直接用文字推理
+#    - 代码执行保证计算精确，解决 LLM 数学弱点
+#    - 与 Function Calling 区别：FC 调用外部服务，PAL 是 LLM 自己写代码
+#    - 适用：数学计算、数据分析、算法实现
+#    - 参考：https://arxiv.org/abs/2211.10435
+#
 # 最佳实践：
 # - 从简单开始，逐步添加约束
-# - 使用 temperature=0 提高确定性
+# - 使用 temperature=0 提高确定性（SC 除外，需 temperature>0）
 # - 提供清晰的示例和格式要求
 # - 测试边界情况，迭代优化
-# - 结合多种技术（如 Few-Shot + CoT）
+# - 结合多种技术（如 Few-Shot + CoT + Self-Consistency）
+# - 计算密集型任务优先考虑 PAL，而非让模型直接算
 #
 # 参考资料：
 # - Prompt Engineering Guide: https://www.promptingguide.ai/
 # - Chain-of-Thought Paper: https://arxiv.org/abs/2201.11903
 # - Zero-Shot CoT: https://arxiv.org/abs/2205.11916
 # - Few-Shot Learning: https://arxiv.org/abs/2005.14165
+# - Self-Consistency: https://arxiv.org/abs/2203.11171
+# - PAL: https://arxiv.org/abs/2211.10435
 # ============================================
