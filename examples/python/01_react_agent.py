@@ -13,6 +13,7 @@
 # ============================================
 
 import json
+import logging
 import os
 import re
 import sys
@@ -21,8 +22,29 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from config import get_client, DEFAULT_PROVIDER, print_section, print_box_start, print_box_end, CYAN, GREEN, YELLOW, GRAY, RESET
+# ============================================
+# 调试日志配置
+# ============================================
+logging.basicConfig(
+    filename='react_debug.log',
+    level=logging.DEBUG,
+    format='%(asctime)s\n%(message)s\n' + '='*60
+)
+
+from config import (
+    get_client,
+    DEFAULT_PROVIDER,
+    print_section,
+    print_box_start,
+    print_box_end,
+    CYAN,
+    GREEN,
+    YELLOW,
+    GRAY,
+    RESET,
+)
 from tools import TOOL_DEFINITIONS, TOOL_IMPLEMENTATIONS, execute_tool
+from datetime import datetime
 
 load_dotenv()
 
@@ -31,9 +53,13 @@ load_dotenv()
 # ============================================
 
 MODEL_ALIASES = {
-    "glm": "glm-4.7",
+    "glm": "glm-4-flash",
+    "glm4": "glm-4-flash",
+    "glm-4-flash": "glm-4-flash",
     "glm4.7": "glm-4.7",
     "glm-4.7": "glm-4.7",
+    "glm5": "glm-5",
+    "glm-5": "glm-5",
     "ds": "deepseek",
     "deepseek": "deepseek",
     "step": "stepfun",
@@ -45,28 +71,33 @@ MODEL_ALIASES = {
 # ReAct 提示词
 # ============================================
 
-REACT_PROMPT = """Answer the following questions as best you can. You have access to the following tools:
-
-{tools}
-
-Use the following format:
-
-Question: the input question you must answer
-Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action (MUST be valid JSON like {{"key": "value"}})
-Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times)
-Thought: I now know the final answer
-Final Answer: the final answer to the original input question
+# System Prompt - 固定的规则和行为规范
+REACT_SYSTEM_PROMPT = """You are a helpful assistant that uses the ReAct (Reasoning + Acting) pattern to solve problems.
 
 IMPORTANT RULES:
 1. You can only execute ONE Action at a time
 2. After writing Action and Action Input, STOP and wait for Observation
 3. NEVER write Observation yourself - the system will provide it
 4. Action Input MUST be valid JSON format: {{"key": "value"}}
+5. After receiving Observation, continue with Thought to decide next step or give Final Answer"""
 
-Begin!
+# 工具描述模板 - 动态内容
+TOOLS_TEMPLATE = """You have access to the following tools:
+
+{tools}
+
+Available actions: [{tool_names}]"""
+
+# User Prompt - 问题 + scratchpad
+REACT_USER_PROMPT = """{tools_desc}
+
+Use the following format:
+Thought: your reasoning about what to do
+Action: the action to take (one of [{tool_names}])
+Action Input: the input to the action as JSON
+... (after Observation, continue with Thought)
+Thought: I now know the final answer
+Final Answer: the final answer
 
 Question: {input}
 Thought:{agent_scratchpad}"""
@@ -78,7 +109,9 @@ def format_tools_for_prompt() -> tuple[str, str]:
     tool_names = []
     for info in TOOL_DEFINITIONS:
         func = info["function"]
-        params = ", ".join(f"{k}" for k in func["parameters"].get("properties", {}).keys())
+        params = ", ".join(
+            f"{k}" for k in func["parameters"].get("properties", {}).keys()
+        )
         tool_descriptions.append(f"{func['name']}({params}): {func['description']}")
         tool_names.append(func["name"])
     return "\n".join(tool_descriptions), ", ".join(tool_names)
@@ -88,29 +121,39 @@ def format_tools_for_prompt() -> tuple[str, str]:
 # ReAct Agent
 # ============================================
 
+
 class ReActAgent:
     """ReAct Agent - 文本解析模式"""
 
     def __init__(self, provider: str = DEFAULT_PROVIDER):
+        today = datetime.now().strftime("%Y-%m-%d")
+        self.system_prompt = f"{REACT_SYSTEM_PROMPT}\n\nCurrent day is {today}"
         self.client, self.model = get_client(provider)
         self.provider = provider
         self.max_iterations = 10
         self.scratchpad = ""
+        self.logger = logging.getLogger(__name__)
 
     def _parse_action(self, text: str) -> tuple[str | None, dict | None]:
-        """解析 Action 和 Action Input（只取第一个）"""
-        action_match = re.search(r"Action:\s*(\w+)", text)
-        action_input_match = re.search(r"Action Input:\s*(.+?)(?=\n(?:Thought|Action|Final Answer|Observation)|$)", text, re.DOTALL)
+        """解析 Action 和 Action Input - 参考 LangChain 实现
 
-        if not action_match:
+        LangChain 使用简单的正则，用 \\n 作为分隔符，不依赖预测模式
+        """
+        # 先检查 Final Answer
+        if "Final Answer:" in text:
+            return None, None  # 让 _parse_final_answer 处理
+
+        # LangChain 风格的正则：简单直接，用 \n 分隔
+        match = re.search(r"Action\s*:\s*(\w+)\s*\n\s*Action Input\s*:\s*(.+)", text, re.DOTALL)
+
+        if not match:
             return None, None
 
-        action = action_match.group(1)
-        action_input = {}
+        action = match.group(1).strip()
+        action_input_str = match.group(2).strip()
 
-        if action_input_match:
-            raw_input = action_input_match.group(1).strip()
-            action_input = self._parse_action_input(raw_input)
+        # 解析 action_input
+        action_input = self._parse_action_input(action_input_str)
 
         return action, action_input
 
@@ -132,7 +175,7 @@ class ReActAgent:
             result[key] = value
 
         if not result:
-            pattern = r'(\w+)\s*=\s*(\S+)'
+            pattern = r"(\w+)\s*=\s*(\S+)"
             matches = re.findall(pattern, raw_input)
             for key, value in matches:
                 value = value.rstrip(",;")
@@ -144,12 +187,18 @@ class ReActAgent:
         """解析 Final Answer"""
         match = re.search(r"Final Answer:\s*", text)
         if match:
-            return text[match.end():].strip()
+            return text[match.end() :].strip()
         return None
 
     def _extract_thought(self, text: str) -> str:
         """提取最后一个 Thought"""
-        matches = list(re.finditer(r"Thought:\s*(.+?)(?=\n\s*(?:Action|Final Answer|Thought:)|$)", text, re.DOTALL))
+        matches = list(
+            re.finditer(
+                r"Thought:\s*(.+?)(?=\n\s*(?:Action|Final Answer|Thought:)|$)",
+                text,
+                re.DOTALL,
+            )
+        )
         if matches:
             return matches[-1].group(1).strip()
         return ""
@@ -165,19 +214,26 @@ class ReActAgent:
         for iteration in range(1, self.max_iterations + 1):
             print(f"\n{CYAN}🔄 第 {iteration} 轮{RESET}")
 
-            prompt = REACT_PROMPT.format(
-                tools=tools_desc,
+            user_prompt = REACT_USER_PROMPT.format(
+                tools_desc=TOOLS_TEMPLATE.format(tools=tools_desc, tool_names=tool_names),
                 tool_names=tool_names,
                 input=question,
-                agent_scratchpad=self.scratchpad
+                agent_scratchpad=self.scratchpad,
             )
+
+            # 调试日志：记录 prompt
+            self.logger.debug(f"=== 第 {iteration} 轮 ===")
+            self.logger.debug(f"PROMPT:\n{user_prompt}")
 
             response = self.client.chat.completions.create(
                 model=self.model,
-                messages=[{"role": "user", "content": prompt}],
+                messages=[
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
                 temperature=0,
                 stream=stream,
-                stop=["\nObservation:"],
+                stop=["\nObservation:", "\nObservation"],  # 两种变体都支持
             )
 
             if stream:
@@ -185,16 +241,30 @@ class ReActAgent:
             else:
                 output = response.choices[0].message.content
 
-            action, action_input = self._parse_action(output)
+            # 调试日志：记录原始输出
+            self.logger.debug(f"RAW OUTPUT (repr): {repr(output)}")
+
+            # 清理输出末尾可能的部分 stop sequence 残留
+            # 匹配：\nObservation:、\nObservation、\nObserv、\nObser、\nObse、\nObs、\nOb 等
+            output_cleaned = re.sub(r'\n?Ob(?:s(?:e(?:r(?:v(?:a(?:t(?:i(?:o(?:n?)?)?)?)?)?)?)?)?)?(?::)?$', '', output).strip()
+            if output_cleaned != output:
+                self.logger.debug(f"CLEANED OUTPUT (removed partial stop): {repr(output_cleaned)}")
+
+            action, action_input = self._parse_action(output_cleaned)
+
+            # 调试日志：记录解析结果
+            self.logger.debug(f"PARSED: action={action}, action_input={action_input}")
 
             if not action:
-                final_answer = self._parse_final_answer(output)
+                final_answer = self._parse_final_answer(output_cleaned)
                 if final_answer and iteration > 1:
                     print(f"\n{GREEN}✅ Final Answer:{RESET}")
                     print(final_answer)
                     return final_answer
                 elif final_answer and iteration == 1:
-                    self.scratchpad += f"\n(你必须先使用工具获取信息，不能直接给出答案。)\n"
+                    self.scratchpad += (
+                        f"\n(你必须先使用工具获取信息，不能直接给出答案。)\n"
+                    )
                     print(f"{YELLOW}⚠️ 第一轮必须先调用工具，请继续...{RESET}")
                     continue
                 else:
@@ -202,33 +272,73 @@ class ReActAgent:
                     print(f"{YELLOW}⚠️ 未找到有效的 Action，提示模型继续...{RESET}")
                     continue
 
+            # 显示本轮思考
             if not stream:
-                thought = self._extract_thought(output)
+                thought = self._extract_thought(output_cleaned)
                 if thought:
                     print(f"{CYAN}💭 Thought:{RESET} {thought}")
                 print(f"{CYAN}🎯 Action:{RESET} {action}")
-                print(f"{CYAN}📥 Action Input:{RESET} {json.dumps(action_input, ensure_ascii=False)}")
+                print(
+                    f"{CYAN}📥 Action Input:{RESET} {json.dumps(action_input, ensure_ascii=False)}"
+                )
 
+            # 执行工具
             observation = execute_tool(action, action_input)
-            print(f"{GRAY}👁️ Observation:{RESET} {observation[:200]}{'...' if len(observation) > 200 else ''}")
+            print(
+                f"{GRAY}👁️ Observation:{RESET} {observation[:200]}{'...' if len(observation) > 200 else ''}"
+            )
 
-            thought = self._extract_thought(output)
-            self.scratchpad += f"\nThought: {thought}\n"
-            self.scratchpad += f"Action: {action}\n"
-            self.scratchpad += f"Action Input: {json.dumps(action_input, ensure_ascii=False)}\n"
-            self.scratchpad += f"Observation: {observation}\n"
+            # 关键修复：使用清理后的输出 + 系统提供的 Observation
+            self.scratchpad += f" {output_cleaned}\nObservation: {observation}\n"
+
+            # 调试日志：记录 scratchpad
+            self.logger.debug(f"SCRATCHPAD:\n{self.scratchpad}")
 
         return "错误：达到最大迭代次数"
 
+    # stop sequence 及其所有可能截断形式的正则
+    # 匹配: \nO, \nOb, \nObs, \nObse, \nObser, \nObserv, ... \nObservation, \nObservation:
+    STOP_PATTERN = r'\nOb(?:s(?:e(?:r(?:v(?:a(?:t(?:i(?:o(?:n?)?)?)?)?)?)?)?)?)?(?::\s*)?$'
+    # 用于检测缓冲区末尾是否可能是 stop sequence 的开头
+    STOP_PREFIX_RE = re.compile(r'\nOb[servaion]*$')
+
     def _handle_streaming(self, response) -> str:
+        """流式输出 + 过滤 stop sequence"""
         collected = ""
+        buffer = ""  # 缓冲区：保留最后可能构成 stop sequence 的字符
+
         for chunk in response:
-            if chunk.choices[0].delta.content:
-                content = chunk.choices[0].delta.content
-                print(content, end="", flush=True)
-                collected += content
-        print()
-        return collected
+            if not chunk.choices[0].delta.content:
+                continue
+
+            content = chunk.choices[0].delta.content
+            collected += content
+            buffer += content
+
+            # 当缓冲区足够长时，尝试输出安全部分
+            while len(buffer) > 15:  # "\nObservation:" 长度是 14
+                # 检查缓冲区末尾是否可能是 stop sequence 的开头
+                if self.STOP_PREFIX_RE.search(buffer):
+                    # 末尾可能是 stop sequence，保留缓冲区，跳出
+                    break
+                else:
+                    # 末尾安全，输出除最后 14 个字符外的内容
+                    safe_len = len(buffer) - 14
+                    print(buffer[:safe_len], end="", flush=True)
+                    buffer = buffer[safe_len:]
+
+        # 流结束，处理缓冲区剩余内容
+        # 清理可能的 stop sequence
+        cleaned_buffer = re.sub(self.STOP_PATTERN, '', buffer)
+        if cleaned_buffer:
+            print(cleaned_buffer, end="", flush=True)
+        print()  # 换行
+
+        # 记录原始数据到日志
+        self.logger.debug(f"STREAMING RAW (repr): {repr(collected)}")
+
+        # 返回清理后的完整结果
+        return re.sub(self.STOP_PATTERN, '', collected).strip()
 
 
 # ============================================
@@ -236,9 +346,21 @@ class ReActAgent:
 # ============================================
 
 DEMOS = {
-    "1": {"name": "旅游规划", "question": "帮我规划明天（2026-02-15）的杭州一日游，需要考虑天气情况。", "stream": True},
-    "2": {"name": "数学计算", "question": "计算 (123 + 456) * (789 - 654) 的结果", "stream": True},
-    "3": {"name": "多步骤查询", "question": "告诉我现在几点了，然后帮我算一下 9876 * 5432 等于多少", "stream": True},
+    "1": {
+        "name": "旅游规划",
+        "question": "帮我规划明天的杭州一日游，需要考虑天气情况。",
+        "stream": True,
+    },
+    "2": {
+        "name": "数学计算",
+        "question": "计算 (123 + 456) * (789 - 654) 的结果",
+        "stream": True,
+    },
+    "3": {
+        "name": "多步骤查询",
+        "question": "告诉我现在几点了，然后帮我算一下 9876 * 5432 等于多少",
+        "stream": True,
+    },
 }
 
 
