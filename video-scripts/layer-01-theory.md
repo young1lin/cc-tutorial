@@ -12,18 +12,18 @@
 
 ## 全部动手练习一览
 
-| 序号 | 示例文件 | 内容 | 示例数 | 难度 |
-|------|----------|------|--------|------|
-| 01 | [01-main.http](../examples/http/01-main.http) | 基础功能：Hello World → System Prompt → 流式 → Token 截断 → 语言控制 → 多轮对话 → Function Calling | 8 | ⭐ |
-| 02 | [02-limitations.http](../examples/http/02-limitations.http) | LLM 局限性：数学、幻觉、逻辑、知识截止 | 9 | ⭐⭐ |
-| 03 | [03-practical-scenarios.http](../examples/http/03-practical-scenarios.http) | 实战场景：代码审查、摘要、情感分析、翻译、数据提取 | 9 | ⭐⭐ |
-| 04 | [04-function-calling-advanced.http](../examples/http/04-function-calling-advanced.http) | 高级工具调用：多工具编排、并行调用、错误处理 | 12 | ⭐⭐⭐ |
-| 05 | [05-legacy-tool-calling.http](../examples/http/05-legacy-tool-calling.http) | 传统工具调用：Text ReAct、XML、JSON vs 原生 FC | 6 | ⭐⭐⭐ |
-| 06 | [06-api-protocol-compatibility.http](../examples/http/06-api-protocol-compatibility.http) | 协议兼容：OpenAI 格式 vs Anthropic 格式 | 4 | ⭐⭐ |
-| 07 | [07-prompt-engineering.http](../examples/http/07-prompt-engineering.http) | 提示词工程：Few-Shot、CoT、Self-Consistency、PAL、角色扮演 | 26 | ⭐⭐ |
-| 08 | [08-parameter-experiments.http](../examples/http/08-parameter-experiments.http) | 参数调优：Temperature、Top-P、Penalties、Stream | 15 | ⭐⭐⭐ |
-| 09 | [09-agent-patterns.http](../examples/http/09-agent-patterns.http) | Agent 设计模式：ReAct、Plan-and-Execute、Self-Reflection | 8 | ⭐⭐⭐⭐ |
-| | **合计** | | **97** | |
+| 序号  | 示例文件                                                                                      | 内容                                                                                | 示例数    | 难度   |
+| --- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------ | ---- |
+| 01  | [01-main.http](../examples/http/01-main.http)                                             | 基础功能：Hello World → System Prompt → 流式 → Token 截断 → 语言控制 → 多轮对话 → Function Calling | 8      | ⭐    |
+| 02  | [02-limitations.http](../examples/http/02-limitations.http)                               | LLM 局限性：数学、幻觉、逻辑、知识截止                                                             | 9      | ⭐⭐   |
+| 03  | [03-practical-scenarios.http](../examples/http/03-practical-scenarios.http)               | 实战场景：代码审查、摘要、情感分析、翻译、数据提取                                                         | 9      | ⭐⭐   |
+| 04  | [04-function-calling-advanced.http](../examples/http/04-function-calling-advanced.http)   | 高级工具调用：多工具编排、并行调用、错误处理                                                            | 12     | ⭐⭐⭐  |
+| 05  | [05-legacy-tool-calling.http](../examples/http/05-legacy-tool-calling.http)               | 传统工具调用：Text ReAct、XML、JSON vs 原生 FC                                               | 6      | ⭐⭐⭐  |
+| 06  | [06-api-protocol-compatibility.http](../examples/http/06-api-protocol-compatibility.http) | 协议兼容：OpenAI 格式 vs Anthropic 格式                                                    | 4      | ⭐⭐   |
+| 07  | [07-prompt-engineering.http](../examples/http/07-prompt-engineering.http)                 | 提示词工程：Few-Shot、CoT、Self-Consistency、PAL、角色扮演                                      | 26     | ⭐⭐   |
+| 08  | [08-parameter-experiments.http](../examples/http/08-parameter-experiments.http)           | 参数调优：Temperature、Top-P、Penalties、Stream                                           | 15     | ⭐⭐⭐  |
+| 09  | [09-agent-patterns.http](../examples/http/09-agent-patterns.http)                         | Agent 设计模式：ReAct、Plan-and-Execute、Self-Reflection                                 | 8      | ⭐⭐⭐⭐ |
+|     | **合计**                                                                                    |                                                                                   | **97** |      |
 
 
 # 一、大语言模型基础
