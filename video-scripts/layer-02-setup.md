@@ -86,6 +86,59 @@ $env:PATH -split ';' | Where-Object { $_ -like '*claude*' }
 
 连接成功后，在 IDE 中选中代码，Claude Code 即可获取上下文进行对话。
 
+# 启动前设置
+
+如果你不是 Claude 订阅用户（订阅用户也要设置代理输入 /login 才能登录使用），那你只能用国内的模型，或者 OpenRouter 这种。下面就是智谱的环境变量设置，如果嫌环境变量每次都要设置很麻烦，可以直接在 `~/.claude/settings.json` 文件中设置。注意，这里的 API_KEY 需要替换成你自己的 API_KEY。
+
+```json
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://open.bigmodel.cn/api/anthropic",
+    "ANTHROPIC_AUTH_TOKEN": "your-zhipu-api-key-here"
+  }
+}
+```
+
+**PowerShell:**
+```powershell
+# API 配置（请替换为你的实际值）
+$env:ANTHROPIC_BASE_URL="https://open.bigmodel.cn/api/anthropic"
+$env:ANTHROPIC_AUTH_TOKEN="your-zhipu-api-key-here"
+
+# API 超时设置（毫秒）
+$env:API_TIMEOUT_MS="3000000"
+
+# 禁用非必要流量（推荐）
+$env:CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
+
+# 模型映射
+$env:ANTHROPIC_MODEL="glm-5"
+$env:ANTHROPIC_SMALL_FAST_MODEL="glm-5"
+$env:ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5"
+$env:ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5"
+$env:ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-5"
+```
+
+**Bash/Zsh (类 Unix 系统):**
+```bash
+# API 配置（请替换为你的实际值）
+export ANTHROPIC_BASE_URL="https://open.bigmodel.cn/api/anthropic"
+export ANTHROPIC_AUTH_TOKEN="your-zhipu-api-key-here"
+
+# API 超时设置（毫秒）
+export API_TIMEOUT_MS="3000000"
+
+# 禁用非必要流量（推荐）
+export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
+
+# 模型映射
+export ANTHROPIC_MODEL="glm-5"
+export ANTHROPIC_SMALL_FAST_MODEL="glm-5"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-5"
+```
+
 # /init —— 让 Claude 认识你的项目
 
 安装好 Claude Code 后，第一件事就是让它理解你的项目。`/init` 命令会扫描整个 codebase，自动生成一份 CLAUDE.md 文件。

@@ -302,7 +302,7 @@ Claude Code 有严重的 BUG，不要开太久，或者对话太长，偶尔会�
 
 **GitHub**: `https://github.com/LYiHub/Cyber-Zen-Master`
 
-林亦（young1lin）出品的哲理问答多步推理项目。基于 DeepSeek 实现，核心是**思维链（Chain of Thought）多步推理**的工作流设计。
+林亦（LinYi）出品的哲理问答多步推理项目。基于 DeepSeek 实现，核心是**思维链（Chain of Thought）多步推理**的工作流设计。
 
 **核心特性**：
 

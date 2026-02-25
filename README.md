@@ -143,7 +143,7 @@ cc-tutorial/
 **PowerShell:**
 ```powershell
 # API 配置（请替换为你的实际值）
-$env:ANTHROPIC_BASE_URL="http://192.168.10.24:3456"
+$env:ANTHROPIC_BASE_URL="http://192.168.1.2:3456"
 $env:ANTHROPIC_AUTH_TOKEN="sk-your-api-key-here"
 
 # 禁用非必要流量（推荐）
@@ -160,7 +160,7 @@ $env:ANTHROPIC_SMALL_FAST_MODEL="gemini-3-flash-preview"
 **Bash/Zsh (类 Unix 系统):**
 ```bash
 # API 配置（请替换为你的实际值）
-export ANTHROPIC_BASE_URL="http://192.168.10.24:3456"
+export ANTHROPIC_BASE_URL="http://192.168.1.2:3456"
 export ANTHROPIC_AUTH_TOKEN="sk-your-api-key-here"
 
 # 禁用非必要流量（推荐）
