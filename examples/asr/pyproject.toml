@@ -1,0 +1,48 @@
+[project]
+name = "whisper-subtitle"
+version = "0.3.0"
+description = "实时语音识别悬浮字幕（SenseVoice 双语引擎）"
+requires-python = ">=3.11"
+dependencies = [
+    # PyTorch CUDA 12.4（兼容驱动 CUDA 12.9）
+    # 通过下方 [tool.uv.sources] 从 PyTorch 官方 whl 源安装
+    "torch>=2.4.0",
+
+    # 核心推理 - FunASR 流式 ASR
+    "funasr>=1.1.3",
+    "modelscope",
+
+    # VAD 断句（备选，FunASR 自带 VAD）
+    "silero-vad>=5.0",
+
+    # 麦克风采集
+    "sounddevice>=0.4.6",
+
+    # 扬声器回环采集（WASAPI loopback，Windows 专用）
+    "PyAudioWPatch>=0.2.12",
+
+    # 回环音频重采样（48kHz → 16kHz）
+    "scipy>=1.11.0",
+
+    # 基础
+    "numpy>=1.24.0",
+]
+
+# ── PyTorch CUDA 源 ────────────────────────────────────────────────────────────
+# uv 默认从 PyPI 安装 CPU 版 torch，这里强制走 PyTorch 官方 CUDA whl 源
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu124" }]
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url  = "https://download.pytorch.org/whl/cu124"
+explicit = true   # 只有显式声明的包才从这个源拉，其余仍走 PyPI
+
+# ── 国内镜像加速（pip/uv fallback）────────────────────────────────────────────
+# 使用方法：uv sync 时自动使用清华源
+# 或手动设置：export UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+
+[[tool.uv.index]]
+name = "tuna"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+
