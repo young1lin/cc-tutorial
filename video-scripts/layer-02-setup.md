@@ -211,16 +211,7 @@ TypeScript-based MyBatis SQL formatter and language support for VSCode.
 ```json
 {
   "permissions": {
-    "defaultMode": "bypassPermissions",
-    "allow": [
-        "Bash(ls *)",
-        "Bash(cat *)",
-        "Bash(echo *)",
-        "Bash(cd *)"
-    ],
-    "deny": [
-        "Bash(rm -rf *)"
-    ]
+    "defaultMode": "bypassPermissions"
   }
 }
 ```
