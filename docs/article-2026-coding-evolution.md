@@ -4,7 +4,7 @@
 
 ![19xx](./19xx.webp)
 
-从 ChatGPT 3.5 刚出来，到现在已经过去了接近三年，这三年出了很多模型和很多编程助手。从最开始的 GPT-3.5，到 GPT-4，GPT-4o（omni 全模态），GPT-5（2025 年 8 月发布），还有 Claude Haiku 4.5、Claude Sonnet 4.5、Claude Opus 4.6（Haiku、Sonnet、Opus 三个档次）。还有国产的大模型 DeepSeek、GLM、MiniMax、QWen、豆包（不要在编程领域使用豆包）。
+从 ChatGPT 3.5 刚出来，到现在已经过去了接近三年，这三年出了很多模型和很多编程助手。从最开始的 GPT-3.5，到 GPT-4，GPT-4o（omni 全模态），GPT-5（2025 年 8 月发布），还有 Claude Haiku 4.5、Claude Sonnet 4.6、Claude Opus 4.6（Haiku、Sonnet、Opus 三个档次）。还有国产的大模型 DeepSeek、GLM、MiniMax、QWen、豆包（不要在编程领域使用豆包）。
 
 编程助手 Cursor 依然坚挺，Open Code、Codex、Kilo Code、Cline、Copilot、Trae 等等都还行，但如果你要评选个最佳的、最好的编程助手，截至 2026 年初，Claude Code 在综合体验上领先。
 
@@ -20,9 +20,9 @@
 - `uv run xx.py` 一条命令搞定，虚拟环境自动创建、自动激活
 - Python 版本固定在项目里，再也不用担心"你机器上能跑、我机器上报错"——官方库删个函数、换个 API，版本不对就是一堆问题
 
-你明明可以用更好的工具，却选择停留在过去。同样的，AI 辅助编程不是要替代你写代码的能力，而是用更高效的方式解决问题，是工程师，而不是码农（Coder），工程师（Engineer）是来解决问题的。
+你明明可以用更好的工具，却选择停留在过去。同样的，AI 辅助编程不是要替代你写代码的能力，而是用更高效的方式解决问题，让你成为一个真正的工程师（Engineer），而不是码农（Coder）。
 
-古法学习方式，需要你从零开始，从枯燥的公式、概念开始学习，上来就要你懂各种各样的概念，然后按照书上的内容，看了之后，再去做题巩固下学到的知识。这种学习方式没什么大问题，但是很多时候，如果内容过于复杂，会让人产生退却的想法，从而放弃学习，因为没有获得及时的正向反馈。
+古法学习方式，需要你从零开始，自下而上，从枯燥的公式、概念开始学习，上来就要你懂各种各样的概念，然后按照书上的内容，看了之后，再去做题巩固下学到的知识。这种学习方式没什么大问题，但是很多时候，如果内容过于复杂，会让人产生退却的想法，从而放弃学习，因为没有获得及时的正向反馈。
 
 举个几乎每个程序员都经历过的痛苦：**学动态规划**。
 
@@ -40,10 +40,10 @@
 你可以告诉 AI："我想理解 0-1 背包问题：3 个物品，重量 [2,3,4]，价值 [3,4,5]，背包容量 5，怎么选价值最大？"
 
 AI 会引导你：
-1. 先理解状态定义：dp[i][w] 是什么意思？（前 i 个物品，容量 w 时的最大价值）
+1. 先理解状态定义：`dp[i][w]`是什么意思？（前 i 个物品，容量 w 时的最大价值）
 2. 对于第 i 个物品，你有什么选择？（选，或不选）
-3. 不选怎么办？dp[i][w] = dp[i-1][w]，继承上一行的结果
-4. 选呢？前提是装得下，dp[i][w] = dp[i-1][w-weight[i]] + value[i]
+3. 不选怎么办？`dp[i][w] = dp[i-1][w]`，继承上一行的结果
+4. 选呢？前提是装得下，`dp[i][w] = dp[i-1][w-weight[i]] + value[i]`
 5. 取最大值，为什么是这两个比较？（因为你要么选要么不选，没有第三种可能）
 6. 写成代码，手动填一个 dp 表格验证
 
@@ -263,7 +263,7 @@ Claude Opus 4.5 在 SWE-Bench Verified 上首次突破 80% 行业门槛（80.9%�
 
 另外，如果你是资深开发者，你会惊叹 AI 带来的生产力的提升，如果是初级开发，会觉得 AI 写的代码一点不懂，架构不会，底层不会，反而还降低生产力。现阶段 AI Coding 并不会模型资深和普通开发者的差距，而是让能者更强，弱者更弱。
 
-Cursor 已经全面拥抱 Claude Code 了，SubAgent、Skills、Rule、CLAUDE.md 等等，![Cursor 拥抱 Claude Code](../research/evidence/Cursor.png)
+Cursor 已经全面拥抱 Claude Code，其中 Claude Code 的 Plugin、SubAgent、Skills、Rule、CLAUDE.md 等等 Cursor 全部“兼容“。![Cursor 拥抱 Claude Code](../research/evidence/Cursor.png)
 
 ## Not a Coder, but an Engineer
 
