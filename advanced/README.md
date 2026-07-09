@@ -18,6 +18,7 @@
 
 - [Skill 高级用法](skill.md)
 - [Command 高级用法](command.md)
+- [斜杠命令全景（交互命令速查）](SLASH_COMMANDS_GUIDE.md)
 - [Agents 与 Sub-agents](agents.md)
 - [Token 与缓存](token.md)
 - [LangChain 与 RAG](langchain-rag.md)
