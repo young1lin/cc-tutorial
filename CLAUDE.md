@@ -13,29 +13,6 @@ A comprehensive Claude Code tutorial project for video script production. Contai
 - `research/` - Completed research materials (Anthropic official, Boris Cherny, Andrew Ng, Addy Osmani)
 - `.claude/commands/` - Custom slash commands (`/commit-push`)
 
-## Vector Knowledge Base
-
-Located at `vector-kb-mcp/`. Uses `paraphrase-multilingual-MiniLM-L12-v2` (384-dim). ~850 MB memory footprint.
-
-```bash
-# CLI usage
-cd vector-kb-mcp
-uv run python -m src.cli add "text" "source"
-uv run python -m src.cli search "query"
-
-# MCP server
-uv run python -m src.cli mcp
-```
-
-In Python, always use the context manager to ensure resource cleanup:
-```python
-with VectorStore() as store:
-    store.add_text("content", source="source")
-    results = store.search("query")
-```
-
-Do NOT create VectorStore instances in a loop. GPU memory auto-cleans but system memory retains ~350 MB model cache.
-
 ## Content Authoring Rules
 
 ### Tutorial Chapters
