@@ -2,9 +2,8 @@
 # 实用场景示例
 # ============================================
 # 说明：展示 LLM 在实际工作中的应用场景
-# 目的：理解如何将 LLM 集成到实际业务流程
 # 模型：GLM-4.7
-# 场景：代码审查、摘要、情感分析、翻译、数据提取
+# 场景：代码审查、摘要、情感分析、翻译、数据提取、内容生成
 # ============================================
 
 # 环境变量
@@ -12,13 +11,11 @@
 @GLM_BEARER_TOKEN = Bearer {{$dotenv GLM_API_KEY}}
 
 # ============================================
-# 1. 代码审查与重构
+# 1. 代码审查与测试
 # ============================================
 
 ### [场景 1.1] 代码审查 - 发现 Bug
-# 说明：使用 LLM 审查代码，发现潜在问题
-# 场景：Python 代码审查
-# 预期：识别除零错误、类型错误等
+# 场景：Python 代码审查，识别除零错误、KeyError 等
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -40,60 +37,8 @@ Authorization: {{GLM_BEARER_TOKEN}}
   "temperature": 0
 }
 
-### [场景 1.2] 代码重构 - 提升可读性
-# 说明：使用 LLM 重构代码，提升质量
-# 场景：重构混乱的代码
-# 预期：返回重构后的代码，并说明改进点
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个代码重构专家。请重构以下代码，要求：\n1. 提升可读性\n2. 遵循最佳实践\n3. 添加必要的类型注解和文档字符串\n4. 改进错误处理\n\n请先给出重构后的代码，再说明改进点。"
-    },
-    {
-      "role": "user",
-      "content": "请重构以下 JavaScript 代码：\n\n```javascript\nfunction f(a,b,c){\n  var x=a+b\n  if(x>c){return x*2}\n  else{return c-x}\n}\n\nvar d=[1,2,3,4,5]\nvar r=[]\nfor(var i=0;i<d.length;i++){\n  if(d[i]%2==0){r.push(d[i]*3)}\n}\nconsole.log(r)\n```"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-### [场景 1.3] 代码解释 - 理解复杂逻辑
-# 说明：使用 LLM 解释复杂代码的工作原理
-# 场景：理解遗留代码
-# 预期：逐步解释代码逻辑
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个代码导师。请用通俗易懂的语言解释代码的工作原理，包括：\n1. 整体功能说明\n2. 逐步执行流程\n3. 关键算法或技巧\n4. 使用示例"
-    },
-    {
-      "role": "user",
-      "content": "请解释以下 Python 代码的工作原理：\n\n```python\ndef memoize(func):\n    cache = {}\n    def wrapper(*args):\n        if args not in cache:\n            cache[args] = func(*args)\n        return cache[args]\n    return wrapper\n\n@memoize\ndef fibonacci(n):\n    if n < 2:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n```"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0.3
-}
-
-### [场景 1.4] 单元测试生成
-# 说明：使用 LLM 为代码生成单元测试
-# 场景：测试驱动开发
-# 预期：返回完整的测试用例
+### [场景 1.2] 单元测试生成
+# 场景：为给定函数生成 pytest 测试（正常/边界/异常）
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -120,9 +65,6 @@ Authorization: {{GLM_BEARER_TOKEN}}
 # ============================================
 
 ### [场景 2.1] 新闻摘要 - 提取要点
-# 说明：将长新闻压缩为关键要点
-# 场景：新闻聚合、信息提取
-# 预期：返回 3-5 条要点
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -144,35 +86,7 @@ Authorization: {{GLM_BEARER_TOKEN}}
   "temperature": 0
 }
 
-### [场景 2.2] 技术文档摘要 - 结构化输出
-# 说明：将技术文档总结为结构化摘要
-# 场景：技术调研、文档管理
-# 预期：返回结构化的摘要（背景、方法、结果、结论）
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个技术文档分析师。请将文档总结为结构化摘要，包含：\n1. 背景（1-2 句）\n2. 核心方法（2-3 句）\n3. 主要结果（2-3 句）\n4. 关键结论（1 句）"
-    },
-    {
-      "role": "user",
-      "content": "请总结以下技术文档：\n\nReAct（Reasoning and Acting）是一种将推理和行动结合的 Agent 框架。传统的 Agent 要么只进行推理，要么只执行行动，而 ReAct 通过交替进行思考（Thought）、行动（Action）和观察（Observation），实现了更智能的问题解决。实验表明，ReAct 在多个基准测试中优于传统方法。在 HotpotQA 问答任务中，ReAct 的准确率达到 34.5%，比 Chain-of-Thought 提升 7%。在 ALFWorld 游戏任务中，ReAct 的成功率为 75%，比基线方法提升 25%。研究表明，通过显式的推理步骤，模型能够更好地处理复杂任务。ReAct 已被广泛应用于 LangChain 等 Agent 框架中。"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-### [场景 2.3] 会议记录摘要 - 行动项提取
-# 说明：从会议记录中提取行动项
-# 场景：会议管理、项目协作
-# 预期：返回待办事项列表
+### [场景 2.2] 会议记录 - 行动项提取
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -198,35 +112,7 @@ Authorization: {{GLM_BEARER_TOKEN}}
 # 3. 情感分析
 # ============================================
 
-### [场景 3.1] 用户评论情感分析 - 简单分类
-# 说明：分析用户评论的情感倾向
-# 场景：电商评论、社交媒体监控
-# 预期：返回情感标签（正面/负面/中性）
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个情感分析助手。请分析评论的情感倾向，只返回以下格式：\n情感：正面/负面/中性"
-    },
-    {
-      "role": "user",
-      "content": "这家餐厅的菜品质量不错，服务态度也很好，但价格有点贵，性价比一般。"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-### [场景 3.2] 细粒度情感分析 - 多维度评分
-# 说明：对评论的多个方面进行情感分析
-# 场景：产品评价、服务质量监控
-# 预期：返回多维度评分
+### [场景 3.1] 细粒度情感分析 - 多维度 JSON 评分
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -248,64 +134,11 @@ Authorization: {{GLM_BEARER_TOKEN}}
   "temperature": 0
 }
 
-### [场景 3.3] 批量情感分析 - 趋势分析
-# 说明：批量分析多条评论，输出整体趋势
-# 场景：舆情监控、品牌管理
-# 预期：返回统计结果
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个舆情分析师。请分析以下评论的整体趋势，返回：\n1. 正面/负面/中性评论数量\n2. 主要正面反馈（2-3 条）\n3. 主要负面反馈（2-3 条）\n4. 总体评价"
-    },
-    {
-      "role": "user",
-      "content": "请分析以下用户评论：\n\n1. 这家店的服务真好，下次还会来！\n2. 价格太贵了，不值这个价。\n3. 菜品一般，没有特色。\n4. 环境很棒，适合约会。\n5. 等了半小时才上菜，体验很差。\n6. 味道不错，分量也足。\n7. 服务员态度不好，不推荐。\n8. 性价比很高，值得推荐！"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
 # ============================================
 # 4. 文本翻译
 # ============================================
 
-### [场景 4.1] 基础翻译 - 中译英
-# 说明：将中文翻译为英文
-# 场景：文档翻译、国际化
-# 预期：返回准确、流畅的译文
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个专业翻译。请将中文准确、流畅地翻译为英文，保持原文的语气和风格。"
-    },
-    {
-      "role": "user",
-      "content": "请将以下中文翻译为英文：\n\n人工智能正在深刻改变我们的生活方式。从智能手机到自动驾驶汽车，AI 技术无处不在。然而，我们也需要关注 AI 带来的伦理和安全问题。"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0.3
-}
-
-### [场景 4.2] 专业术语翻译 - 技术文档
-# 说明：翻译包含专业术语的技术文档
-# 场景：技术文档本地化
-# 预期：准确翻译术语，保持技术准确性
+### [场景 4.1] 专业术语翻译 - 技术文档
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -327,39 +160,11 @@ Authorization: {{GLM_BEARER_TOKEN}}
   "temperature": 0
 }
 
-### [场景 4.3] 风格适配翻译 - 保留文化语境
-# 说明：翻译时考虑文化差异和语境
-# 场景：营销文案、文学作品翻译
-# 预期：译文符合目标语言的表达习惯
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个文化适配翻译专家。请翻译时考虑文化差异，必要时调整表达方式以符合目标语言习惯。对于文化特定概念，提供简短解释。"
-    },
-    {
-      "role": "user",
-      "content": "请将以下中文翻译为英文，注意文化适配：\n\n春节是中国最重要的传统节日，家家户户都会贴春联、吃团圆饭、放鞭炮。长辈会给小孩发压岁钱，寓意平安吉祥。"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0.3
-}
-
 # ============================================
 # 5. 数据提取与结构化
 # ============================================
 
 ### [场景 5.1] 实体提取 - 命名实体识别
-# 说明：从文本中提取人名、地名、机构名等
-# 场景：信息抽取、知识图谱构建
-# 预期：返回结构化的实体列表
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -381,35 +186,7 @@ Authorization: {{GLM_BEARER_TOKEN}}
   "temperature": 0
 }
 
-### [场景 5.2] 表格数据提取 - 从文本生成表格
-# 说明：将非结构化文本转换为表格
-# 场景：数据整理、报表生成
-# 预期：返回 Markdown 表格
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个数据整理助手。请将文本中的信息整理为 Markdown 表格。"
-    },
-    {
-      "role": "user",
-      "content": "请将以下信息整理为表格：\n\niPhone 15 售价 5999 元，内存 128GB，颜色黑色。\niPhone 15 Pro 售价 7999 元，内存 256GB，颜色白色。\niPhone 15 Pro Max 售价 9999 元，内存 512GB，颜色蓝色。"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0
-}
-
-### [场景 5.3] 关键信息提取 - 简历解析
-# 说明：从简历中提取关键信息
-# 场景：招聘管理、候选人筛选
-# 预期：返回结构化的简历信息
+### [场景 5.2] 简历解析 - 关键信息提取
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -436,9 +213,6 @@ Authorization: {{GLM_BEARER_TOKEN}}
 # ============================================
 
 ### [场景 6.1] 邮件撰写 - 商务邮件
-# 说明：根据要点生成正式的商务邮件
-# 场景：商务沟通、客户关系
-# 预期：返回格式规范的邮件
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -460,116 +234,21 @@ Authorization: {{GLM_BEARER_TOKEN}}
   "temperature": 0.3
 }
 
-### [场景 6.2] 社交媒体文案 - 产品推广
-# 说明：生成吸引人的社交媒体文案
-# 场景：营销推广、品牌宣传
-# 预期：返回简短、有吸引力的文案
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个社交媒体文案专家。请生成简短、有吸引力的文案，要求：\n1. 长度不超过 100 字\n2. 包含 1-2 个 emoji\n3. 有明确的行动号召（CTA）"
-    },
-    {
-      "role": "user",
-      "content": "为新款智能手表撰写推广文案，卖点：\n- 7 天续航\n- 健康监测\n- 防水设计\n- 限时优惠 500 元"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0.7
-}
-
-### [场景 6.3] FAQ 生成 - 客户服务
-# 说明：根据产品特性生成常见问题解答
-# 场景：客户服务、产品文档
-# 预期：返回结构化的 FAQ
-POST {{GLM_BASE_URL}} HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: {{GLM_BEARER_TOKEN}}
-
-{
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个客户服务专家。请根据产品信息，生成 5-8 条常见问题及解答，格式：\n\nQ: 问题\nA: 回答"
-    },
-    {
-      "role": "user",
-      "content": "请为以下产品生成 FAQ：\n\n产品：云存储服务\n特点：\n- 免费 10GB 空间\n- 付费版 100GB，月费 9.9 元\n- 支持多设备同步\n- 文件自动备份\n- 分享链接功能"
-    }
-  ],
-  "model": "GLM-4.7",
-  "stream": false,
-  "temperature": 0.3
-}
-
 # ============================================
 # 总结
 # ============================================
 #
-# 实用场景应用指南：
+# 实用场景速查：
 #
-# 1. 代码审查与重构
-#    - 发现 Bug、性能问题、安全漏洞
-#    - 提升代码可读性和可维护性
-#    - 生成单元测试
-#    - 推荐配置：temperature=0, max_tokens=1000
+# 代码审查：temperature=0, 详细 system prompt 列明检查维度
+# 文本摘要：temperature=0, max_tokens=300
+# 情感分析：temperature=0, JSON 结构化输出
+# 技术翻译：temperature=0, 保留专业术语原文
+# 数据提取：temperature=0, 提供 JSON Schema
+# 内容生成：temperature=0.3, 明确格式要求
 #
-# 2. 文本摘要
-#    - 新闻摘要、技术文档摘要
-#    - 会议记录行动项提取
-#    - 推荐配置：temperature=0, max_tokens=300
-#
-# 3. 情感分析
-#    - 用户评论分析、舆情监控
-#    - 多维度情感评分
-#    - 批量分析趋势
-#    - 推荐配置：temperature=0, 结构化输出
-#
-# 4. 文本翻译
-#    - 基础翻译、专业术语翻译
-#    - 文化适配、风格保留
-#    - 推荐配置：temperature=0.3, max_tokens=1000
-#
-# 5. 数据提取与结构化
-#    - 实体提取（NER）
-#    - 表格数据提取
-#    - 简历解析、信息抽取
-#    - 推荐配置：temperature=0, JSON 输出
-#
-# 6. 内容生成
-#    - 商务邮件、社交媒体文案
-#    - FAQ、产品描述
-#    - 推荐配置：temperature=0.3-0.7, max_tokens=500
-#
-# 集成建议：
-# - 使用 Function Calling 集成业务系统
-# - 设置合理的 max_tokens 控制成本
-# - 对关键业务使用 temperature=0 提高一致性
-# - 添加后处理验证（如 JSON Schema 验证）
-# - 记录失败案例，迭代优化提示词
-#
-# 成本优化：
-# - 缓存常见问题的回答
-# - 批量处理相似任务
-# - 使用高效模型（GLM-4.7）
-# - 精简提示词，去除冗余信息
-#
-# 质量保障：
-# - 人工审核关键输出
-# - A/B 测试不同提示词
-# - 收集用户反馈，持续改进
-# - 设置输出质量监控指标
-#
-# 参考资料：
-# - LangChain Use Cases: https://python.langchain.com/docs/use_cases/
-# - OpenAI Cookbook: https://cookbook.openai.com/
-# - Prompt Engineering for Developers: https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/
+# 通用建议：
+# - 用 temperature=0 提高一致性
+# - 用 JSON Schema 约束输出格式
+# - 精简 system prompt，去除冗余
 # ============================================
