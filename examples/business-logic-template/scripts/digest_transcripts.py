@@ -62,6 +62,11 @@ def _text_of(content):
     return ""
 
 
+def _entry_text(data):
+    """Plain text of a transcript entry's message content (empty if absent)."""
+    return _text_of(data.get("message", {}).get("content", ""))
+
+
 def _is_own_sync_session(lines):
     """True if the session's first user message is an automated sync prompt."""
     for raw in lines[:20]:
@@ -70,7 +75,7 @@ def _is_own_sync_session(lines):
         except ValueError:
             continue
         if data.get("type") == "user":
-            text = _text_of(data.get("message", {}).get("content", ""))
+            text = _entry_text(data)
             return text.lstrip().startswith(SYNC_MARKERS)
     return False
 
@@ -88,7 +93,7 @@ def _digest_lines(lines):
         kind = data.get("type", "")
         if kind not in ("user", "assistant"):
             continue
-        text = _text_of(data.get("message", {}).get("content", "")).strip()
+        text = _entry_text(data).strip()
         if not text or text.startswith(SKIP_PREFIXES):
             continue
         if len(text) > MAX_MESSAGE_CHARS:
