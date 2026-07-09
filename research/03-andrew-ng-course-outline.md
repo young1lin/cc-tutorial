@@ -1,5 +1,5 @@
 ---
-title: Claude Code: A Highly Agentic Coding Assistant (Course Outline)
+title: Claude Code-A Highly Agentic Coding Assistant (Course Outline)
 url: https://www.deeplearning.ai/short-courses/claude-code-a-highly-agentic-coding-assistant/
 author: Elie Schoppik (Head of Technical Education at Anthropic), Andrew Ng (DeepLearning.AI)
 date: 2025-08-05

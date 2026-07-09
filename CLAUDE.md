@@ -143,6 +143,14 @@ Each research file should include YAML front matter with `title`, `author`, `dat
 - `research/06-anthropic-internal-ai-transforming-work.md` - Anthropic internal AI research
 - `research/07-hwchase17-react-prompt.md` - ReAct prompt template (LangChain)
 - `research/08-lsp-language-server-protocol.md` - LSP deep dive
+- `research/09-prompt-caching-and-kv-cache.md` - Prompt caching and KV cache mechanism
+- `research/10-langchain-rag-cache-shape.md` - LangChain RAG prompt structure and cache invalidation
+- `research/11-claude-code-subagents.md` - Claude Code subagents (`.claude/agents/`)
+- `research/12-langgraph-customer-support-agents.md` - LangGraph customer-support agent pattern
+- `research/13-claude-code-skills-lessons.md` - Anthropic internal skills: 9 categories and authoring tips
+- `research/14-claude-code-loops-getting-started.md` - Loops: turn-based, `/goal`, `/loop`, `/schedule`
+- `research/15-claude-code-dynamic-workflows.md` - Dynamic multi-agent workflows (trigger `ultracode`)
+- `research/16-claude-code-agent-teams.md` - Agent Teams: lead + teammates, inter-agent messaging (experimental)
 
 ## Custom Commands
 

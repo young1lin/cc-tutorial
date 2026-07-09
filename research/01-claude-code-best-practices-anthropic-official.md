@@ -1,5 +1,5 @@
 ---
-title: Claude Code: Best practices for agentic coding
+title: Claude Code-Best practices for agentic coding
 url: https://www.anthropic.com/engineering/claude-code-best-practices
 author: Boris Cherny and Anthropic Engineering Team
 date: 2025-01

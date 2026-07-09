@@ -1,5 +1,11 @@
 # Claude Code Advanced
 
+添加官方的插件市场，并且安装 examples 内容，这里有 skill-creator 以及所有高级内容处理
+
+```
+/plugin marketplace add anthropics/claude-code
+```
+
 **[Tutorial perspective]** 这一套用法的目标不是“让 Claude 更聪明”，而是砍掉重复探索。每次都开 Explore Agent 扫全仓库，像让人每天重新背一次地图。浪费上下文。也浪费时间。
 
 ## 导航
@@ -9,6 +15,7 @@
 - [Agents 与 Sub-agents](agents.md)
 - [Token 与缓存](token.md)
 - [LangChain 与 RAG](langchain-rag.md)
+- [Superpowers 插件详解](SUPERPOWERS_GUIDE.md)
 
 ## 核心思路
 

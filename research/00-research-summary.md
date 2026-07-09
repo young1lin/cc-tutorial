@@ -4,11 +4,16 @@ url: N/A (Research Summary)
 author: Research Compilation
 date: 2026-01-10
 tier: T4
-why_important: |
+why_important: |-
   这是对 Claude Code 最佳实践、教程和专家建议的全面研究总结。
   汇集了官方文档、知名专家（Boris Cherny、Andrew Ng、Addy Osmani、Ethan Mollick、Zvi Mowshowitz）的建议，
   以及关于架构模式（DDD、六边形架构、洋葱架构）的实践指南。
-topics: [summary, research, best-practices, claude-code, compilation]
+topics:
+  - summary
+  - research
+  - best-practices
+  - claude-code
+  - compilation
 ---
 
 # Claude Code 最佳实践研究总结
@@ -675,7 +680,35 @@ def test_user_login():
    - 来源：https://langchain-ai.github.io/langgraph/tutorials/customer-support/customer-support/
    - 内容：LangGraph 的状态化工作流、handoffs 在客服场景下的适用性、LangChain 与 LangGraph 的分工
 
-13. ✅ **00-research-summary.md**（本文档）
+13. ✅ **13-claude-code-skills-lessons.md**
+   - Claude Code Skills 实战经验（T1）
+   - 作者：Thariq Shihipar（Anthropic）
+   - 日期：2026-06-03
+   - 来源：https://claude.com/blog/lessons-from-building-claude-code-how-we-use-skills
+   - 内容：Anthropic 内部数百个 skills 的九大分类、写 skill 九大技巧（gotchas/渐进式披露/按需 hook 等）、分发与 marketplace、度量
+
+14. ✅ **14-claude-code-loops-getting-started.md**
+   - Claude Code Loops 入门（T1）
+   - 作者：Delba de Oliveira, Michael Segner（Anthropic）
+   - 日期：2026-06-30
+   - 来源：https://claude.com/blog/getting-started-with-loops
+   - 内容：loops 定义、四种类型（turn-based / `/goal` / `/loop`+`/schedule` / proactive）、代码质量维护、token 管理、速查表
+
+15. ✅ **15-claude-code-dynamic-workflows.md**
+   - Claude Code Dynamic Workflows（T1）
+   - 作者：Thariq Shihipar, Sid Bidasaria（Anthropic）
+   - 日期：2026-06-02
+   - 来源：https://claude.com/blog/a-harness-for-every-task-dynamic-workflows-in-claude-code
+   - 内容：为什么需要 workflow（三种失败模式）、工作原理、dynamic vs static、六大模式、典型用例、何时不用、技巧
+
+16. ✅ **16-claude-code-agent-teams.md**
+   - Claude Code Agent Teams 官方文档编译（T1）
+   - 作者：Anthropic（Claude Code Docs）
+   - 日期：2026-07-04（截至 v2.1.199）
+   - 来源：https://code.claude.com/docs/en/agent-teams
+   - 内容：实验性多代理协作（lead + teammates 互发消息）、vs subagents、启用/显示模式/导航键/模型/计划审批/任务领取/Hooks/架构/权限/局限，附 Agent View 区分
+
+17. ✅ **00-research-summary.md**（本文档）
    - 研究总结和综合
 
 ### 待获取文档（中优先级）
@@ -811,6 +844,11 @@ def test_user_login():
 - [Plan Mode in Claude Code: When to Use It (and When Not To)](https://claude-ai.chat/blog/plan-mode-in-claude-code-when-to-use-it/)（社区来源 T3，非 Anthropic 官方；官方文档见 https://docs.anthropic.com/en/docs/claude-code/overview）
 - [Claude Code Documentation](https://claude.ai/code)
 - [How AI Is Transforming Work at Anthropic](https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic)（Anthropic 内部研究报告）
+- [Lessons from building Claude Code: How we use skills](https://claude.com/blog/lessons-from-building-claude-code-how-we-use-skills)（Thariq Shihipar, Anthropic, 2026-06-03）—— skill 的九大分类与写作技巧
+- [Getting started with loops](https://claude.com/blog/getting-started-with-loops)（Delba de Oliveira, Michael Segner, Anthropic, 2026-06-30）—— `/goal`、`/loop`、`/schedule` 四种 loop 模式
+- [A harness for every task: dynamic workflows in Claude Code](https://claude.com/blog/a-harness-for-every-task-dynamic-workflows-in-claude-code)（Thariq Shihipar, Sid Bidasaria, Anthropic, 2026-06-02）—— 动态多 agent 编排（触发词 `ultracode`）
+- [Orchestrate teams of Claude Code sessions](https://code.claude.com/docs/en/agent-teams)（Anthropic 官方 Docs）—— Agent Teams：多实例协作，lead + teammates 直接通信
+- [Manage multiple agents with agent view](https://code.claude.com/docs/en/agent-view)（Anthropic 官方 Docs，research preview）—— Agent View：一屏派发管理多个独立后台会话（`claude agents`）
 
 ### 课程和教程
 - [Claude Code: A Highly Agentic Coding Assistant](https://www.deeplearning.ai/short-courses/claude-code-a-highly-agentic-coding-assistant/) (Andrew Ng & Elie Schoppik)
@@ -862,4 +900,4 @@ def test_user_login():
 
 **研究完成日期：** 2026-01-10
 **研究执行者：** Claude (Anthropic)
-**保存位置：** `C:\PythonProject\cc-tutorial\docs\research\`
+

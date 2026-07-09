@@ -4,3 +4,6 @@
 
 # Editor configs
 .obsidian/
+
+# Local git worktrees
+.claude/worktrees/
