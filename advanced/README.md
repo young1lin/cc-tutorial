@@ -16,6 +16,9 @@
 - [Token 与缓存](token.md)
 - [LangChain 与 RAG](langchain-rag.md)
 - [Superpowers 插件详解](SUPERPOWERS_GUIDE.md)
+- [Ralph Loop 插件详解](RALPH_LOOP_GUIDE.md)
+- [扩展机制全景](EXTENSIONS_OVERVIEW.md)
+- [记忆机制：原生 vs claude-mem](MEMORY_VS_CLAUDE_MEM.md)
 
 ## 核心思路
 
