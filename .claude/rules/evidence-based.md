@@ -1,108 +1,105 @@
 # Evidence-Based Content Rule
 
-This rule enforces rigorous evidence standards for all content created in this tutorial project.
-
 ## Core Principle
 
-**Every factual claim must be traceable to a verifiable source.** Opinions must be clearly distinguished from facts.
+If it is a fact, prove it.
+
+If you cannot prove it, stop calling it a fact.
+
+Opinion is allowed. Analysis is allowed. Prediction is allowed. Smuggling any of them in dressed as fact is not.
 
 ## Evidence Tiers
 
-| Tier | Name | Definition |
-|------|------|------------|
-| **T1** | Official Doctrine | Primary source from the tool/platform vendor (official docs, changelogs, engineering team blog posts) |
-| **T2** | Expert Practitioner | Published content from recognized practitioners (blogs, conference talks, courses, books) |
-| **T3** | Community Consensus | Widely repeated claim across multiple independent sources (requires 2+ citations) |
-| **T4** | Author Interpretation | Your own analysis, opinion, pedagogical framing, or prediction |
+- `T1`: primary material from the vendor, platform, or tool owner. Official docs. Changelogs. Engineering posts.
+- `T2`: recognized expert practitioner material. Books. Talks. Courses. Technical blogs with real standing.
+- `T3`: community consensus. Requires at least two independent sources.
+- `T4`: tutorial interpretation. Author judgment. Teaching framing. Prediction.
 
-## Citation Requirements
+## Hard Rules
 
-### T1 Citations (Official)
-```markdown
-According to [Anthropic's official documentation](URL) (Author/Team, YYYY-MM), ...
-```
+### 1. Every factual claim needs a trail
 
-### T2 Citations (Expert)
-```markdown
-Boris Cherny recommends ... ([Best Practices Guide](research/01-xxx.md), 2025-01)
-```
+Any statement about product behavior, feature existence, pricing, limits, benchmarks, statistics, chronology, or technical capability must be traceable to a source.
 
-### T3 Citations (Community)
-Must reference at least two independent sources:
-```markdown
-Multiple sources report that ... ([Source A](URL), [Source B](URL))
-```
+No source, no factual claim.
 
-### T4 Markers (Opinion)
-Must be explicitly prefixed:
-```markdown
-**[Author's analysis]** Based on our testing across 5 projects, we found that ...
-**[Tutorial perspective]** We recommend starting with Module 01 because ...
-```
+### 2. Strong claims need strong proof
 
-## Critical Thinking Requirements
+Words like `best`, `fastest`, `only`, `always`, `never`, `most powerful`, or anything else that tries to close the case require `T1` or `T2`.
 
-### Superlative and Absolute Claims
-Statements containing "best", "only", "always", "never", "fastest", "most powerful" require **T1 or T2 evidence**. If unavailable:
-1. Mark as T4 with explicit prefix
-2. Use hedging language ("in our experience", "based on available benchmarks")
+If that proof does not exist:
 
-**Bad:** "Claude Code is the best AI coding tool available."
-**Good:** "**[Tutorial perspective]** In our testing, Claude Code provided the most effective workflow for the use cases covered in this tutorial."
+- downgrade the statement to `T4`
+- mark it explicitly
+- narrow the wording until it stops pretending to be universal
 
-### Conflicting Expert Opinions
-When experts disagree, present **both positions with citations**:
-```markdown
-There are differing views on this approach:
-- Boris Cherny argues for X ([source](URL))
-- Addy Osmani suggests Y ([source](URL))
+### 3. Community repetition is not evidence unless it converges
 
-**[Tutorial perspective]** For this tutorial, we follow X because ...
-```
+If the claim rests on community chatter, forum wisdom, or repeated blog claims, treat it as `T3` and cite at least two independent sources.
 
-### Predictive Claims
-All predictions are **always T4**. Include:
-1. `**[Author's analysis]**` prefix
-2. Reasoning chain explaining the basis
+One echo chamber is still one source.
 
-## Research Directory Integration
+### 4. Predictions are never facts
 
-When encountering new claims that require evidence:
+Every forecast, projection, or forward-looking claim is `T4`.
 
-1. **Search existing research** in `research/` first
-2. **If no evidence exists**, either:
-   - Find and cite a credible source, save to `research/NN-descriptive-name.md`
-   - Mark as T4 with explicit marker
-3. **New research files** must include YAML front matter:
-   ```yaml
-   ---
-   title: "Source Title"
-   author: "Author Name"
-   date: "YYYY-MM-DD"
-   url: "https://original-source-url"
-   tier: T1 | T2 | T3
-   topics: [topic1, topic2]
-   ---
-   ```
-4. **Update** `research/00-research-summary.md` with a summary entry
+Mark it. Explain the reasoning. Do not write prophecy in the grammar of certainty.
 
-## Quick Reference
+### 5. Disagreement must be shown, not buried
 
-| Claim Type | Evidence Required |
-|------------|-------------------|
-| Performance/benchmark claims | T1 or T2 citation |
-| Feature existence claims | T1 citation |
-| Expert quotes | T2 citation |
-| Statistics/numerical data | T1-T3 citation |
-| Workflow recommendations | T4 marker sufficient |
-| Analogies/metaphors | T4 marker sufficient |
-| Predictions | T4 marker + reasoning |
+When credible sources disagree, surface the conflict first.
 
-## Verification Checklist
+Show both positions with citations. Then state the tutorial's judgment and why it takes that side.
 
-Before publishing any content:
-- [ ] All factual claims have citations or T4 markers
-- [ ] Superlative claims have T1/T2 support or are hedged
-- [ ] Conflicting opinions are presented fairly
-- [ ] New research files follow the standard format
-- [ ] Research summary is updated
+### 6. Interpretation must wear a label
+
+Use explicit markers for non-factual content:
+
+- `**[Tutorial perspective]**`
+- `**[Author's analysis]**`
+
+Do not rely on tone alone to imply subjectivity. Mark it.
+
+## Research Workflow
+
+### 1. Search before you add
+
+Check `research/` before creating a new note. Do not duplicate source work that already exists.
+
+### 2. Add new sources the right way
+
+If the source is new, create `research/NN-descriptive-name.md`.
+
+Every new research file must include YAML front matter with:
+
+- `title`
+- `author`
+- `date`
+- `url`
+- `tier`
+- `topics`
+
+### 3. Update the index
+
+If you add a research note, update `research/00-research-summary.md`.
+
+No orphan notes. No hidden evidence.
+
+## What Requires Evidence
+
+- feature existence or product behavior: `T1`
+- benchmarks and performance claims: `T1` or `T2`
+- expert recommendations or quoted guidance: `T2`
+- statistics, counts, and quantitative claims: `T1`, `T2`, or `T3`
+- workflow recommendations, teaching advice, and framing: `T4` is acceptable if clearly marked
+- predictions: always `T4`
+
+## Final Check
+
+Before publishing:
+
+- every factual claim has a source or gets cut
+- every opinion is marked or obviously framed as `T4`
+- every strong claim has evidence strong enough to carry the weight
+- every new research file follows the repository format
+- every new research file is reflected in `research/00-research-summary.md`

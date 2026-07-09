@@ -34,18 +34,18 @@ Follows conventional commits format:
 
 [optional body]
 
-Co-Authored-By: {Model Name} <noreply@anthropic.com>
+Co-Authored-By: {Model Identity}
 ```
 
 **重要**:
-- 模型名称使用当前会话的实际模型（从系统消息 "You are powered by the model XXX" 获取）
-- 邮箱始终使用 `noreply@anthropic.com`（工具是 Claude Code，属于 Anthropic）
+- 模型名称使用当前会话的实际模型
+- 根据当前终端区分署名格式，不要跨厂商混用身份
+- 不要猜测或伪造 OpenAI 邮箱
 
 **示例：**
-- `glm-5` → `Co-Authored-By: GLM-5 <noreply@anthropic.com>`
-- `claude-opus-4-6` → `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
-- `gpt-4o` → `Co-Authored-By: GPT-4o <noreply@anthropic.com>`
-- `deepseek-reasoner` → `Co-Authored-By: DeepSeek Reasoner <noreply@anthropic.com>`
+- `claude-opus-4-6` in Claude Code → `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
+- `gpt-5` in Codex → `Co-Authored-By: GPT-5 (Codex)`
+- `gpt-4o` in Codex → `Co-Authored-By: GPT-4o (Codex)`
 
 **Types:**
 - `feat` - New feature
@@ -102,12 +102,14 @@ The following patterns are automatically excluded:
 
 ## Steps to Execute
 
-1. **Identify current model** - Extract model name from system context (e.g., "You are powered by the model glm-5")
+1. **Identify current model and terminal** - Determine the actual model name and whether the session is running in Claude Code or Codex/OpenAI
 2. Run `git status --porcelain` to get list of changes
 3. Run `git diff --stat` to see change summary
 4. Filter out files matching exclusion patterns
 5. Run `git add` on remaining files
-6. Generate commit message based on changes, using the correct model name in Co-Authored-By
+6. Generate commit message based on changes, using the correct trailer format:
+   - Claude Code: `Co-Authored-By: <Model Name> <noreply@anthropic.com>`
+   - Codex/OpenAI: `Co-Authored-By: <Model Name> (Codex)`
 7. Run `git commit` with the message
 8. Run `git push` to remote
 
