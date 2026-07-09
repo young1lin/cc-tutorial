@@ -39,6 +39,8 @@ If the directory does not exist, say so and offer `/business-logic install`.
 | `sync [N]` | Sync the last N commits (default: all commits since the CHANGELOG hash). |
 | `capture` | Distill THIS conversation's requirement background / design intent / pitfalls into the affected unit docs, right now, in-session. |
 | `status` / `check` / `search <kw>` / `map [target]` / `explain <c>` / `api [unit]` / `diff` / `errors [unit]` | Same semantics as before, operating on the data dir. |
+| `doctor` | Run the deterministic anti-corruption gate on demand (size cap, secret scan, dead `source_packages`, structure, links, conflict markers, CHANGELOG rotation, UTF-8/BOM). Interactive sessions prompt per hard finding via `AskUserQuestion`; headless `claude -p` reports only. |
+| `reconcile` | Manual decay cleanup: runs the deterministic scanner (`scripts/reconcile_scan.py`) then ONE serial LLM reconcile pass (`prompts/reconcile.md`) to dedup sections, resolve contradictions against code, and split oversized docs. Run periodically (e.g. before a release) to prevent knowledge-base rot. |
 
 ## Install procedure (`/business-logic install [--global]`)
 
@@ -50,10 +52,10 @@ directory's parent parent (the plugin root).
 2. Create `<project>/.claude/business-logic/state/` (empty).
 3. Engine placement:
    - **project mode (default):** copy `<plugin>/scripts/auto_sync.py`,
-     `digest_transcripts.py`, `ensure_env_ignored.py`, `install_hooks.py`,
-     `.env.example`, `requirements.txt` to
-     `<project>/.claude/business-logic/scripts/`.
-   - **`--global` mode:** copy the same six files to
+     `anticorruption.py`, `reconcile_scan.py`, `digest_transcripts.py`,
+     `ensure_env_ignored.py`, `install_hooks.py`, `.env.example`,
+     `requirements.txt` to `<project>/.claude/business-logic/scripts/`.
+   - **`--global` mode:** copy the same eight files to
      `~/.claude/business-logic/bin/` instead (one shared engine for all
      projects; re-run `install --global` after plugin updates to refresh it).
 4. Copy `<plugin>/rules/explore-with-business-logic.md` to
@@ -87,6 +89,48 @@ Every `overview.md` contains, in order: Quick Index / Business Overview /
 API Entry Points / Core Flow (Mermaid) / Business Rules / Code Location /
 Database / Potential Pitfalls / Related Docs — plus the anchors
 `> last_verified_commit: <hash>` and `> source_packages:` at the top.
+
+## Anti-corruption gate
+
+Every per-push sync first runs a deterministic, zero-LLM gate
+(`scripts/anticorruption.py`):
+
+- **Hard** findings (a secret scanned in a committed doc, or a merge-conflict
+  marker) abort the sync round and write a masked `state/audit.md`. Secrets are
+  masked (`sk-***...***312`) before they ever touch disk; the raw value is
+  never logged.
+- **Soft** findings (oversize, broken links, dead `source_packages`, missing
+  sections, BOM/encoding) are written to `state/audit.md`; the sync proceeds.
+- Oversized docs are split in place during the same sync round. After repeated
+  `BL_MAX_DOC_BYTES`-split attempts that fail to converge, the gate stops
+  auto-splitting and nags in `state/audit.md`.
+
+`/business-logic doctor` is the human face of the gate; it runs the checks on
+demand and (in an interactive session) walks hard findings via `AskUserQuestion`.
+Thresholds live in `.env` and all have defaults.
+
+## Reconcile procedure (`/business-logic reconcile`)
+
+Manual escape hatch to reverse accumulated decay (duplicate sections,
+contradictions, bloat) from many digest merges. Run it periodically -- before a
+release, or monthly -- to keep the knowledge base from rotting. It is ONE serial
+pass; do not fan out parallel agents (reconciliation needs a global view, and
+concurrent edits to the same doc conflict).
+
+1. Run the deterministic scanner from the project root:
+   - project mode: `python .claude/business-logic/scripts/reconcile_scan.py`
+   - global mode: `python ~/.claude/business-logic/bin/reconcile_scan.py`
+
+   It writes `state/reconcile-candidates.md` (duplicate groups, oversized docs,
+   stale anchors).
+2. Follow `prompts/reconcile.md` as one serial pass: read the candidates report,
+   consolidate duplicates (keep the best wording, cross-reference the rest),
+   resolve contradictions against the current code (code wins), split oversized
+   docs into linked sub-docs, and append a `[reconcile]` CHANGELOG entry.
+3. Delete `state/reconcile-candidates.md` once consumed.
+
+Thresholds: stale-anchor cutoff via `BL_RECONCILE_STALE_COMMITS` (default 50);
+oversized via `BL_MAX_DOC_BYTES`.
 
 ## Fallback strategy
 

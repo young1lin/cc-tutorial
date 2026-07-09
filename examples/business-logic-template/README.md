@@ -24,6 +24,14 @@ This engine repo contains no project data and no secrets.
   conversation into the docs without waiting for a push.
 - Doc updates from a `pre-push` sync land after that push finishes (the
   hook is async); they ride the next push.
+- Every sync first runs a deterministic anti-corruption gate: it aborts on
+  secrets or merge-conflict markers (masked in `state/audit.md`), prunes
+  CHANGELOG, and splits oversized docs in place. Thresholds are `.env` vars
+  with defaults. `/business-logic doctor` runs the gate on demand.
+- `/business-logic reconcile` is the manual decay cleanup: a deterministic scan
+  (`scripts/reconcile_scan.py`) finds duplicate sections, oversized docs, and
+  stale anchors, then one serial LLM pass (`prompts/reconcile.md`) dedups and
+  resolves contradictions. Run it periodically to prevent knowledge-base rot.
 
 ## Install
 
@@ -89,6 +97,8 @@ projects if you use one provider).
 
 ```
 python tests/test_digest.py
+python tests/test_anticorruption.py
+python tests/test_reconcile_scan.py
 python tests/test_lock.py
 python tests/test_sync_flow.py
 python tests/test_install.py

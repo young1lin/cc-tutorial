@@ -38,6 +38,7 @@ from claude_agent_sdk import ClaudeAgentOptions, query
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ensure_env_ignored  # noqa: E402
 import digest_transcripts  # noqa: E402
+import anticorruption  # noqa: E402
 
 
 def find_git_root(start):
@@ -462,7 +463,7 @@ def _get_changelog_fingerprint():
         return ""
 
 
-async def run_sync(commit_count, digest_path, max_retries=3):
+async def run_sync(commit_count, digest_path, max_retries=3, split_directive=None):
     """Run /<skill> sync using claude-agent-sdk, with rate-limit retry."""
     env_vars = load_env()
 
@@ -493,8 +494,9 @@ async def run_sync(commit_count, digest_path, max_retries=3):
         "4. The `permission_mode` is `bypassPermissions` -- all file writes are pre-approved.\n"
         "5. After updating docs, you MUST update {rel}/CHANGELOG.md with the new sync entry.\n"
         "6. Start applying changes NOW. Do not explain what you plan to do -- just do it.\n"
-        "{digest_note}"
-    ).format(name=SKILL_NAME, count=commit_count, rel=DATA_REL, digest_note=digest_note)
+        "{digest_note}{split_note}"
+    ).format(name=SKILL_NAME, count=commit_count, rel=DATA_REL,
+             digest_note=digest_note, split_note=split_directive or "")
 
     env_vars["BUSINESS_LOGIC_SYNC"] = "1"  # lets tooling identify our own sessions
     options = ClaudeAgentOptions(
@@ -574,9 +576,9 @@ async def run_sync(commit_count, digest_path, max_retries=3):
 # ---------------------------------------------------------------------------
 
 def run_consumer():
-    """Run as the consumer: guard, batch-drain, digest, then sync once."""
-    # Security guard: refuse to run if a .env secret is exposed. This catches the
-    # case where the user created .env after install without re-running install.
+    """Run as the consumer: guard, batch-drain, digest, anti-corruption gate,
+    then sync once."""
+    # Security guard: refuse to run if a .env secret is exposed.
     guard_rc = ensure_env_ignored.main(DATA_DIR)
     if guard_rc != 0:
         log.error(".env safety check failed (rc=%d); aborting sync to protect secrets", guard_rc)
@@ -610,17 +612,39 @@ def run_consumer():
     # Calculate commits to sync from CHANGELOG (auto-dedup).
     commit_count = get_commits_to_sync()
 
-    # Run the sync: one SDK round covering both the diff and the digest.
-    success = asyncio.run(run_sync(commit_count, digest_path))
-    if not success:
-        log.error("Auto-sync FAILED for batch of %d items", len(items))
-    else:
+    # Anti-corruption gate: deterministic, zero-LLM. Prunes CHANGELOG, runs all
+    # checks, builds a split directive, writes a masked audit. Hard violations
+    # (secrets, merge-conflict markers) abort the sync round when
+    # BL_AUDIT_FAIL_SYNC=1. Oversized docs inject a split directive so the
+    # model splits them in this same round.
+    anticorruption.prune_changelog(DATA_DIR)
+    gate = anticorruption.run_gate(DATA_DIR, PROJECT_ROOT, STATE_DIR)
+    split_text, split_files = anticorruption.build_split_directive(gate, STATE_DIR)
+    anticorruption.write_audit(gate, STATE_DIR / "audit.md")
+    attempted_split = []
+
+    if gate.abort:
+        log.error("Anti-corruption gate ABORTED sync: %d hard violation(s)", len(gate.hard))
+        anticorruption.persist_split_history(STATE_DIR, gate, attempted_split)
+        return False
+
+    if gate.hard or gate.soft or gate.split_candidates:
+        log.info("Anti-corruption gate: %d hard, %d soft, %d split candidate(s)",
+                 len(gate.hard), len(gate.soft), len(gate.split_candidates))
+
+    # Run the sync: one SDK round covering the diff, the digest, and any split.
+    success = asyncio.run(run_sync(commit_count, digest_path, split_directive=split_text))
+    if success:
+        attempted_split = split_files
         # Advance conversation cursors only on success so failed content retries.
         digest_transcripts.save_cursors(STATE_DIR, new_cursors)
         if digest_path is not None:
             digest_path.unlink(missing_ok=True)
         log.info("Auto-sync completed successfully for %d commits", commit_count)
+    else:
+        log.error("Auto-sync FAILED for batch of %d items", len(items))
 
+    anticorruption.persist_split_history(STATE_DIR, gate, attempted_split)
     return success
 
 
