@@ -11,6 +11,8 @@
 @GLM_BASE_URL = https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
 @GLM_BEARER_TOKEN = Bearer {{$dotenv GLM_API_KEY}}
 
+@OLLAMA_BASE_URL = http://localhost:11434/v1/chat/completions
+
 # ============================================
 # 1. 多工具组合调用
 # ============================================
@@ -753,6 +755,49 @@ Authorization: {{GLM_BEARER_TOKEN}}
             }
           },
           "required": ["code", "language"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+### [实战 7.2] 代码执行 - Ollama 代码工具
+# 说明：使用 Ollama 执行代码
+# 场景：用户要求执行代码
+# 预期：模型识别需要执行代码，调用工具
+POST {{OLLAMA_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个编程助手。当用户需要执行代码时，使用 execute_code 工具。"
+    },
+    {
+      "role": "user",
+      "content": "帮我计算斐波那契数列的第 10 项。"
+    }
+  ],
+  "model": "qwen3.5:4b",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "execute_code",
+        "description": "执行 Python 代码并返回结果",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "要执行的 Python 代码"
+            }
+          },
+          "required": ["code"]
         }
       }
     }

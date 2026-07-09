@@ -153,9 +153,14 @@ LOCATION_MAP = {
 def get_weather(location: str, date: str | None = None) -> str:
     """获取天气信息 - 通过 Web Search"""
     normalized_location = LOCATION_MAP.get(location, location)
-    query = f"{normalized_location} {date} 天气" if date else f"{normalized_location} 天气"
+    query = (
+        f"{normalized_location} {date} 天气" if date else f"{normalized_location} 天气"
+    )
     results = web_search(query, n=3)
-    return json.dumps({"location": normalized_location, "date": date or "今天", "results": results}, ensure_ascii=False)
+    return json.dumps(
+        {"location": normalized_location, "date": date or "今天", "results": results},
+        ensure_ascii=False,
+    )
 
 
 def get_attractions(location: str, category: str = "all") -> str:
@@ -163,7 +168,10 @@ def get_attractions(location: str, category: str = "all") -> str:
     normalized_location = LOCATION_MAP.get(location, location)
     query = f"{normalized_location} {category} 景点推荐"
     results = web_search(query, n=5)
-    return json.dumps({"location": normalized_location, "category": category, "results": results}, ensure_ascii=False)
+    return json.dumps(
+        {"location": normalized_location, "category": category, "results": results},
+        ensure_ascii=False,
+    )
 
 
 def get_restaurants(location: str, cuisine: str | None = None) -> str:
@@ -171,7 +179,10 @@ def get_restaurants(location: str, cuisine: str | None = None) -> str:
     normalized_location = LOCATION_MAP.get(location, location)
     query = f"{normalized_location} {cuisine or ''} 美食餐厅推荐"
     results = web_search(query, n=5)
-    return json.dumps({"location": normalized_location, "cuisine": cuisine, "results": results}, ensure_ascii=False)
+    return json.dumps(
+        {"location": normalized_location, "cuisine": cuisine, "results": results},
+        ensure_ascii=False,
+    )
 
 
 def get_current_time() -> str:
@@ -221,7 +232,10 @@ TOOL_DEFINITIONS = [
                 "type": "object",
                 "properties": {
                     "location": {"type": "string", "description": "城市名称"},
-                    "category": {"type": "string", "enum": ["outdoor", "indoor", "cultural", "all"]},
+                    "category": {
+                        "type": "string",
+                        "enum": ["outdoor", "indoor", "cultural", "all"],
+                    },
                 },
                 "required": ["location"],
             },
@@ -257,7 +271,9 @@ TOOL_DEFINITIONS = [
             "description": "执行数学计算，返回精确结果",
             "parameters": {
                 "type": "object",
-                "properties": {"expression": {"type": "string", "description": "数学表达式"}},
+                "properties": {
+                    "expression": {"type": "string", "description": "数学表达式"}
+                },
                 "required": ["expression"],
             },
         },
@@ -269,7 +285,9 @@ TOOL_DEFINITIONS = [
             "description": "搜索互联网获取实时信息",
             "parameters": {
                 "type": "object",
-                "properties": {"query": {"type": "string", "description": "搜索关键词"}},
+                "properties": {
+                    "query": {"type": "string", "description": "搜索关键词"}
+                },
                 "required": ["query"],
             },
         },
@@ -282,7 +300,9 @@ TOOL_IMPLEMENTATIONS: dict[str, Callable] = {
     "get_restaurants": get_restaurants,
     "get_current_time": get_current_time,
     "calculator": calculator,
-    "web_search": lambda query: json.dumps({"query": query, "results": web_search(query)}, ensure_ascii=False),
+    "web_search": lambda query: json.dumps(
+        {"query": query, "results": web_search(query)}, ensure_ascii=False
+    ),
 }
 
 

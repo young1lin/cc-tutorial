@@ -18,6 +18,8 @@
 @STEPFUN_BASE_URL = https://api.stepfun.com/v1/chat/completions
 @STEPFUN_BEARER_TOKEN = Bearer {{$dotenv STEPFUN_API_KEY}}
 
+@OLLAMA_BASE_URL = http://localhost:11434/v1/chat/completions
+
 @intelligent_assistatnt_prompt = Your are intelligent assistant named Alice. Your main role is to help users answer their questions.
 
 # ============================================
@@ -273,6 +275,28 @@ Authorization: {{GLM_BEARER_TOKEN}}
   "stream": false,
   "temperature": 0
 }
+
+### 最近比较火的陷阱问题
+POST {{OLLAMA_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个助手，请根据给定信息回答问题。"
+    },
+    {
+      "role": "user",
+      "content": "我想去洗车，洗车店距离我家50米，你说我应该开车过去还是走过去？"
+    }
+  ],
+  "model": "qwen3.5:4b",
+  "stream": false,
+  "temperature": 0
+}
+
 # ============================================
 # 总结
 # ============================================
