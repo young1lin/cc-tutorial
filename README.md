@@ -140,6 +140,17 @@ cc-tutorial/
 
 适用于本地部署的 OpenAI-compatible API（如 Nginx 代理、LiteLLM 等）。
 
+**注：这里的 Haiku 模型一定要设置成低档位的模型，Claude Code 中有大量边缘场景会用 Haiku 模型**
+
+包括但不限于：
+1. Explore Agent 默认是 Haiku 模型探索项目；
+2. 每次对话，输出的内容，都会让 Haiku 模型总结返回的内容，是否违反了 Anthropic 的协议；
+3. /memory 这块内容，本质就是让 Haiku 模型每次总结你的每次历史对话，把总结内容，放到一个特定文档中；
+4. Prompt-based hooks 默认走 Haiku，其实就包括上面的内容，也包括在 /config 中设置的自动总结下一轮应该有什么的补全内容，也就是 Prompt suggestions；
+5. WebSearch 和 WebFetch 默认使用 Haiku 模型进行总结。
+
+你可以看到，有很多地方使用 Haiku 模型，会导致一个问题，就是 Haiku 模型如果设置的是 glm-5 这种，很容易触发小范围阶段的限流，所以下面的内容改成了 GLM-4.7 这种模型。
+
 **PowerShell:**
 ```powershell
 # API 配置（请替换为你的实际值）
@@ -193,7 +204,7 @@ $env:ANTHROPIC_MODEL="glm-5"
 $env:ANTHROPIC_SMALL_FAST_MODEL="glm-5"
 $env:ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5"
 $env:ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5"
-$env:ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-5"
+$env:ANTHROPIC_DEFAULT_HAIKU_MODEL="GLM-4.7"
 ```
 
 **Bash/Zsh (类 Unix 系统):**
@@ -213,7 +224,7 @@ export ANTHROPIC_MODEL="glm-5"
 export ANTHROPIC_SMALL_FAST_MODEL="glm-5"
 export ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5"
 export ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5"
-export ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-5"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="GLM-4.7"
 ```
 
 #### 示例 3：DeepSeek
@@ -234,7 +245,7 @@ $env:ANTHROPIC_MODEL="deepseek-reasoner"
 $env:ANTHROPIC_SMALL_FAST_MODEL="deepseek-reasoner"
 $env:ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-reasoner"
 $env:ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-reasoner"
-$env:ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-reasoner"
+$env:ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-chat"
 ```
 
 **Bash/Zsh (类 Unix 系统):**
@@ -251,7 +262,7 @@ export ANTHROPIC_MODEL="deepseek-reasoner"
 export ANTHROPIC_SMALL_FAST_MODEL="deepseek-reasoner"
 export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-reasoner"
 export ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-reasoner"
-export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-reasoner"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-chat"
 ```
 
 > **注意:** 环境变量可通过以下方式永久生效：
