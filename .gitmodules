@@ -1,0 +1,9 @@
+[submodule "advanced/vendor/WeKnora"]
+	path = advanced/vendor/WeKnora
+	url = https://github.com/Tencent/WeKnora
+[submodule "advanced/vendor/langchain"]
+	path = advanced/vendor/langchain
+	url = https://github.com/langchain-ai/langchain
+[submodule "advanced/vendor/langgraph"]
+	path = advanced/vendor/langgraph
+	url = https://github.com/langchain-ai/langgraph

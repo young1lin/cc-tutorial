@@ -647,7 +647,35 @@ def test_user_login():
    - 来源：https://microsoft.github.io/language-server-protocol/
    - 内容：LSP 定义、历史、工作原理、功能、支持的语言/编辑器、与 Claude Code 集成、与 Tree-sitter 对比
 
-9. ✅ **00-research-summary.md**（本文档）
+9. ✅ **09-prompt-caching-and-kv-cache.md**
+   - Prompt Caching 与 KV Cache 机制研究（T1）
+   - 作者：Research Compilation
+   - 日期：2026-03-07
+   - 来源：https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching
+   - 内容：Anthropic/OpenAI 的缓存字段、前缀命中条件、KV tensor 与 prefill 的关系、工程优化含义
+
+10. ✅ **10-langchain-rag-cache-shape.md**
+   - LangChain RAG Prompt 结构与缓存失效研究（T1）
+   - 作者：Research Compilation
+   - 日期：2026-03-07
+   - 来源：https://docs.langchain.com/langsmith/observability-quickstart
+   - 内容：LangChain 常见 RAG prompt 结构、把检索内容放入 system prompt 的代价、与 Anthropic 缓存层级的关系
+
+11. ✅ **11-claude-code-subagents.md**
+   - Claude Code Subagents 研究（T1）
+   - 作者：Anthropic
+   - 日期：2026-03-07
+   - 来源：https://code.claude.com/docs/en/sub-agents
+   - 内容：subagent 的本质、`.claude/agents/` 目录、frontmatter 字段、自动委派、skills 预加载
+
+12. ✅ **12-langgraph-customer-support-agents.md**
+   - LangGraph 客服 Agent 模式研究（T1）
+   - 作者：LangChain
+   - 日期：2026-03-07
+   - 来源：https://langchain-ai.github.io/langgraph/tutorials/customer-support/customer-support/
+   - 内容：LangGraph 的状态化工作流、handoffs 在客服场景下的适用性、LangChain 与 LangGraph 的分工
+
+13. ✅ **00-research-summary.md**（本文档）
    - 研究总结和综合
 
 ### 待获取文档（中优先级）

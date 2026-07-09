@@ -1,0 +1,3 @@
+display_name: Business Logic
+description: Build and sync a repository business-logic index from layered code and recent commits.
+default_prompt: Analyze this repository's business logic, keep the index under .claude/skills/business-logic up to date, and explain affected domains from code evidence.
