@@ -2,7 +2,7 @@
 
 要想充分发挥 Claude Code 能力，必须要理解什么是大语言模型，以及它的局限性是什么。上下文、提示词、Function Calling、Agent 模式等基础概念非常重要，后面所有的所谓的各种各样的概念，本质都是为了解决**上下文有限**的问题。如果你已经看完了 Andrej Karpathy 的 *Deep Dive into LLMs Like ChatGPT* 视频，可以跳过下面的大语言模型基础介绍，直接去 Claude Code 使用那一节，我的截图的 Token 的图片也是来自他的视频。
 
-这一层是整个教程最厚的地基。我准备了 **9 个 HTTP 示例文件、90+ 个可执行的 API 请求**，覆盖从 Token 概念到 Agent 模式的完整知识链条。每一节都有对应的动手练习，不是纸上谈兵。
+这一层是整个教程最厚的地基。我准备了 **9 个 HTTP 示例文件、97 个可执行的 API 请求**，覆盖从 Token 概念到 Agent 模式的完整知识链条。每一节都有对应的动手练习，不是纸上谈兵。
 
 > **学习路径建议**：
 > - 零基础 → 从头到尾按顺序走
@@ -14,16 +14,16 @@
 
 | 序号 | 示例文件 | 内容 | 示例数 | 难度 |
 |------|----------|------|--------|------|
-| 01 | [01-main.http](../examples/http/01-main.http) | 基础功能：Token 演示、对话、流式、Function Calling | 7 | ⭐ |
-| 02 | [02-limitations.http](../examples/http/02-limitations.http) | LLM 局限性：数学、幻觉、逻辑、知识截止 | 8 | ⭐⭐ |
+| 01 | [01-main.http](../examples/http/01-main.http) | 基础功能：Hello World → System Prompt → 流式 → Token 截断 → 语言控制 → 多轮对话 → Function Calling | 8 | ⭐ |
+| 02 | [02-limitations.http](../examples/http/02-limitations.http) | LLM 局限性：数学、幻觉、逻辑、知识截止 | 9 | ⭐⭐ |
 | 03 | [03-practical-scenarios.http](../examples/http/03-practical-scenarios.http) | 实战场景：代码审查、摘要、情感分析、翻译、数据提取 | 9 | ⭐⭐ |
-| 04 | [04-function-calling-advanced.http](../examples/http/04-function-calling-advanced.http) | 高级工具调用：多工具编排、并行调用、错误处理 | 13 | ⭐⭐⭐ |
-| 05 | [05-prompt-engineering.http](../examples/http/05-prompt-engineering.http) | 提示词工程：Few-Shot、CoT、结构化输出、角色扮演 | 20 | ⭐⭐ |
-| 06 | [06-parameter-experiments.http](../examples/http/06-parameter-experiments.http) | 参数调优：Temperature、Top-P、Penalties、Stream | 15 | ⭐⭐⭐ |
-| 07 | [07-agent-patterns.http](../examples/http/07-agent-patterns.http) | Agent 设计模式：ReAct、Plan-and-Execute、Self-Reflection | 9 | ⭐⭐⭐⭐ |
-| 08 | [08-legacy-tool-calling.http](../examples/http/08-legacy-tool-calling.http) | 传统工具调用：Text ReAct、XML、JSON vs 原生 FC | 6 | ⭐⭐⭐ |
-| 09 | [09-api-protocol-compatibility.http](../examples/http/09-api-protocol-compatibility.http) | 协议兼容：OpenAI 格式 vs Anthropic 格式 | 5 | ⭐⭐ |
-| | **合计** | | **90+** | |
+| 04 | [04-function-calling-advanced.http](../examples/http/04-function-calling-advanced.http) | 高级工具调用：多工具编排、并行调用、错误处理 | 12 | ⭐⭐⭐ |
+| 05 | [05-legacy-tool-calling.http](../examples/http/05-legacy-tool-calling.http) | 传统工具调用：Text ReAct、XML、JSON vs 原生 FC | 6 | ⭐⭐⭐ |
+| 06 | [06-api-protocol-compatibility.http](../examples/http/06-api-protocol-compatibility.http) | 协议兼容：OpenAI 格式 vs Anthropic 格式 | 4 | ⭐⭐ |
+| 07 | [07-prompt-engineering.http](../examples/http/07-prompt-engineering.http) | 提示词工程：Few-Shot、CoT、Self-Consistency、PAL、角色扮演 | 26 | ⭐⭐ |
+| 08 | [08-parameter-experiments.http](../examples/http/08-parameter-experiments.http) | 参数调优：Temperature、Top-P、Penalties、Stream | 15 | ⭐⭐⭐ |
+| 09 | [09-agent-patterns.http](../examples/http/09-agent-patterns.http) | Agent 设计模式：ReAct、Plan-and-Execute、Self-Reflection | 8 | ⭐⭐⭐⭐ |
+| | **合计** | | **97** | |
 
 
 # 一、大语言模型基础
@@ -74,7 +74,7 @@ Token序列: [今天, 天气]
 2. **上下文按 Token**：200K 的窗口指的是 200K Token，不是 200K 字
 3. **中文更"贵"**：一个或者多个中文字通常占 1 个 Token，而一个英文单词通常只占 1 个 Token。例如 “你好” 占用一个 Token，“你好世界” 占用 2 个 Token。
 
-> **动手练习** → [01-main.http](../examples/http/01-main.http)：第一个请求展示了"字数不等于 Token"的概念
+> **动手练习** → [01-main.http](../examples/http/01-main.http)：第 4 个请求展示了"字数不等于 Token"的概念
 
 ## 1.3 Context Window 上下文窗口
 
@@ -91,7 +91,7 @@ Token序列: [今天, 天气]
 
 不了解局限性，就会对 LLM 有错误预期。以下所有结论均来自 2026-02-15 实测（glm-4-flash，无内置推理）。
 
-> **动手练习** → [02-limitations.http](../examples/http/02-limitations.http)：8 个请求，覆盖 5 大类局限性
+> **动手练习** → [02-limitations.http](../examples/http/02-limitations.http)：9 个请求，覆盖 5 大类局限性
 
 ### 2.1 数学计算局限
 
@@ -390,9 +390,13 @@ LLM 收到结果: "北京今天天气晴朗，气温 18°C，适合外出。"
 >
 > **Python 实现** → [examples/python/00_basic_function_calling.py](../examples/python/00_basic_function_calling.py)：纯 httpx 手写多轮工具调用循环，不依赖任何 SDK，展示底层完整流程
 
+> **学术印证**：CS146S Week 1 的 Tool Calling 作业要求学生用 Ollama 本地模型实现工具调用，
+> 与本节内容完全对应。如果你想要更完整的工程实践，可以参考该作业。
+> ([作业仓库](https://github.com/mihail911/modern-software-dev-assignments/tree/master/week1))
+
 ## 4.3 高级工具调用
 
-> **动手练习** → [04-function-calling-advanced.http](../examples/http/04-function-calling-advanced.http)：13 个高级示例
+> **动手练习** → [04-function-calling-advanced.http](../examples/http/04-function-calling-advanced.http)：12 个高级示例
 
 ### 多工具编排
 
@@ -456,7 +460,7 @@ LLM 应回答: "抱歉，天气服务目前只支持地球上的城市。"
 
 在原生 Function Calling 之前，业界经历了多种"手工"方案。理解这些历史有助于理解当前方案为什么是这样。
 
-> **动手练习** → [08-legacy-tool-calling.http](../examples/http/08-legacy-tool-calling.http)：6 个示例，覆盖 3 种传统格式 + 原生 FC 对比
+> **动手练习** → [05-legacy-tool-calling.http](../examples/http/05-legacy-tool-calling.http)：6 个示例，覆盖 3 种传统格式 + 原生 FC 对比
 
 ### 技术演进时间线
 
@@ -513,7 +517,7 @@ Final Answer: 北京今天晴朗，18°C。
 
 不同厂商的 Function Calling 协议不同。理解差异才能在多模型之间切换。
 
-> **动手练习** → [09-api-protocol-compatibility.http](../examples/http/09-api-protocol-compatibility.http)：5 个协议对比示例
+> **动手练习** → [06-api-protocol-compatibility.http](../examples/http/06-api-protocol-compatibility.http)：4 个协议对比示例
 
 | 方面 | OpenAI 格式 | Anthropic 格式 |
 |------|------------|---------------|
@@ -558,7 +562,7 @@ Claude Code 本身就是一个 MCP Client，内置的 Read/Write/Edit/Bash 等�
 
 提示词工程不是玄学，是有方法论的工程实践。写好提示词，输出质量可以提升 10 倍。
 
-> **动手练习** → [05-prompt-engineering.http](../examples/http/05-prompt-engineering.http)：20 个示例，覆盖 6 大技术
+> **动手练习** → [07-prompt-engineering.http](../examples/http/07-prompt-engineering.http)：26 个示例，覆盖 8 大技术
 >
 > **延伸阅读**：[promptingguide.ai](https://www.promptingguide.ai/) —— 最全面的提示词工程参考
 
@@ -695,10 +699,14 @@ Zero-Shot（零样本）:
 
 > **延伸阅读**：[Hacker News 讨论](https://news.ycombinator.com/item?id=38545663)详细分析了 Gemini benchmark 的方法论问题。
 
-> **动手练习** → [05-prompt-engineering.http](../examples/http/05-prompt-engineering.http)：
+> **动手练习** → [07-prompt-engineering.http](../examples/http/07-prompt-engineering.http)：
 > - Zero-Shot vs 3-Shot 情感分析对比
 > - Few-Shot 代码生成（带类型标注和文档字符串）
 > - 4-Shot 实体提取
+
+> **学术印证**：斯坦福 CS146S《The Modern Software Developer》将 K-shot Prompting 作为 Week 1
+> 第一个动手作业，与本节 HTTP 示例 05 的 Few-Shot 练习完全对应。
+> ([作业仓库](https://github.com/mihail911/modern-software-dev-assignments/tree/master/week1))
 
 ## 5.2 Chain-of-Thought（链式思维, CoT）
 
@@ -728,7 +736,7 @@ Zero-Shot（零样本）:
 
 > **注意**：思考 Token 按**输出 Token 费率**计费，不消耗上下文窗口。上述数值可能随版本更新而变化（详见 [Claude Code Guide](https://www.claude-code-guide.com/)）。
 
-> **动手练习** → [05-prompt-engineering.http](../examples/http/05-prompt-engineering.http)：
+> **动手练习** → [07-prompt-engineering.http](../examples/http/07-prompt-engineering.http)：
 > - Zero-Shot CoT（"Let's think step by step"）
 > - 有无 CoT 的对比实验
 > - Few-Shot CoT（提供推理示例）
@@ -757,7 +765,7 @@ Zero-Shot（零样本）:
 - MCP 工具的返回值需要结构化
 - Agent 的 Function Calling 本身就是结构化输出
 
-> **动手练习** → [05-prompt-engineering.http](../examples/http/05-prompt-engineering.http)：
+> **动手练习** → [07-prompt-engineering.http](../examples/http/07-prompt-engineering.http)：
 > - 基础 JSON 格式要求
 > - JSON Schema 约束
 > - 复杂嵌套 JSON（电商订单结构）
@@ -779,7 +787,7 @@ Zero-Shot（零样本）:
 
 **在 Claude Code 中的应用**：CLAUDE.md 中的 persona 设置就是角色扮演——告诉 Claude 它是某个项目的资深开发者。
 
-> **动手练习** → [05-prompt-engineering.http](../examples/http/05-prompt-engineering.http)：
+> **动手练习** → [07-prompt-engineering.http](../examples/http/07-prompt-engineering.http)：
 > - 系统架构师角色
 > - 普通助手 vs 架构师对比
 > - 创意角色（诗人写西湖诗）
@@ -811,14 +819,60 @@ Zero-Shot（零样本）:
 助手: "哎呀，真是太抱歉了 😅 让我帮您查一下订单状态~"
 ```
 
-> **动手练习** → [05-prompt-engineering.http](../examples/http/05-prompt-engineering.http)：客服风格学习示例
+> **动手练习** → [07-prompt-engineering.http](../examples/http/07-prompt-engineering.http)：客服风格学习示例
+
+## 5.7 Self-Consistency（自洽性采样）
+
+CoT 的升级版。核心机制：**temperature > 0，多次独立采样，多数投票取答案**。
+
+```
+同一道题，跑 3 次 CoT：
+路径 A → 答案：900
+路径 B → 答案：900
+路径 C → 答案：720（推理出了岔）
+
+投票结果：900（2/3）→ 采用
+```
+
+**为什么比单次 CoT 更准**：单次 CoT 可能走错路，多路径投票让正确推理"胜出"。直觉：一道数学题，让 5 个不同的学生各自解，答案相同的概率更高。
+
+**你在 §5.1 已经见过 SC 的真实案例了**：Gemini 的 CoT@32——跑 32 次 CoT 取最好，本质上就是 best-of-32 的 SC。那个争议告诉你 SC 有多能刷分，同时也说明成本：token 消耗 × 32 倍。关键任务才上，不是每次都用。
+
+**适用场景**：数学题、代码正确性验证、高精度分类
+
+**在 Claude Code 中的应用**：`think harder` / `ultrathink` 背后正是 SC 的精神——模型探索更多内部推理路径再收敛，而不是只走一条。显式用 SC 的场景：对同一个任务跑两次 Plan Mode，两份方案都给你，你选更合理的那个。
+
+> **动手练习** → [07-prompt-engineering.http](../examples/http/07-prompt-engineering.http)：7.1 和 7.2 是同一道题的两次独立采样——对比推理路径是否不同，答案是否一致
+
+> **来源**：Wang et al., [Self-Consistency Improves Chain-of-Thought Reasoning in Language Models](https://arxiv.org/abs/2203.11171)（2022）
+
+## 5.8 PAL（程序辅助推理）
+
+**用代码替代文字推理**。模型不直接给出答案，而是输出 Python 代码，执行代码得精确结果。
+
+```python
+# 模型输出的不是"答案是 X"，而是：
+result = 982717.1211 * 213213.23321 - 321312.777 / 1112.1121
+print(result)
+# 执行后：209530338599.45 （精确）
+```
+
+**与 §2.1 的呼应**：[02-limitations.http](../examples/http/02-limitations.http) [1.1] 里，让模型直接算那道复杂乘除法会差出几个数量级。PAL 直接解决了这个问题——把计算交给 Python，模型只负责写代码。
+
+**与 Function Calling 的区别**：FC 调用开发者预先写好的外部函数；PAL 让模型现场生成推理代码。都是用工具弥补 LLM 的计算短板，路径不同。
+
+**在 Claude Code 中的应用**：Claude Code 就是 PAL 的产品化实现。你让它"统计日志目录下各文件的大小分布，找出异常"，它写 Python、Bash 工具跑、拿到精确结果——这就是 PAL。不是"延伸"，是原型。
+
+> **动手练习** → [07-prompt-engineering.http](../examples/http/07-prompt-engineering.http)：8.1 同一道复杂计算题（对比 02-limitations.http）——模型应输出 `python` 代码块而非直接给答案；8.2 给定原始数据，模型应输出 `pandas` 代码
+
+> **来源**：Gao et al., [PAL: Program-aided Language Models](https://arxiv.org/abs/2211.10435)（2022）
 
 
 # 六、参数调优 —— 控制 LLM 的"旋钮"
 
 不同参数组合对输出质量影响巨大。这不是理论，是必须动手调的。
 
-> **动手练习** → [06-parameter-experiments.http](../examples/http/06-parameter-experiments.http)：15 个参数实验，覆盖核心参数
+> **动手练习** → [08-parameter-experiments.http](../examples/http/08-parameter-experiments.http)：15 个参数实验，覆盖核心参数
 
 ## 6.1 Temperature（温度）
 
@@ -844,7 +898,7 @@ temperature=2.0:   极端随机（基本不可用）
 | 创意写作 | 0.8 |
 | 头脑风暴 | 1.0-1.2 |
 
-> **动手练习** → [06-parameter-experiments.http](../examples/http/06-parameter-experiments.http)：
+> **动手练习** → [08-parameter-experiments.http](../examples/http/08-parameter-experiments.http)：
 > - temperature=0 / 0.7 / 1.5 三级对比实验
 > - 同一首诗在不同温度下的变化
 
@@ -893,7 +947,7 @@ max_tokens=1000:  详细解释（~500-700 中文字）
 | 客服回复 | 0.3 | - | 300 | 0 |
 | 数据分析 | 0 | 1 | - | 0 |
 
-> **动手练习** → [06-parameter-experiments.http](../examples/http/06-parameter-experiments.http)：
+> **动手练习** → [08-parameter-experiments.http](../examples/http/08-parameter-experiments.http)：
 > - 参数组合实验（创意写作、技术文档）
 > - 流式 vs 非流式对比
 > - 流式 vs 非流式响应
@@ -914,7 +968,7 @@ Claude 的具体架构未公开，但从实测表现看长距离代码依赖处�
 
 Function Calling 让 LLM 能调用一个工具。Agent 模式让 LLM 能**自主决定调用哪些工具、以什么顺序调用、如何根据中间结果调整策略**。这是从"工具使用者"到"自主执行者"的跃迁。
 
-> **动手练习** → [07-agent-patterns.http](../examples/http/07-agent-patterns.http)：9 个 Agent 模式示例
+> **动手练习** → [09-agent-patterns.http](../examples/http/09-agent-patterns.http)：8 个 Agent 模式示例
 
 ## 8.1 什么是 AI Agent？
 
@@ -1199,7 +1253,7 @@ Final Answer: "明天杭州天气晴朗，推荐行程：
 
 **ReAct 的优势**：灵活。如果中间发现天气变了，可以立即调整方案。
 
-> **动手练习** → [07-agent-patterns.http](../examples/http/07-agent-patterns.http)：
+> **动手练习** → [09-agent-patterns.http](../examples/http/09-agent-patterns.http)：
 > - ReAct 三轮完整流程（天气 → 景点 → 餐厅）
 > - 发现下雨后动态切换为室内景点
 >
@@ -1263,6 +1317,11 @@ Final Answer: 斐波那契第 20 项是 6765
 > **Claude Code 对应**：当 Claude Code 写完代码后运行测试失败，它会自动分析错误、修改代码、重新运行——这就是 Self-Reflection 模式。
 >
 > **Python 实现** → [examples/python/03_self_reflection_agent.py](../examples/python/03_self_reflection_agent.py)：执行后自动验证结果，检测到错误则重新规划修正，演示 Reflexion 机制的最小实现
+
+> **学术印证**：CS146S Week 1 包含 Reflexion 和 Self-Consistency 两种高级推理模式，
+> 是本节 Agent 模式的学术版本。Week 1 作业还包含 RAG，是
+> [09-agent-patterns.http](../examples/http/09-agent-patterns.http) 的延伸。
+> ([作业仓库](https://github.com/mihail911/modern-software-dev-assignments/tree/master/week1))
 
 ## 8.5 Agent 的核心挑战
 
@@ -1433,7 +1492,7 @@ Code Review Agent
 
 这就是为什么 Boris Cherny 建议"尽可能让 Claude Code 自己探索"——因为探索任务往往会交给 SubAgent，不会污染主 Agent 的上下文。
 
-**HTTP 示例对应** → [07-agent-patterns.http](../examples/http/07-agent-patterns.http)：
+**HTTP 示例对应** → [09-agent-patterns.http](../examples/http/09-agent-patterns.http)：
 
 ```
 # 07 示例演示了 Agent 模式的基础：
@@ -1528,12 +1587,12 @@ Code Review Agent
 
 **进阶路径**（有 API 经验）：
 ```
-04-function-calling-advanced.http → 05-prompt-engineering.http → 06-parameter-experiments.http
+04-function-calling-advanced.http → 07-prompt-engineering.http → 08-parameter-experiments.http
 ```
 
 **高级路径**（想理解 Agent）：
 ```
-07-agent-patterns.http → 08-legacy-tool-calling.http → 09-api-protocol-compatibility.http
+09-agent-patterns.http → 05-legacy-tool-calling.http → 06-api-protocol-compatibility.http
 ```
 
 
@@ -1606,3 +1665,19 @@ Code Review Agent
 ```
 
 理解了这些理论基础，你就知道了 Claude Code 的每个功能**为什么存在**——不是凭空冒出来的产品特性，而是在解决 LLM 固有的限制。这是后面六层内容的认知地基。****
+
+---
+
+## 进阶路径：斯坦福 CS146S 对照表
+
+学完本层后，如果想验证自己真的掌握了，可以对照斯坦福 CS146S（Stanford Fall 2025，
+全球首门系统性 AI 编程课，主讲 Mihail Eric）的作业做一遍：
+
+| 本教程知识点 | 对应 CS146S | 作业链接 |
+|------------|------------|---------|
+| Few-Shot、CoT、工具调用 | Week 1：提示词技术 6 件套 | [week1/assignment.md](https://github.com/mihail911/modern-software-dev-assignments/tree/master/week1) |
+| LLM 集成 + 单元测试 | Week 2：构建 LLM 驱动的应用 | [week2/assignment.md](https://github.com/mihail911/modern-software-dev-assignments/tree/master/week2) |
+| 代码安全与漏洞扫描 | Week 6：Semgrep 静态分析 | [week6/assignment.md](https://github.com/mihail911/modern-software-dev-assignments/blob/master/week6/assignment.md) |
+
+**[Tutorial perspective]** CS146S 用的是 Ollama 本地模型，本教程用 DeepSeek/GLM API。
+知识点完全兼容，只是运行环境不同。哪个方便用哪个。

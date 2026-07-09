@@ -37,7 +37,7 @@ Authorization: {{GLM_BEARER_TOKEN}}
     },
     {
       "role": "user",
-      "content": "Calculate: 982717.1211 * 213213.23321 - 321312.777 / 1112.1121. Do NOT use any tools. Do NOT show reasoning. Just give the final number directly."
+      "content": "请计算：982717.1211 * 213213.23321 - 321312.777 / 1112.1121. 不要使用任何工具，不要显示推理，直接给出最终数字。"
     }
   ],
   "max_tokens": 200,
@@ -149,6 +149,7 @@ Authorization: {{GLM_BEARER_TOKEN}}
 
 ### [4.1] 事实混淆 - 英文绕过幻觉防护
 # 中文问"林黛玉倒拔垂杨柳"已免疫，换英文就失效
+# 英文问"Who pulled down the willow tree in Dream of the Red Chamber？"
 # glm-4-flash 回答：编造了"凤姐（王熙凤）命人砍掉了柳树"
 POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
@@ -248,6 +249,27 @@ Authorization: {{GLM_BEARER_TOKEN}}
   "temperature": 0
 }
 
+### 最近比较火的陷阱问题
+POST {{GLM_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{GLM_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个助手，请根据给定信息回答问题。"
+    },
+    {
+      "role": "user",
+      "content": "我想去洗车，洗车店距离我家50米，你说我应该开车过去还是走过去？"
+    }
+  ],
+  "model": "glm-4-flash",
+  "stream": false,
+  "temperature": 0
+}
 # ============================================
 # 总结
 # ============================================

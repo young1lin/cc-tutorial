@@ -95,114 +95,7 @@
 
 ---
 
-### 5. `05-prompt-engineering.http` - 提示词工程 📝
-**涵盖内容**：
-- 📚 **Few-Shot Learning**（少样本学习）
-  - Zero-Shot vs Few-Shot 对比
-  - 情感分析、代码生成、实体提取
-
-- 🧠 **Chain-of-Thought**（思维链）
-  - Zero-Shot CoT："Let's think step by step"
-  - Few-Shot CoT：提供推理示例
-  - 数学应用题、逻辑推理、代码调试
-
-- 📋 **结构化输出**
-  - JSON 输出（带 Schema）
-  - Markdown 文档和表格生成
-
-- 🎭 **角色扮演**
-  - 专家角色设定
-  - 创意角色（诗人、作家）
-
-- 🚫 **Negative Prompting**
-  - 避免特定行为
-  - 控制输出风格和长度
-
-- 🔄 **In-Context Learning**
-  - 从对话历史中学习
-  - 保持风格一致性
-
-**学习目标**：
-- 掌握提示词优化技术
-- 理解不同提示词模式的适用场景
-- 学会设计高效的提示词
-
----
-
-### 6. `06-parameter-experiments.http` - 参数实验 🔬
-**涵盖内容**：
-- 🌡️ **Temperature**（创造性控制）
-  - 0（完全确定）→ 2.0（极高随机）
-  - 不同场景的最佳配置
-
-- 🎯 **Top-P**（核采样）
-  - 0.1（保守）→ 1.0（无限制）
-  - Temperature vs Top-P 对比
-
-- 📏 **Max Tokens**（长度控制）
-  - 短回答 vs 详细阐述
-  - 成本优化
-
-- 🔁 **Frequency Penalty**（重复惩罚）
-  - 避免词汇重复
-  - 提升内容多样性
-
-- 🌈 **Presence Penalty**（话题发散）
-  - 鼓励引入新话题
-  - 内容丰富度控制
-
-- 🆚 **模型对比**
-  - GLM vs DeepSeek
-  - 代码生成、创意写作、多语言
-
-**学习目标**：
-- 理解各参数对输出的影响
-- 掌握不同场景的参数配置
-- 学会平衡质量、成本、速度
-
-**推荐配置**：
-```
-📝 技术文档：temperature=0, max_tokens=1000
-🎨 创意写作：temperature=0.8, frequency_penalty=0.5
-💡 头脑风暴：temperature=1.2, presence_penalty=1.5
-💬 客户服务：temperature=0.3, max_tokens=300
-```
-
----
-
-### 7. `07-agent-patterns.http` - Agent 设计模式 🤖
-**涵盖内容**：
-- 🔄 **ReAct 模式**（Reasoning + Acting）
-  - Thought（思考）→ Action（行动）→ Observation（观察）循环
-  - 适用于动态环境、需要根据反馈调整的任务
-  - 示例：旅游规划（根据天气调整景点）
-
-- 📋 **Plan-and-Execute 模式**
-  - 先制定完整计划，再逐步执行
-  - 适用于目标明确、步骤可预见的任务
-  - 示例：博客文章创作（收集信息 → 整合内容）
-
-- 🔍 **Self-Reflection 模式**（自我反思）
-  - 执行后自我检查结果是否合理
-  - 适用于需要高准确性的任务
-  - 示例：数学计算验证
-
-**学习目标**：
-- 理解不同 Agent 模式的优劣和适用场景
-- 掌握如何通过 System Prompt 引导模型思考
-- 学会设计原子化的工具便于组合
-
-**对比总结**：
-
-| 模式 | 优势 | 劣势 | 适用场景 |
-|------|------|------|----------|
-| **ReAct** | 灵活、自适应 | 效率较低 | 客服对话、问题诊断 |
-| **Plan-and-Execute** | 全局优化、高效 | 缺乏灵活性 | 内容创作、批量处理 |
-| **Self-Reflection** | 提高准确性 | 额外开销 | 代码生成、事实核查 |
-
----
-
-### 8. `08-legacy-tool-calling.http` - 传统工具调用方法 ⏳
+### 5. `05-legacy-tool-calling.http` - 传统工具调用方法 ⏳
 **涵盖内容**：
 - 📜 **历史背景**
   - 在原生 Function Calling 出现之前的工具调用方法
@@ -238,7 +131,7 @@
 
 ---
 
-### 9. `09-api-protocol-compatibility.http` - API 协议兼容性 🔄
+### 6. `06-api-protocol-compatibility.http` - API 协议兼容性 🔄
 **涵盖内容**：
 - 🔀 **OpenAI vs Anthropic 协议差异**
   - 请求格式对比（messages、tools、system）
@@ -282,6 +175,113 @@ class AnthropicAdapter implements ChatProvider { ... }
 
 ---
 
+### 7. `07-prompt-engineering.http` - 提示词工程 📝
+**涵盖内容**：
+- 📚 **Few-Shot Learning**（少样本学习）
+  - Zero-Shot vs Few-Shot 对比
+  - 情感分析、代码生成、实体提取
+
+- 🧠 **Chain-of-Thought**（思维链）
+  - Zero-Shot CoT："Let's think step by step"
+  - Few-Shot CoT：提供推理示例
+  - 数学应用题、逻辑推理、代码调试
+
+- 📋 **结构化输出**
+  - JSON 输出（带 Schema）
+  - Markdown 文档和表格生成
+
+- 🎭 **角色扮演**
+  - 专家角色设定
+  - 创意角色（诗人、作家）
+
+- 🚫 **Negative Prompting**
+  - 避免特定行为
+  - 控制输出风格和长度
+
+- 🔄 **In-Context Learning**
+  - 从对话历史中学习
+  - 保持风格一致性
+
+**学习目标**：
+- 掌握提示词优化技术
+- 理解不同提示词模式的适用场景
+- 学会设计高效的提示词
+
+---
+
+### 8. `08-parameter-experiments.http` - 参数实验 🔬
+**涵盖内容**：
+- 🌡️ **Temperature**（创造性控制）
+  - 0（完全确定）→ 2.0（极高随机）
+  - 不同场景的最佳配置
+
+- 🎯 **Top-P**（核采样）
+  - 0.1（保守）→ 1.0（无限制）
+  - Temperature vs Top-P 对比
+
+- 📏 **Max Tokens**（长度控制）
+  - 短回答 vs 详细阐述
+  - 成本优化
+
+- 🔁 **Frequency Penalty**（重复惩罚）
+  - 避免词汇重复
+  - 提升内容多样性
+
+- 🌈 **Presence Penalty**（话题发散）
+  - 鼓励引入新话题
+  - 内容丰富度控制
+
+- 🆚 **模型对比**
+  - GLM vs DeepSeek
+  - 代码生成、创意写作、多语言
+
+**学习目标**：
+- 理解各参数对输出的影响
+- 掌握不同场景的参数配置
+- 学会平衡质量、成本、速度
+
+**推荐配置**：
+```
+📝 技术文档：temperature=0, max_tokens=1000
+🎨 创意写作：temperature=0.8, frequency_penalty=0.5
+💡 头脑风暴：temperature=1.2, presence_penalty=1.5
+💬 客户服务：temperature=0.3, max_tokens=300
+```
+
+---
+
+### 9. `09-agent-patterns.http` - Agent 设计模式 🤖
+**涵盖内容**：
+- 🔄 **ReAct 模式**（Reasoning + Acting）
+  - Thought（思考）→ Action（行动）→ Observation（观察）循环
+  - 适用于动态环境、需要根据反馈调整的任务
+  - 示例：旅游规划（根据天气调整景点）
+
+- 📋 **Plan-and-Execute 模式**
+  - 先制定完整计划，再逐步执行
+  - 适用于目标明确、步骤可预见的任务
+  - 示例：博客文章创作（收集信息 → 整合内容）
+
+- 🔍 **Self-Reflection 模式**（自我反思）
+  - 执行后自我检查结果是否合理
+  - 适用于需要高准确性的任务
+  - 示例：数学计算验证
+
+**学习目标**：
+- 理解不同 Agent 模式的优劣和适用场景
+- 掌握如何通过 System Prompt 引导模型思考
+- 学会设计原子化的工具便于组合
+
+**对比总结**：
+
+| 模式 | 优势 | 劣势 | 适用场景 |
+|------|------|------|----------|
+| **ReAct** | 灵活、自适应 | 效率较低 | 客服对话、问题诊断 |
+| **Plan-and-Execute** | 全局优化、高效 | 缺乏灵活性 | 内容创作、批量处理 |
+| **Self-Reflection** | 提高准确性 | 额外开销 | 代码生成、事实核查 |
+
+---
+
 ## ⚠️ 模型能力差异说明
 
 本示例集合主要使用 **智谱 GLM** 模型进行演示。不同模型的能力存在差异：
@@ -309,7 +309,7 @@ class AnthropicAdapter implements ChatProvider { ... }
 
 3. **协议转换**
    - 可使用 Claude Code Router 进行格式转换
-   - 详见 `09-api-protocol-compatibility.http`
+   - 详见 `06-api-protocol-compatibility.http`
 
 ### 本示例集的模型选择
 
@@ -356,20 +356,20 @@ DEEPSEEK_API_KEY=sk-xxxxx
 
 ### 3. 学习路径
 
-**初学者**（入门路径）：
+**入门**（认识 LLM）：
 1. `01-main.http` - 理解基本 API 用法
 2. `02-limitations.http` - 认识 LLM 的边界
 3. `03-practical-scenarios.http` - 学习实用场景
 
-**进阶者**（深入学习）：
+**工具调用**（Function Calling 全景）：
 1. `04-function-calling-advanced.http` - 掌握工具调用
-2. `05-prompt-engineering.http` - 优化提示词技术
-3. `06-parameter-experiments.http` - 理解参数影响
+2. `05-legacy-tool-calling.http` - 了解技术演进历史
+3. `06-api-protocol-compatibility.http` - 掌握多协议兼容
 
-**专家**（系统设计）：
-1. `07-agent-patterns.http` - 理解 Agent 设计模式
-2. `08-legacy-tool-calling.http` - 了解技术演进历史
-3. `09-api-protocol-compatibility.http` - 掌握多协议兼容
+**精进**（Prompt、参数、Agent）：
+1. `07-prompt-engineering.http` - 优化提示词技术
+2. `08-parameter-experiments.http` - 理解参数影响
+3. `09-agent-patterns.http` - 理解 Agent 设计模式
 4. 组合不同技术（如 Few-Shot + CoT + Function Calling）
 5. 设计完整的 AI 工作流
 
@@ -449,16 +449,16 @@ DEEPSEEK_API_KEY=sk-xxxxx
 
 | 文件 | 示例数 | 难度 | 预计学习时间 | 状态 |
 |------|--------|------|--------------|------|
-| `01-main.http` | 7 | ⭐ 入门 | 30 分钟 | ✅ |
-| `02-limitations.http` | 15 | ⭐⭐ 进阶 | 1 小时 | ✅ |
-| `03-practical-scenarios.http` | 18 | ⭐⭐ 进阶 | 2 小时 | ✅ |
-| `04-function-calling-advanced.http` | 13 | ⭐⭐⭐ 高级 | 1.5 小时 | ✅ |
-| `05-prompt-engineering.http` | 20 | ⭐⭐ 进阶 | 1.5 小时 | ✅ |
-| `06-parameter-experiments.http` | 29 | ⭐⭐⭐ 高级 | 2 小时 | ✅ |
-| `07-agent-patterns.http` | 9 | ⭐⭐⭐⭐ 专家 | 2 小时 | ✅ |
-| `08-legacy-tool-calling.http` | 17 | ⭐⭐⭐ 高级 | 1.5 小时 | ✅ |
-| `09-api-protocol-compatibility.http` | - | ⭐⭐ 进阶 | 30 分钟 | ✅ |
-| **总计** | **128** | - | **12.5 小时** | ✅ |
+| `01-main.http` | 8 | ⭐ 入门 | 30 分钟 | ✅ |
+| `02-limitations.http` | 9 | ⭐⭐ 进阶 | 1 小时 | ✅ |
+| `03-practical-scenarios.http` | 9 | ⭐⭐ 进阶 | 2 小时 | ✅ |
+| `04-function-calling-advanced.http` | 12 | ⭐⭐⭐ 高级 | 1.5 小时 | ✅ |
+| `05-legacy-tool-calling.http` | 6 | ⭐⭐⭐ 高级 | 1.5 小时 | ✅ |
+| `06-api-protocol-compatibility.http` | 4 | ⭐⭐ 进阶 | 30 分钟 | ✅ |
+| `07-prompt-engineering.http` | 26 | ⭐⭐ 进阶 | 1.5 小时 | ✅ |
+| `08-parameter-experiments.http` | 15 | ⭐⭐⭐ 高级 | 2 小时 | ✅ |
+| `09-agent-patterns.http` | 8 | ⭐⭐⭐⭐ 专家 | 2 小时 | ✅ |
+| **总计** | **97** | - | **12.5 小时** | ✅ |
 
 ---
 

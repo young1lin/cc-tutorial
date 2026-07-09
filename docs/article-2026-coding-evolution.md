@@ -259,6 +259,12 @@ Claude Opus 4.5 在 SWE-Bench Verified 上首次突破 80% 行业门槛（80.9%�
 
 > **一句话总结：** OpenAI 工程师偷着用它，Google Gemini 团队工程师公开夸它，xAI 员工被切断后集体"生产力受损"，前 Codex 开发者用它做日常编程，连 OpenAI 联合创始人都说 OpenAI 在这件事上"做错了"。排行榜可以刷，这些事实刷不了。
 
+### 补充
+
+另外，如果你是资深开发者，你会惊叹 AI 带来的生产力的提升，如果是初级开发，会觉得 AI 写的代码一点不懂，架构不会，底层不会，反而还降低生产力。现阶段 AI Coding 并不会模型资深和普通开发者的差距，而是让能者更强，弱者更弱。
+
+Cursor 已经全面拥抱 Claude Code 了，SubAgent、Skills、Rule、CLAUDE.md 等等，![Cursor 拥抱 Claude Code](../research/evidence/Cursor.png)
+
 ## Not a Coder, but an Engineer
 
 软件开发并不只是编程，写写代码，如果只有这些那你只能被称为 Coder。从更高维度思考，结构化思维，将看似不可能完成的事情，转化为可执行的步骤，用第一性原理理解本质。你可能会说有很多细节的内容，我不知道怎么做，每个框架、语言都不一样，数据处理和 GUI 桌面软件开发，后端你开发好像都不一样。实际上这些内容，只要你更为底层的知识，Claude Code + Opus 就能助你解决绝大部分问题，编程语言、框架、不同领域内容都不再是问题。
