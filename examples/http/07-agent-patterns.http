@@ -3,13 +3,13 @@
 # ============================================
 # 说明：展示基于 LLM 的 Agent 设计模式
 # 目的：理解 Agent 如何通过工具调用完成复杂任务
-# 模型：StepFun step-3.5-flash
+# 模型：GLM-4.7
 # 核心概念：Reasoning + Acting (ReAct)
 # ============================================
 
 # 环境变量
-@STEPFUN_BASE_URL = https://api.stepfun.com/v1/chat/completions
-@STEPFUN_BEARER_TOKEN = Bearer {{$dotenv STEPFUN_API_KEY}}
+@GLM_BASE_URL = https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
+@GLM_BEARER_TOKEN = Bearer {{$dotenv GLM_API_KEY}}
 
 # ============================================
 # 1. ReAct 模式 (Reasoning + Acting)
@@ -24,10 +24,10 @@
 #   4. 重复 1-3，直到完成任务
 # 场景：规划明天的杭州一日游，需要考虑天气
 # 预期：模型会先查询天气，再根据天气推荐景点
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -40,7 +40,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "帮我规划明天（2026-02-10）的杭州一日游，需要考虑天气情况。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -117,10 +117,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 #   - Observation: 分析天气（晴天，适合户外）
 #   - Thought: 决定查询户外景点
 #   - Action: 调用 get_attractions(outdoor)
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -152,7 +152,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "{\"location\": \"杭州\", \"date\": \"2026-02-10\", \"weather\": \"Sunny\", \"temperature\": \"18°C\", \"description\": \"晴朗，适合户外活动\"}"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -213,10 +213,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 #   - Observation: 分析景点列表
 #   - Thought: 决定查询餐厅
 #   - Action: 调用 get_restaurants
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -267,7 +267,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "{\"attractions\": [{\"name\": \"西湖\", \"rating\": 4.8, \"description\": \"杭州最著名的景点\"}, {\"name\": \"灵隐寺\", \"rating\": 4.6, \"description\": \"千年古刹\"}, {\"name\": \"西溪湿地\", \"rating\": 4.5, \"description\": \"自然生态湿地公园\"}]}"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -328,10 +328,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 区别于 ReAct：ReAct 是边思考边行动，Plan-and-Execute 是先规划后执行
 # 场景：写一篇关于杭州旅游的博客文章
 # 预期：模型先输出完整计划，再开始执行各步骤
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -344,7 +344,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "写一篇关于杭州旅游的博客文章，包括天气建议、必去景点、美食推荐三个部分。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -398,10 +398,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 ### [Agent 2.2] Plan-and-Execute - 执行阶段
 # 说明：模拟计划制定完成后，进入执行阶段
 # 预期：模型按计划依次调用工具
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -422,7 +422,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "好的，请开始执行你的计划。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -481,10 +481,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：ReAct 可以根据中间结果动态调整策略
 # 场景：查询天气后发现下雨，立即改变计划
 # 预期：模型在发现下雨后，改为推荐室内景点
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -516,7 +516,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "{\"weather\": \"Rainy\", \"temperature\": \"12°C\", \"description\": \"大雨，不适合户外活动\"}"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -559,10 +559,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：Plan-and-Execute 可以全局规划，避免重复工作
 # 场景：需要写多篇不同主题的文章
 # 预期：模型制定统一的数据收集计划，避免重复调用
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -575,7 +575,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "写两篇文章：一篇关于杭州的户外活动，一篇关于杭州的文化景点。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -605,10 +605,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：Agent 执行任务后，自我检查结果是否合理
 # 场景：计算复杂数学问题，自我验证答案
 # 预期：模型在给出答案后，使用工具验证
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -621,7 +621,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "计算：(123 + 456) × (789 - 654) ÷ 10"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",

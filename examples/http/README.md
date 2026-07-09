@@ -1,6 +1,6 @@
 # HTTP 示例集合
 
-这个目录包含了全面的大语言模型 API 使用示例，重点使用 **StepFun** 模型，涵盖基础用法、高级特性和实战场景。
+这个目录包含了全面的大语言模型 API 使用示例，重点使用 **智谱 GLM** 模型，涵盖基础用法、高级特性和实战场景。
 
 ## 📁 文件列表
 
@@ -152,7 +152,7 @@
   - 内容丰富度控制
 
 - 🆚 **模型对比**
-  - StepFun vs DeepSeek
+  - GLM vs DeepSeek
   - 代码生成、创意写作、多语言
 
 **学习目标**：
@@ -284,7 +284,7 @@ class AnthropicAdapter implements ChatProvider { ... }
 
 ## ⚠️ 模型能力差异说明
 
-本示例集合主要使用 **StepFun** 模型进行演示。不同模型的能力存在差异：
+本示例集合主要使用 **智谱 GLM** 模型进行演示。不同模型的能力存在差异：
 
 ### 核心能力对比
 
@@ -292,20 +292,19 @@ class AnthropicAdapter implements ChatProvider { ... }
 |------|-----------|-----------------|--------|---------|
 | **Claude Opus 4.6** | 200K | ✅ 原生支持 | ✅ 原生多模态 | 复杂任务、代码生成 |
 | **GPT-4o** | 128K | ✅ 原生支持 | ✅ 原生多模态 | 通用场景 |
-| **StepFun step-3.5-flash** | 32K | ✅ 原生支持 | ⚠️ 非原生 | 成本敏感、中文任务 |
+| **智谱 GLM-4.7** | 128K | ✅ 原生支持 | ✅ 原生多模态 | 中文任务、性价比 |
 | **DeepSeek V3** | 64K | ✅ 原生支持 | ❌ 无 | 代码生成、推理 |
-| **智谱 GLM-4** | 128K | ✅ Anthropic 格式 | ⚠️ 非原生 | 中文任务 |
 
 ### API 协议差异
 
 不同模型厂商的 API 格式存在差异：
 
 1. **OpenAI 格式**（最通用）
-   - StepFun、DeepSeek、OpenAI 系列
+   - GLM、DeepSeek、OpenAI 系列
    - 请求格式：`{"messages": [...], "tools": [...]}`
 
 2. **Anthropic 格式**
-   - Claude 系列、智谱 GLM
+   - Claude 系列
    - 请求格式：`{"messages": [...], "system": "...", "tools": [...]}`
 
 3. **协议转换**
@@ -314,10 +313,10 @@ class AnthropicAdapter implements ChatProvider { ... }
 
 ### 本示例集的模型选择
 
-- **主要使用**: StepFun step-3.5-flash（性价比高）
-- **对比测试**: DeepSeek V3、GLM-4
+- **主要使用**: 智谱 GLM-4.7（性价比高）
+- **对比测试**: DeepSeek V3
 - **原因**:
-  - StepFun 对 Function Calling 支持良好
+  - GLM 对 Function Calling 支持良好
   - 成本相对较低
   - 中文处理能力优秀
 
@@ -337,7 +336,7 @@ class AnthropicAdapter implements ChatProvider { ... }
 创建 `.env` 文件，添加 API Keys：
 
 ```env
-STEPFUN_API_KEY=sk-xxxxx
+GLM_API_KEY=xxxxx
 DEEPSEEK_API_KEY=sk-xxxxx
 ```
 
@@ -379,8 +378,8 @@ DEEPSEEK_API_KEY=sk-xxxxx
 ## 📚 参考资料
 
 ### 官方文档
-- [StepFun Tool Call 文档](https://platform.stepfun.com/docs/guide/tool_call)
-- [StepFun Chat Completion 文档](https://platform.stepfun.com/docs/api-reference/chat/chat-completion-create)
+- [智谱 GLM API 文档](https://open.bigmodel.cn/dev/api)
+- [DeepSeek API 文档](https://platform.deepseek.com/api-docs/)
 
 ### 提示词工程
 - [Chain-of-Thought Prompting Guide](https://www.promptingguide.ai/techniques/cot)
@@ -439,7 +438,7 @@ DEEPSEEK_API_KEY=sk-xxxxx
 - 缓存常用的工具结果
 
 ### 成本控制
-- 优先使用高效模型（如 `step-3.5-flash`）
+- 优先使用高效模型（如 `GLM-4.7`）
 - 避免不必要的工具调用
 - 使用 `max_tokens` 限制输出长度
 - 在提示词中明确"只调用必要的工具"
@@ -479,7 +478,7 @@ DEEPSEEK_API_KEY=sk-xxxxx
 - ✅ **补充内容**：传统工具调用方法（文本 ReAct、XML、JSON 格式）（17 个示例）
 - ✅ **补充内容**：API 协议兼容性（OpenAI vs Anthropic 格式差异）
 - ✅ 总计 **128+ 个高质量示例**，涵盖从入门到专家的完整学习路径
-- ✅ 所有示例使用 **StepFun** 模型（主要）+ DeepSeek、GLM（对比）
+- ✅ 所有示例使用 **智谱 GLM** 模型（主要）+ DeepSeek（对比）
 - ✅ 文件采用数字前缀（01-09）便于 IDE 中按顺序浏览
 - ✅ 包含详细注释、最佳实践和完整的参考资料
 

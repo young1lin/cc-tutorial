@@ -2,9 +2,9 @@
 @DEEP_SEEK_BASE_URL = https://api.deepseek.com/chat/completions
 @DEEP_SEEK_BEARER_TOKEN = Bearer {{$dotenv DEEPSEEK_API_KEY}}
 
-# 阶跃星辰
-@STEPFUN_BASE_URL = https://api.stepfun.com/v1/chat/completions
-@STEPFUN_BEARER_TOKEN = Bearer {{$dotenv STEPFUN_API_KEY}}
+# 智谱 GLM
+@GLM_BASE_URL = https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
+@GLM_BEARER_TOKEN = Bearer {{$dotenv GLM_API_KEY}}
 
 # 通用变量
 @LOCALE = zh-CN
@@ -35,10 +35,10 @@ Authorization: {{DEEP_SEEK_BEARER_TOKEN}}
 }
 
 ### Single request
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -51,16 +51,16 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "role": "user"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
 
-### 阶跃星辰调用
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+### 智谱 GLM 调用
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -73,7 +73,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "role": "user"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": true,
   "temperature": 0
 }
@@ -102,10 +102,10 @@ Authorization: {{DEEP_SEEK_BEARER_TOKEN}}
 }
 
 ### Regular conversation
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -126,16 +126,16 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "role": "user"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
 
 ### Function calling conversation
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -148,7 +148,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "role": "user"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -173,10 +173,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 }
 
 ### Function calling conversation with tool call
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -209,7 +209,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "Sunny, 29°C"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",

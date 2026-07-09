@@ -3,7 +3,7 @@
 # ============================================
 # 说明：这些示例展示了大语言模型的固有局限性
 # 目的：帮助理解 LLM 的工作原理和边界
-# 模型：GLM-4.6（智谱 AI）、StepFun step-3.5-flash、DeepSeek
+# 模型：GLM-4.7（智谱 AI）、DeepSeek
 # 注意：不同模型的局限性程度不同，以下测试基于 2026 年初的模型能力
 # ============================================
 
@@ -11,7 +11,7 @@
 @response_language = You must respond in the locale specified by the LOCALE variable ({{LOCALE}}).All your responses should be in the language corresponding to this locale code.Do not use any other language regardless of the user's input language.
 
 # 环境变量
-@GLM_BASE_URL = https://open.bigmodel.cn/api/paas/v4/chat/completions
+@GLM_BASE_URL = https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
 @GLM_BEARER_TOKEN = Bearer {{$dotenv GLM_API_KEY}}
 
 @STEPFUN_BASE_URL = https://api.stepfun.com/v1/chat/completions
@@ -42,9 +42,10 @@ Authorization: {{GLM_BEARER_TOKEN}}
     },
     {
       "role": "user",
-      "content": "Calculate: 982717.1211 * 213213.23321 - 321312.777 / 1112.1121. Do NOT use any tools. Do NOT show reasoning. Just give the final number."
+      "content": "Calculate: 982717.1211 * 213213.23321 - 321312.777 / 1112.1121. Do NOT use any tools. Do NOT show reasoning. Just give the final number directly."
     }
   ],
+  "max_tokens": 100,
   "model": "GLM-4.6",
   "stream": false,
   "temperature": 0
@@ -55,10 +56,10 @@ Authorization: {{GLM_BEARER_TOKEN}}
 # 原理：模型识别需要计算，调用外部计算器工具
 # 预期：模型会调用 calculator 工具，返回精确结果
 # 9876 × 5432 = 53646432
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -71,7 +72,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请计算：9876 × 5432 = ?"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -103,10 +104,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：模型训练数据截止于特定日期，无法获取之后的信息
 # 测试时间：2026-02-09
 # 预期：模型会承认不知道，或基于旧信息推测
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -119,7 +120,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请问 2026 年 2 月发生了哪些重大科技新闻？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -127,10 +128,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 ### [局限性 2.2] 实时信息缺失 - 当前时间
 # 说明：模型无法获取实时信息（时间、天气、股票等）
 # 预期：模型可能编造一个时间，或承认无法获取
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -143,7 +144,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "现在几点了？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -151,10 +152,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 ### [局限性 2.3] 解决方案：Function Calling + 实时 API
 # 说明：通过工具调用获取实时信息
 # 预期：模型调用 get_current_time 工具
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -167,7 +168,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "现在几点了？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -223,10 +224,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：LLM 不具备基于形式逻辑的严格推理能力
 # 问题：测试否定逻辑的理解
 # 预期：可能出现逻辑错误
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -239,7 +240,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "给定：\n1. 所有的猫都喜欢鱼\n2. Tom 不喜欢鱼\n\n请问：Tom 是不是猫？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -248,10 +249,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：测试模型处理多步传递性推理的能力
 # 正确答案：C 比 A 高（A<B, B<C => A<C）
 # 预期：可能在多步推理中出错
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -264,7 +265,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "给定：\n1. A 比 B 矮\n2. B 比 C 矮\n3. C 比 D 矮\n4. D 比 E 矮\n\n请问：C 和 A 谁更高？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -273,10 +274,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：测试模型处理悖论的能力
 # 问题：自指悖论（Russell 悖论的通俗版）
 # 预期：可能给出矛盾的回答，或回避问题
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -289,7 +290,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "在一个村庄里，有一个理发师。他的规则是：\n- 他给所有不给自己刮胡子的人刮胡子\n- 他不给给自己刮胡子的人刮胡子\n\n请问：这个理发师给自己刮胡子吗？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -302,10 +303,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：模型可能混淆不同来源的知识，产生"幻觉"
 # 经典案例："林黛玉倒拔垂杨柳"（混淆《红楼梦》和《水浒传》）
 # 预期：可能会混淆角色和情节
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -318,7 +319,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请问《红楼梦》中是谁倒拔了垂杨柳？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -326,10 +327,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 ### [局限性 4.2] 编造不存在的 API - 技术幻觉
 # 说明：模型可能编造不存在的函数、API 或技术细节
 # 预期：可能会"创造"一个听起来合理但不存在的 API
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -342,7 +343,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请问 Python 的 os 模块中有一个叫 os.get_all_processes() 的函数吗？如果有，请说明它的用法。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -401,10 +402,10 @@ Authorization: {{GLM_BEARER_TOKEN}}
 ### [局限性 4.3] 虚假引用 - 学术幻觉
 # 说明：模型可能编造不存在的论文、作者或引用
 # 预期：可能会"创造"一个听起来专业的虚假引用
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -417,7 +418,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请推荐 3 篇关于'量子纠缠在区块链中的应用'的权威论文，包括作者、标题和发表年份。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -425,10 +426,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 ### [局限性 4.4] 对比测试 - 高 temperature 增加幻觉风险
 # 说明：temperature 越高，模型越"创造性"，幻觉风险也越高
 # 预期：temperature=1.5 可能产生更多不可靠的内容
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -441,7 +442,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请介绍一下 JavaScript 中的 Array.prototype.superMap() 方法。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 1.5
 }
@@ -455,10 +456,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 测试：提供一个长列表，询问中间的内容
 # 答案：济南
 # 预期：可能遗忘或混淆中间部分的信息
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -471,7 +472,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "以下是一个城市列表：\n北京、上海、广州、深圳、杭州、南京、武汉、成都、重庆、西安、天津、苏州、长沙、郑州、济南、青岛、大连、沈阳、哈尔滨、长春、厦门、福州、昆明、贵阳、南宁、海口、兰州、银川、西宁、乌鲁木齐。\n\n请问：第 15 个城市是哪个？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -637,14 +638,14 @@ Authorization: {{GLM_BEARER_TOKEN}}
 }
 
 # ============================================
-# 7. 模型对比 - StepFun vs DeepSeek
+# 7. 模型对比 - GLM vs DeepSeek
 # ============================================
 
-### [对比 6.1] StepFun - 大数乘法
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+### [对比 7.1] GLM-4.7 - 大数乘法
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -657,12 +658,12 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请计算：9876 × 5432，只给出数字结果。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
 
-### [对比 6.2] DeepSeek - 大数乘法
+### [对比 7.2] DeepSeek - 大数乘法
 # 9876 × 5432 = 53646432
 POST {{DEEP_SEEK_BASE_URL}} HTTP/1.1
 Content-Type: application/json
@@ -687,7 +688,7 @@ Authorization: {{DEEP_SEEK_BEARER_TOKEN}}
 #
 # 大模型的核心局限性：
 # 1. 数学计算：基于概率预测，不是真正的计算器 → 解决：Function Calling + 计算器工具
-#    - 简单整数运算：现代模型（step-3.5-flash、GLM-4.6）通常正确
+#    - 简单整数运算：现代模型（GLM-4.7）通常正确
 #    - 复杂小数运算：即使有内置推理，仍可能出错（如 GLM-4.6 测试）
 # 2. 知识截止：无法获取训练后的新信息 → 解决：RAG、Web Search、实时 API
 # 3. 逻辑推理：缺乏形式逻辑的严格推理能力 → 解决：Chain-of-Thought、外部推理引擎
@@ -699,8 +700,7 @@ Authorization: {{DEEP_SEEK_BEARER_TOKEN}}
 # 模型差异说明（2026 年初测试）：
 # | 模型 | 数学计算 | 幻觉控制 | 内置推理 |
 # |------|---------|---------|---------|
-# | step-3.5-flash | ✅ 简单正确 | 较好 | ✅ 有 |
-# | GLM-4.6 | ❌ 复杂出错 | ❌ 有幻觉 | ✅ 有 |
+# | GLM-4.7 | ❌ 复杂出错 | ❌ 有幻觉 | ✅ 有 |
 # | DeepSeek | ✅ 较好 | 较好 | 可选 |
 #
 # 关键启示：
@@ -712,6 +712,6 @@ Authorization: {{DEEP_SEEK_BEARER_TOKEN}}
 # 参考资料：
 # - 大模型的科学解释和逻辑增强: https://www.caa.org.cn/article/345/5045.html
 # - 大模型幻觉及其价值风险: http://www.news.cn/tech/20250411/250a24bfd95c4551869630f53e9584d6/c.html
-# - StepFun 官方文档: https://platform.stepfun.com/docs
 # - 智谱 AI 官方文档: https://open.bigmodel.cn/dev/api
+# - DeepSeek 官方文档: https://platform.deepseek.com/api-docs/
 # ============================================

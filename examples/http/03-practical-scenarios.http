@@ -3,13 +3,13 @@
 # ============================================
 # 说明：展示 LLM 在实际工作中的应用场景
 # 目的：理解如何将 LLM 集成到实际业务流程
-# 模型：StepFun step-3.5-flash
+# 模型：GLM-4.7
 # 场景：代码审查、摘要、情感分析、翻译、数据提取
 # ============================================
 
 # 环境变量
-@STEPFUN_BASE_URL = https://api.stepfun.com/v1/chat/completions
-@STEPFUN_BEARER_TOKEN = Bearer {{$dotenv STEPFUN_API_KEY}}
+@GLM_BASE_URL = https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
+@GLM_BEARER_TOKEN = Bearer {{$dotenv GLM_API_KEY}}
 
 # ============================================
 # 1. 代码审查与重构
@@ -19,10 +19,10 @@
 # 说明：使用 LLM 审查代码，发现潜在问题
 # 场景：Python 代码审查
 # 预期：识别除零错误、类型错误等
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -35,7 +35,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请审查以下 Python 代码：\n\n```python\ndef calculate_average(numbers):\n    total = 0\n    for num in numbers:\n        total += num\n    return total / len(numbers)\n\ndef process_data(data):\n    result = []\n    for item in data:\n        if item['value'] > 0:\n            result.append(item['value'] * 2)\n    return result\n\nusers = [{'name': 'Alice', 'age': 30}, {'name': 'Bob'}]\nfor user in users:\n    print(f\"{user['name']} is {user['age']} years old\")\n```"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -44,10 +44,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：使用 LLM 重构代码，提升质量
 # 场景：重构混乱的代码
 # 预期：返回重构后的代码，并说明改进点
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -60,7 +60,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请重构以下 JavaScript 代码：\n\n```javascript\nfunction f(a,b,c){\n  var x=a+b\n  if(x>c){return x*2}\n  else{return c-x}\n}\n\nvar d=[1,2,3,4,5]\nvar r=[]\nfor(var i=0;i<d.length;i++){\n  if(d[i]%2==0){r.push(d[i]*3)}\n}\nconsole.log(r)\n```"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -69,10 +69,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：使用 LLM 解释复杂代码的工作原理
 # 场景：理解遗留代码
 # 预期：逐步解释代码逻辑
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -85,7 +85,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请解释以下 Python 代码的工作原理：\n\n```python\ndef memoize(func):\n    cache = {}\n    def wrapper(*args):\n        if args not in cache:\n            cache[args] = func(*args)\n        return cache[args]\n    return wrapper\n\n@memoize\ndef fibonacci(n):\n    if n < 2:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n```"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0.3
 }
@@ -94,10 +94,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：使用 LLM 为代码生成单元测试
 # 场景：测试驱动开发
 # 预期：返回完整的测试用例
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -110,7 +110,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请为以下 Python 函数生成单元测试：\n\n```python\ndef calculate_discount(price: float, discount_rate: float) -> float:\n    \"\"\"\n    计算折扣后的价格\n    \n    Args:\n        price: 原价（必须 > 0）\n        discount_rate: 折扣率（0-1 之间）\n    \n    Returns:\n        折扣后的价格\n    \"\"\"\n    if price <= 0:\n        raise ValueError(\"Price must be positive\")\n    if not 0 <= discount_rate <= 1:\n        raise ValueError(\"Discount rate must be between 0 and 1\")\n    return price * (1 - discount_rate)\n```"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -123,10 +123,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：将长新闻压缩为关键要点
 # 场景：新闻聚合、信息提取
 # 预期：返回 3-5 条要点
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -139,7 +139,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请总结以下新闻：\n\n杭州市政府今天宣布，将在未来三年内投资 50 亿元打造智慧城市项目。该项目包括建设城市大脑、智能交通系统和数字政务平台。市长表示，这将大幅提升城市管理效率，改善市民生活质量。项目预计将创造 2000 个就业岗位，并吸引更多科技企业入驻。目前已有 10 家知名科技公司签约参与项目建设。专家认为，此举将使杭州成为全国智慧城市建设的标杆。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -148,10 +148,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：将技术文档总结为结构化摘要
 # 场景：技术调研、文档管理
 # 预期：返回结构化的摘要（背景、方法、结果、结论）
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -164,7 +164,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请总结以下技术文档：\n\nReAct（Reasoning and Acting）是一种将推理和行动结合的 Agent 框架。传统的 Agent 要么只进行推理，要么只执行行动，而 ReAct 通过交替进行思考（Thought）、行动（Action）和观察（Observation），实现了更智能的问题解决。实验表明，ReAct 在多个基准测试中优于传统方法。在 HotpotQA 问答任务中，ReAct 的准确率达到 34.5%，比 Chain-of-Thought 提升 7%。在 ALFWorld 游戏任务中，ReAct 的成功率为 75%，比基线方法提升 25%。研究表明，通过显式的推理步骤，模型能够更好地处理复杂任务。ReAct 已被广泛应用于 LangChain 等 Agent 框架中。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -173,10 +173,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：从会议记录中提取行动项
 # 场景：会议管理、项目协作
 # 预期：返回待办事项列表
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -189,7 +189,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请从以下会议记录提取行动项：\n\n产品会议记录（2026-02-09）\n参会人员：张三（产品）、李四（开发）、王五（设计）\n\n讨论内容：\n1. 新版本功能规划\n   - 张三：下周一前完成需求文档\n   - 李四：评估技术可行性，周三前给出方案\n   - 王五：设计 UI 原型，下周五前完成\n\n2. Bug 修复\n   - 李四：今天下班前修复登录问题\n   - 张三：跟进用户反馈，本周内给出解决方案\n\n3. 测试计划\n   - 全员：下周二参加测试培训\n   - 李四：准备测试环境，下周一完成"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -202,10 +202,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：分析用户评论的情感倾向
 # 场景：电商评论、社交媒体监控
 # 预期：返回情感标签（正面/负面/中性）
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -218,7 +218,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "这家餐厅的菜品质量不错，服务态度也很好，但价格有点贵，性价比一般。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -227,10 +227,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：对评论的多个方面进行情感分析
 # 场景：产品评价、服务质量监控
 # 预期：返回多维度评分
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -243,7 +243,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "这款手机性能强悍，拍照效果很棒，但电池续航一般，而且价格偏高。客服态度不错，物流也很快。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -252,10 +252,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：批量分析多条评论，输出整体趋势
 # 场景：舆情监控、品牌管理
 # 预期：返回统计结果
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -268,7 +268,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请分析以下用户评论：\n\n1. 这家店的服务真好，下次还会来！\n2. 价格太贵了，不值这个价。\n3. 菜品一般，没有特色。\n4. 环境很棒，适合约会。\n5. 等了半小时才上菜，体验很差。\n6. 味道不错，分量也足。\n7. 服务员态度不好，不推荐。\n8. 性价比很高，值得推荐！"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -281,10 +281,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：将中文翻译为英文
 # 场景：文档翻译、国际化
 # 预期：返回准确、流畅的译文
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -297,7 +297,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请将以下中文翻译为英文：\n\n人工智能正在深刻改变我们的生活方式。从智能手机到自动驾驶汽车，AI 技术无处不在。然而，我们也需要关注 AI 带来的伦理和安全问题。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0.3
 }
@@ -306,10 +306,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：翻译包含专业术语的技术文档
 # 场景：技术文档本地化
 # 预期：准确翻译术语，保持技术准确性
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -322,7 +322,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请将以下技术文档翻译为英文：\n\nReAct 框架通过交替执行推理（Reasoning）和行动（Acting）来解决问题。它使用思维链（Chain-of-Thought）提示词引导大语言模型（LLM）输出推理过程，然后调用外部工具（Tools）执行行动。这种方法在 HotpotQA 基准测试中取得了最先进（SOTA）的结果。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -331,10 +331,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：翻译时考虑文化差异和语境
 # 场景：营销文案、文学作品翻译
 # 预期：译文符合目标语言的表达习惯
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -347,7 +347,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请将以下中文翻译为英文，注意文化适配：\n\n春节是中国最重要的传统节日，家家户户都会贴春联、吃团圆饭、放鞭炮。长辈会给小孩发压岁钱，寓意平安吉祥。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0.3
 }
@@ -360,10 +360,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：从文本中提取人名、地名、机构名等
 # 场景：信息抽取、知识图谱构建
 # 预期：返回结构化的实体列表
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -376,7 +376,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请从以下文本提取实体：\n\n2026 年 2 月 9 日，阿里巴巴集团 CEO 张勇在杭州总部宣布，公司将投资 10 亿美元在美国硅谷建立 AI 研究院。该研究院将与斯坦福大学合作，重点研究大语言模型技术。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -385,10 +385,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：将非结构化文本转换为表格
 # 场景：数据整理、报表生成
 # 预期：返回 Markdown 表格
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -401,7 +401,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请将以下信息整理为表格：\n\niPhone 15 售价 5999 元，内存 128GB，颜色黑色。\niPhone 15 Pro 售价 7999 元，内存 256GB，颜色白色。\niPhone 15 Pro Max 售价 9999 元，内存 512GB，颜色蓝色。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -410,10 +410,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：从简历中提取关键信息
 # 场景：招聘管理、候选人筛选
 # 预期：返回结构化的简历信息
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -426,7 +426,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请解析以下简历：\n\n张三\n电话：13800138000\n邮箱：zhangsan@example.com\n\n教育背景：\n浙江大学，计算机科学与技术，本科，2018-2022\n\n工作经历：\n阿里巴巴，前端工程师，2022-2024（2年）\n腾讯，高级前端工程师，2024-至今\n\n技能：React、TypeScript、Node.js、Python"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -439,10 +439,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：根据要点生成正式的商务邮件
 # 场景：商务沟通、客户关系
 # 预期：返回格式规范的邮件
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -455,7 +455,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请撰写一封邮件，要点如下：\n- 收件人：李总\n- 目的：邀请参加产品发布会\n- 时间：2026年2月15日下午3点\n- 地点：杭州国际会议中心\n- 内容：介绍公司最新 AI 产品"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0.3
 }
@@ -464,10 +464,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：生成吸引人的社交媒体文案
 # 场景：营销推广、品牌宣传
 # 预期：返回简短、有吸引力的文案
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -480,7 +480,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "为新款智能手表撰写推广文案，卖点：\n- 7 天续航\n- 健康监测\n- 防水设计\n- 限时优惠 500 元"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0.7
 }
@@ -489,10 +489,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：根据产品特性生成常见问题解答
 # 场景：客户服务、产品文档
 # 预期：返回结构化的 FAQ
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -505,7 +505,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "请为以下产品生成 FAQ：\n\n产品：云存储服务\n特点：\n- 免费 10GB 空间\n- 付费版 100GB，月费 9.9 元\n- 支持多设备同步\n- 文件自动备份\n- 分享链接功能"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0.3
 }
@@ -559,7 +559,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 成本优化：
 # - 缓存常见问题的回答
 # - 批量处理相似任务
-# - 使用高效模型（step-3.5-flash）
+# - 使用高效模型（GLM-4.7）
 # - 精简提示词，去除冗余信息
 #
 # 质量保障：

@@ -8,8 +8,8 @@
 # ============================================
 
 # 环境变量
-@STEPFUN_BASE_URL = https://api.stepfun.com/v1/chat/completions
-@STEPFUN_BEARER_TOKEN = Bearer {{$dotenv STEPFUN_API_KEY}}
+@GLM_BASE_URL = https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
+@GLM_BEARER_TOKEN = Bearer {{$dotenv GLM_API_KEY}}
 
 # ============================================
 # 1. 文本格式 ReAct（LangChain 风格） 适合智能客服系统，一步步获取信息，并且得到信息后执行下一步
@@ -24,10 +24,10 @@
 #   Observation: 工具返回结果（需要人工或程序插入）
 # 历史：这是 LangChain 最早的 ReAct 实现方式
 # 参考：https://python.langchain.com/docs/modules/agents/agent_types/react
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -40,7 +40,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "明天杭州天气怎么样？如果下雨，推荐室内景点。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -52,10 +52,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 #   2. 程序解析，执行工具，插入 Observation
 #   3. 模型继续输出下一轮 Thought + Action
 #   4. 重复直到 Final Answer
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -76,7 +76,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "Observation: {\"location\": \"杭州\", \"date\": \"2026-02-11\", \"weather\": \"Rainy\", \"temperature\": \"10°C\", \"description\": \"中雨\"}"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -84,10 +84,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 ### [传统 1.3] 文本格式 ReAct - 完整示例（3 轮循环）
 # 说明：展示完整的多轮 ReAct 对话
 # 演示：查天气 → 根据天气搜索景点 → 给出最终答案
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -116,7 +116,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "Observation: 杭州室内景点：浙江博物馆、杭州科技馆、西湖音乐喷泉（室内观赏区）、杭州图书馆"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -136,10 +136,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 优势：结构清晰，易于解析
 # 历史：Claude 2.x 时期的推荐方式
 # 参考：https://docs.anthropic.com/en/docs/build-with-claude/tool-use
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -152,7 +152,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "明天北京天气如何？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -160,10 +160,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 ### [传统 2.2] XML 格式 - 多工具调用
 # 说明：使用 XML 格式表示多个工具调用
 # 场景：需要同时调用多个工具
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -176,17 +176,17 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "查询北京、上海、杭州的天气。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
 
 ### [传统 2.3] XML 格式 - 工具返回（模拟完整流程）
 # 说明：模拟工具执行后的 XML 格式返回
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -207,7 +207,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "<tool_result>\n  <tool>get_weather</tool>\n  <result>\n    <location>北京</location>\n    <weather>Sunny</weather>\n    <temperature>15°C</temperature>\n  </result>\n</tool_result>"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -221,10 +221,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 格式：让模型输出 JSON 字符串，程序解析后执行
 # 优势：标准化、易于解析
 # 劣势：需要精确的提示词，模型容易出错
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -237,7 +237,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "明天杭州天气怎么样？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -245,10 +245,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 ### [传统 3.2] JSON 格式 - 多步骤工作流
 # 说明：使用 JSON 数组表示多步骤计划
 # 场景：Plan-and-Execute 模式的传统实现
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -261,17 +261,17 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "帮我规划明天的杭州一日游，要考虑天气和景点。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
 
 ### [传统 3.3] JSON 格式 - 工具结果处理
 # 说明：模拟工具执行后，将结果以 JSON 格式返回
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -292,7 +292,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "{\n  \"tool\": \"get_weather\",\n  \"result\": {\n    \"location\": \"杭州\",\n    \"weather\": \"Sunny\",\n    \"temperature\": \"20°C\"\n  }\n}"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -305,10 +305,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 说明：结合 Markdown 的可读性和 JSON 的结构化
 # 优势：既能让用户理解，又能让程序解析
 # 应用：ChatGPT Plugins 早期实现
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -321,7 +321,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "明天北京天气怎么样？"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -336,10 +336,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 2. 需要额外的解析逻辑
 # 3. 模型可能"忘记"格式要求
 # 4. 无法保证输出结构化
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -352,7 +352,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "查询杭州天气"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -364,10 +364,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 # 3. 返回结构化 JSON，直接使用
 # 4. 支持并行调用
 # 5. 错误处理更完善
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -376,7 +376,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "查询杭州天气"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "tools": [
     {
       "type": "function",
@@ -403,10 +403,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 
 ### [实战 6.1] 步骤 1：初始请求
 # 说明：用户发起请求，模型输出第一个 Action
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -419,7 +419,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "明天杭州会下雨吗？如果下雨，推荐室内活动。"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
@@ -445,10 +445,10 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
 
 ### [实战 6.2] 步骤 3：插入 Observation，继续对话
 # 说明：将工具结果插入对话，模型继续推理
-POST {{STEPFUN_BASE_URL}} HTTP/1.1
+POST {{GLM_BASE_URL}} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Authorization: {{STEPFUN_BEARER_TOKEN}}
+Authorization: {{GLM_BEARER_TOKEN}}
 
 {
   "messages": [
@@ -469,7 +469,7 @@ Authorization: {{STEPFUN_BEARER_TOKEN}}
       "content": "Observation: {\"weather\": \"Rainy\", \"temperature\": \"12°C\", \"description\": \"中雨\"}"
     }
   ],
-  "model": "step-3.5-flash",
+  "model": "GLM-4.7",
   "stream": false,
   "temperature": 0
 }
