@@ -163,6 +163,9 @@ Each research file should include YAML front matter with `title`, `author`, `dat
 - `research/03-andrew-ng-course-outline.md` - Andrew Ng course outline
 - `research/04-addy-osmani-2026-workflow.md` - Addy Osmani 2026 workflow
 - `research/05-boris-cherny-workflow-x-thread.md` - Boris Cherny X thread
+- `research/06-anthropic-internal-ai-transforming-work.md` - Anthropic internal AI research
+- `research/07-hwchase17-react-prompt.md` - ReAct prompt template (LangChain)
+- `research/08-lsp-language-server-protocol.md` - LSP deep dive
 
 ## Custom Commands
 

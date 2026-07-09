@@ -27,6 +27,9 @@
 - [Andrew Ng 课程大纲](../research/03-andrew-ng-course-outline.md)
 - [Addy Osmani 2026 工作流](../research/04-addy-osmani-2026-workflow.md)
 - [Boris Cherny 工作流 X Thread](../research/05-boris-cherny-workflow-x-thread.md)
+- [Anthropic 内部 AI 研究](../research/06-anthropic-internal-ai-transforming-work.md)
+- [ReAct 提示词模板](../research/07-hwchase17-react-prompt.md)
+- [LSP 深度研究](../research/08-lsp-language-server-protocol.md)
 
 ## 示例代码
 
