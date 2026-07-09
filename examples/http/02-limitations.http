@@ -14,6 +14,9 @@
 
 @DEEP_SEEK_BASE_URL = https://api.deepseek.com/v1/chat/completions
 @DEEP_SEEK_BEARER_TOKEN = Bearer {{$dotenv DEEPSEEK_API_KEY}}
+# StepFun
+@STEPFUN_BASE_URL = https://api.stepfun.com/v1/chat/completions
+@STEPFUN_BEARER_TOKEN = Bearer {{$dotenv STEPFUN_API_KEY}}
 
 @intelligent_assistatnt_prompt = Your are intelligent assistant named Alice. Your main role is to help users answer their questions.
 
@@ -266,7 +269,7 @@ Authorization: {{GLM_BEARER_TOKEN}}
       "content": "我想去洗车，洗车店距离我家50米，你说我应该开车过去还是走过去？"
     }
   ],
-  "model": "glm-4-flash",
+  "model": "glm-5",
   "stream": false,
   "temperature": 0
 }

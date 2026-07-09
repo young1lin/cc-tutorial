@@ -2,6 +2,8 @@
 
 # 安装 Claude Code
 
+`npm install -g @anthropic-ai/claude-code`
+
 在安装 Claude Code 之前，必须安装最新的 Node.js，官网推荐的原生安装方式，国内安装有问题。安装好后，执行 `claude install` 命令来安装原生的。如果你没有代理，不知道怎么设置代理环境变量，那就不用原生的安装方式，npm 安装的方式也能用，只是会有警告提示而已。
 
 **Win10 用户特别注意**：Win10 自带的终端有兼容问题，Win10 用户不要安装最新版本的 Windows Terminal 和 PowerShell 7，有 BUG 会闪退、无法安装。推荐使用以下指定版本：
