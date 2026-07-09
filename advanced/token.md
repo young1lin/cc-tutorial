@@ -6,7 +6,7 @@
 
 每次请求里最贵、最慢的部分，往往不是生成最后几十个 token，而是把前面那一大坨提示词、工具定义、历史消息、检索上下文重新过一遍模型。你每次都重喂一遍，模型每次都重算一遍。钱和延迟就这么烧掉。
 
-`T1` Anthropic 和 OpenAI 都明确提供了 prompt/input cache 机制，用来减少这部分重复成本。[Anthropic prompt caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) [OpenAI prompt caching](https://platform.openai.com/docs/guides/prompt-caching)
+`T1` Anthropic 和 OpenAI 都明确提供了 prompt/input cache 机制，用来减少这部分重复成本。[Anthropic prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching) [OpenAI prompt caching](https://platform.openai.com/docs/guides/prompt-caching)
 
 ## 什么是 input cache token
 
@@ -30,7 +30,7 @@ total_input_tokens = cache_read_input_tokens + cache_creation_input_tokens + inp
 - `cache_creation_input_tokens`：这次新写入缓存的前缀 token
 - `input_tokens`：断点之后没被缓存的 token
 
-来源：[Anthropic prompt caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)
+来源：[Anthropic prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
 
 ### OpenAI
 
@@ -73,7 +73,7 @@ total_input_tokens = cache_read_input_tokens + cache_creation_input_tokens + inp
 
 `T1` OpenAI 官方说得很死：只有 exact prefix match 才可能命中缓存，所以静态内容应该放前面，动态内容放后面。[OpenAI prompt caching](https://platform.openai.com/docs/guides/prompt-caching)
 
-`T1` Anthropic 也明确建议把稳定内容放在提示开头，并按 `tools -> system -> messages` 的层级形成缓存前缀。[Anthropic prompt caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)
+`T1` Anthropic 也明确建议把稳定内容放在提示开头，并按 `tools -> system -> messages` 的层级形成缓存前缀。[Anthropic prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
 
 所以真正省 token 的提示结构，应该像这样：
 
@@ -92,7 +92,7 @@ total_input_tokens = cache_read_input_tokens + cache_creation_input_tokens + inp
 
 `T1` LangChain 官方示例和生态文档里，常见写法就是把 `{context}` 直接塞进 system prompt 或统一 QA prompt，再交给 `create_stuff_documents_chain` / retrieval chain。[LangSmith tracing quickstart](https://docs.langchain.com/langsmith/observability-quickstart) [LangChain retrieval docs](https://docs.langchain.com/oss/python/langchain/retrieval) [LangChain integration example](https://docs.langchain.com/oss/python/integrations/vectorstores/sqlserver)
 
-`T1` Anthropic 明确说明缓存层级是 `tools -> system -> messages`，而且某一层发生变化，会让该层及其后续层失效。[Anthropic prompt caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)
+`T1` Anthropic 明确说明缓存层级是 `tools -> system -> messages`，而且某一层发生变化，会让该层及其后续层失效。[Anthropic prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
 
 这两件事一拼起来，结论就出来了：
 
@@ -127,7 +127,7 @@ total_input_tokens = cache_read_input_tokens + cache_creation_input_tokens + inp
 
 ### 2. 工具定义尽量稳定
 
-`T1` Anthropic 明确说，修改 tool definitions 会让整个缓存失效。[Anthropic prompt caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)
+`T1` Anthropic 明确说，修改 tool definitions 会让整个缓存失效。[Anthropic prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
 
 ### 3. 动态检索放后面
 
@@ -139,7 +139,7 @@ total_input_tokens = cache_read_input_tokens + cache_creation_input_tokens + inp
 
 ### 5. 控制消息块数量和编辑位置
 
-`T1` Anthropic 文档指出，自动缓存只会往前检查有限数量的 block；如果你在太靠前的位置改内容，又没有额外断点，命中会失败。[Anthropic prompt caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)
+`T1` Anthropic 文档指出，自动缓存只会往前检查有限数量的 block；如果你在太靠前的位置改内容，又没有额外断点，命中会失败。[Anthropic prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
 
 ### 6. 监控缓存字段
 
@@ -159,6 +159,18 @@ total_input_tokens = cache_read_input_tokens + cache_creation_input_tokens + inp
 - RAG 检索片段的拼接方式
 
 如果这些东西大部分是稳定的，却还在每轮重算，那不是模型贵。是 prompt 结构太烂。
+
+## 缓存的价格与时效
+
+`T1` Anthropic 官方给出的缓存计价与生命周期（[Anthropic prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)）：
+
+- 默认 TTL 5 分钟，每次命中刷新存活时间。
+- 可选 1 小时 TTL，适合调用间隔超过 5 分钟的场景。
+- 写缓存不免费：5 分钟档按基础 input 价格的 1.25 倍计费，1 小时档按 2 倍计费。
+- 读缓存便宜一个数量级：按基础 input 价格的 0.1 倍计费。
+- 一次请求最多 4 个显式 cache breakpoint。
+
+**[Author's analysis]** 这组数字给出一个硬判断：缓存只在「同一前缀会被反复读」时划算。写一次 1.25 倍，读一次 0.1 倍——前缀被复用一次就回本。反过来，每轮都变的内容塞进缓存段，等于花 1.25 倍的钱买永远不会命中的缓存。
 
 ## 边界
 

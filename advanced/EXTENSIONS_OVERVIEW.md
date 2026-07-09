@@ -80,6 +80,8 @@ Claude Code = 会推理的模型 + 内置工具（文件操作、搜索、执行
 
 **黄金组合（T1）**：MCP 给连接（连接和鉴权由 server 管），Skill 教用法。例：MCP 连数据库，Skill 文档化 schema 和查询模式，加 `/post-to-slack` 工作流定义消息格式。
 
+**[Author's analysis]** 想搞懂 MCP 协议本身——host/client/server 三角色、JSON-RPC 2.0 over stdio、`initialize` → `tools/list` → `tools/call` 握手、从零写 server 和 client——可看本教程作者的配套项目 [minimal-mcp](https://github.com/young1lin/minimal-mcp)：手把手 README（从 LLM 本质、ReAct 一路写到多轮工具循环和真实 server 集成），Python 实现，另有 Java / Go / Streamable HTTP 版本。Claude Code 只是 MCP 的一个 host，协议吃透了，任何 host 上的配置都是细节。
+
 ### Hook vs Skill（最重要的一条）
 
 | | Hook | Skill |
@@ -93,7 +95,7 @@ Claude Code = 会推理的模型 + 内置工具（文件操作、搜索、执行
 
 > Put guardrails in hooks. An instruction like "never edit `.env`" in CLAUDE.md or a skill is a request, not a guarantee. A `PreToolUse` hook that blocks the edit is enforcement. **If a rule must hold every time, make it a hook rather than a prompt instruction.**
 
-CLAUDE.md / Skill 里写「别碰 .env」是**请求**——Claude 大概率听话，不保证。`PreToolUse` hook 拦截是**执行**。强制规则 → hook。[RALPH_LOOP_GUIDE](RALPH_LOOP_GUIDE.md) 就是这条原理的极致：用 Stop hook 强制 Claude 自主循环。
+CLAUDE.md / Skill 里写「别碰 .env」是**请求**——Claude 大概率听话，不保证。`PreToolUse` hook 拦截是**执行**。强制规则 → hook。[Loop 与调度全指南](LOOPS_SCHEDULING_GUIDE.md)里的 Ralph Loop 就是这条原理的极致：用 Stop hook 强制 Claude 自主循环。事件清单、matcher 语法、输入输出协议见 [Hooks 完全参考](HOOKS_GUIDE.md)。
 
 ---
 
@@ -129,7 +131,7 @@ context 成本排序（T1）：CLAUDE.md（全量每次）> Skills（描述每�
 | Claude 读一堆文件找符号定义 | 装 code intelligence |
 | 副任务输出淹没对话 | 走 subagent |
 | 想某事每次自动发生 | 写 hook |
-| 第二个仓库要同样配置 | 打包成 plugin |
+| 第二个仓库要同样配置 | 打包成 plugin（[怎么打](PLUGINS_GUIDE.md)） |
 
 **[Author's analysis]** 同样的触发也告诉你何时**更新**现有的：同一个错误反复出现 = CLAUDE.md 该编辑，不是聊天里再纠正一次；一个工作流反复手调 = 该再修一次 skill。
 
@@ -158,7 +160,7 @@ context 成本排序（T1）：CLAUDE.md（全量每次）> Skills（描述每�
 2. **能 on-demand 就别 always-on**。context 是稀缺资源。
 3. **副任务隔离走 Subagent**。主 context 留给推理。
 
-和本仓库其他文档的关系：[advanced/README.md](README.md) 的 business-logic skill 是 **Skill** 的深度用法；[SUPERPOWERS_GUIDE](SUPERPOWERS_GUIDE.md) 的 superpowers 是 **Plugin**；[RALPH_LOOP_GUIDE](RALPH_LOOP_GUIDE.md) 是 **Hook** 的极致。这篇全景是它们的地图——先看地图，再钻细节。
+和本仓库其他文档的关系：[advanced/README.md](README.md) 的 business-logic skill 是 **Skill** 的深度用法；[SUPERPOWERS_GUIDE](SUPERPOWERS_GUIDE.md) 的 superpowers 是 **Plugin**（打包与分发见 [PLUGINS_GUIDE](PLUGINS_GUIDE.md)）；[LOOPS_SCHEDULING_GUIDE](LOOPS_SCHEDULING_GUIDE.md) 的 Ralph Loop 是 **Hook** 的极致。这篇全景是它们的地图——先看地图，再钻细节。
 
 ---
 

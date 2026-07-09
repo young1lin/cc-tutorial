@@ -14,6 +14,8 @@
 
 ## 我直接看的源码位置
 
+下面的路径指向 `advanced/vendor/` 下的 git submodule。刚 clone 的仓库里它们是空目录，先跑 `git submodule update --init`，链接才能打开。
+
 LangChain 本地源码：
 
 - [retrieval.py](vendor/langchain/libs/langchain/langchain_classic/chains/retrieval.py)

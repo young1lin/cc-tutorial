@@ -2,7 +2,7 @@
 
 > 一套给编码 agent 的「软件开发方法论」，核心不在教 agent 新本事，而在用强制流程堵死它的偷懒路径。
 
-本地版本：`v6.1.1`，作者 [Jesse Vincent](https://blog.fsck.com) / Prime Radiant，MIT，来自 Anthropic 官方插件市场 `claude-plugins-official`（[plugin.json](.claude-plugin/plugin.json), T1；[README](README.md), T1）。仓库 `obra/superpowers`，首发 2025-10-09（[发布文](https://blog.fsck.com/2025/10/09/superpowers/)）。
+本地版本：`v6.1.1`，作者 [Jesse Vincent](https://blog.fsck.com) / Prime Radiant，MIT，来自 Anthropic 官方插件市场 `claude-plugins-official`（插件源文件 `.claude-plugin/plugin.json` 与插件 `README.md`，T1，路径相对插件根，见文末参考）。仓库 `obra/superpowers`，首发 2025-10-09（[发布文](https://blog.fsck.com/2025/10/09/superpowers/)）。本篇讲怎么用现成插件；想自己打包、自建市场，见 [Plugins 打包与分发](PLUGINS_GUIDE.md)。
 
 ---
 
@@ -59,7 +59,7 @@ Superpowers 的作者显然吃过足够多的亏。每个核心 skill 都长着�
 
 ## 三、brainstorming：HARD-GATE 与九步
 
-`brainstorming` 是整个方法论的入口（T1，[SKILL.md](skills/brainstorming/SKILL.md)）。它的核心是一条硬门：
+`brainstorming` 是整个方法论的入口（T1，插件源文件 `skills/brainstorming/SKILL.md`）。它的核心是一条硬门：
 
 > <HARD-GATE>
 > Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
@@ -145,7 +145,7 @@ SKILL.md 原文（T1）：
 
 ### 技术架构：为什么这么搭
 
-[visual-companion.md](skills/brainstorming/visual-companion.md)（T1）描述的机制：
+插件源文件 `skills/brainstorming/visual-companion.md`（T1）描述的机制：
 
 1. **file-watch server**：一个本地服务器监视某个目录，把**最新写入的 HTML 文件**推给浏览器。agent 产出内容的方式就是写文件——它最熟的工具，不用学新 API。
 2. **HTML fragment，不是完整文档**：agent 写的内容若不以 `<!DOCTYPE` / `<html>` 开头，server 自动套上 frame template（header、CSS 主题、连接状态、交互脚本）。agent 只管内容，基础设施由 server 提供。关注点分离，降低 agent 出错率。
@@ -170,7 +170,7 @@ SKILL.md 原文（T1）：
 
 ## 五、systematic-debugging：找根因前不准改
 
-T1，[SKILL.md](skills/systematic-debugging/SKILL.md)。铁律：
+T1，插件源文件 `skills/systematic-debugging/SKILL.md`。铁律：
 
 ```
 NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
@@ -193,7 +193,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 ## 六、verification-before-completion：证据先于断言
 
-T1，[SKILL.md](skills/verification-before-completion/SKILL.md)。铁律：
+T1，插件源文件 `skills/verification-before-completion/SKILL.md`。铁律：
 
 ```
 NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
@@ -214,7 +214,124 @@ Gate Function 五步（T1）：识别证明命令 → 跑完整命令 → 读全
 
 ---
 
-## 七、工作流串联
+## 七、subagent-driven-development:进度账本是主梁
+
+T1,插件源文件 `skills/subagent-driven-development/SKILL.md`。它把一份计划的执行拆成:controller 编排 + 每个 task 派一个 implementer 子代理 + 一个 task-reviewer 子代理(模板 `implementer-prompt.md` / `task-reviewer-prompt.md`,审 spec 合规 + 代码质量),整分支收尾再过一遍 `requesting-code-review` 的 `code-reviewer.md`。
+
+但它真正的主梁是 **Durable Progress**(T1,原文):
+
+> Conversation memory does not survive compaction ... controllers that lost their place have re-dispatched entire completed task sequences — **the single most expensive failure observed.**
+
+机制(账本文件 `.superpowers/sdd/progress.md`):
+- 开工先读账本(`cat "$(git rev-parse --show-toplevel)/.superpowers/sdd/progress.md"`);标 complete 的任务=已完成,不准重派,从第一个未完成续上
+- 每过一个 review,追一行 `Task N: complete (commits <base7>..<head7>, review clean)`
+- 账本是恢复地图:compaction 之后,信账本 + `git log`,别信自己的记忆
+- `git clean -fdx` 会毁掉它(git-ignored scratch),毁了就从 `git log` 重建
+
+外加一条 **Continuous execution**(T1):任务间不准停下来问"要不要继续"——唯一能停的理由是无法解决的 BLOCKED、真歧义、全部完成。
+
+**[Author's analysis]** 这一节就是"带进度的 TODO.md"的工程化终点:进度不活在对话里,活在一个 git-SHA 键控、优先于记忆的文件里。区别只在——手动维护 vs 强制且带恢复协议。
+
+---
+
+## 八、receiving-code-review:不表演性同意
+
+T1,`skills/receiving-code-review/SKILL.md`。这是之前只在总览表里一句带过、却最反直觉的 skill:**收到 review,第一反应不是照做。**
+
+六步响应模式(T1,原文):
+
+> READ → UNDERSTAND(用自己的话复述)→ VERIFY(对着代码现实核)→ EVALUATE(对**这个**代码库技术上成立吗)→ RESPOND(技术承认或有理反驳)→ IMPLEMENT(一次一条,逐条测)
+
+**Forbidden Responses**(T1,原文):
+
+> **NEVER:** "You're absolutely right!" / "Great point!" / "Let me implement that now" (before verification)
+
+表演性同意被明令禁止。取而代之:复述技术需求、问澄清、有错用技术理由顶回去、或直接动手(actions > words)。**When To Push Back**:意见破坏现有功能、reviewer 缺上下文、违反 YAGNI、对本技术栈不正确、有兼容性理由、或和人类搭档的架构决策冲突——都该顶,用技术推理而非防御。
+
+**[Author's analysis]** 这条直击 agent 头号谄媚失败:一见 review 就"您说得对"然后照单全改,把对的代码改坏。它把"同意"降级成一个需要证据的技术判断——和本仓库 evidence-based 同源。
+
+---
+
+## 九、dispatching-parallel-agents:先证明"独立"
+
+T1,`skills/dispatching-parallel-agents/SKILL.md`。核心不是"能并行就并行",是**先证明任务之间真独立**。
+
+**Use when**(T1):3+ 测试文件因不同根因失败、多子系统各自坏、每个问题不需要别人上下文就能懂、**investigations 之间无共享状态**。
+**Don't use when**(T1):失败相关(修一个可能修好其它)、需要整体系统状态、代理之间会互相干扰。
+
+四步法(T1):① Identify Independent Domains(按"坏了什么"分组,确认互不影响)② Create Focused Agent Tasks ③ Dispatch in Parallel ④ **Review and Integrate**(并行结果收回统一审、合并)。
+
+**[Author's analysis]** 危险从来不是并行,是**假独立**:两个代理改同一块状态,并行就是数据竞争。所以重量全压在前置判断和第 4 步收口上。原来那句"并行 subagent"把最重要的前提和收尾都吞了。
+
+---
+
+## 十、test-driven-development:先看它失败
+
+T1,`skills/test-driven-development/SKILL.md`。铁律:
+
+```
+NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
+```
+
+执行最硬:先写了实现再补测试?**删掉,重来**(T1:"Write code before the test? Delete it. Start over.")——不准留作"参考"、不准"改改用",delete means delete。
+
+RED-GREEN-REFACTOR 不是走一圈就算,中间有一道**亲眼验证门**:
+
+> **Verify RED - Watch It Fail. MANDATORY. Never skip.**
+
+跑测试,确认它**失败**(不是报错)、失败信息符合预期、失败原因是功能缺失而非 typo。测试直接过了?说明你在测已有行为,测试写错了。GREEN 之后同样要亲眼看它转绿。外加 Common Rationalizations 表、Red Flags—STOP and Start Over、独立的 `testing-anti-patterns.md`。
+
+**[Author's analysis]** 原来的"强制 RED-GREEN-REFACTOR"漏了这个 skill 的灵魂——**"watch it fail"**。没亲眼见它红过的测试证明不了任何东西,绿可能是假绿。这一步是 TDD 与"补几个测试"的分水岭。
+
+---
+
+## 十一、writing-plans:计划里不准有占位
+
+T1,`skills/writing-plans/SKILL.md`。它把"计划"定义成**另一个 session、没上下文的工程师照着就能做**的东西,所以两条硬规矩。
+
+**No Placeholders**(T1,原文列为 "plan failures",永不准写):`TBD`/`TODO`/`implement later`、"add appropriate error handling"、"write tests for the above"(不给实际测试代码)、"Similar to Task N"(必须重复代码,读者可能乱序读)、只说做什么不给代码块。
+
+**Self-Review**(T1):写完用新眼睛对着 spec 自审——① spec 覆盖(每条需求都指得到一个 task 吗)② 占位符扫描 ③ 类型一致性(Task 3 叫 `clearLayers()`、Task 7 叫 `clearFullLayers()` 就是 bug)。原文强调:**这是你自己跑的 checklist,不是派子代理**。另有 `plan-document-reviewer-prompt.md` 供需要时派审。粒度即文档说的 2-5 分钟 / 确切文件路径 / 每步给完整代码与预期输出。
+
+**[Author's analysis]** 占位符=把思考推迟到执行时;而执行时是另一个没上下文的 agent,推迟=丢失。这条把"计划"和"愿望清单"划开。
+
+---
+
+## 十二、requesting-code-review:机制是派一个 reviewer 子代理
+
+T1,`skills/requesting-code-review/SKILL.md`。之前文档只说"请求审查",没点出机制:**它派一个 `general-purpose` 子代理,套 `code-reviewer.md` 模板来审**。
+
+流程:① 取 SHA(`BASE_SHA=$(git rev-parse HEAD~1)` / `HEAD_SHA=$(git rev-parse HEAD)`)② 用 `{DESCRIPTION}/{PLAN_OR_REQUIREMENTS}/{BASE_SHA}/{HEAD_SHA}` 填模板派子代理 ③ 按等级处置:**Critical 立即修、Important 推进前修、Minor 记下、reviewer 错了带理由顶回去**。
+
+**[Author's analysis]** 关键是"审查=一个独立上下文的子代理读你的 diff",不是你自己回头看一眼——独立上下文才看得见被 tunnel-vision 挡住的东西。sdd 每个 task 的第二阶段审查复用的正是同一个 `code-reviewer.md`。
+
+---
+
+## 十三、executing-plans:先离开 main
+
+T1,`skills/executing-plans/SKILL.md`。三步:Load and Review Plan → Execute Tasks → Complete Development(交给 finishing)。
+
+一条硬门(T1):**`Never start implementation on main/master branch`**——执行计划前必须在隔离分支/工作树,呼应 `using-git-worktrees`。两个决策规则:**When to Stop and Ask for Help**(遇无法解决的 BLOCKED / 真歧义就停,不硬撑)、**When to Revisit Earlier Steps**(发现计划本身有问题,回头改计划,不将错就错)。
+
+**[Author's analysis]** 它和 `subagent-driven-development` 是执行同一份计划的两种模式:executing-plans 带人工检查点、适合你想盯着;sdd 连续无人值守、靠 progress 账本。选哪个,看你要不要留在回路里。
+
+---
+
+## 十四、finishing-a-development-branch:先验证合并结果,再删
+
+T1,`skills/finishing-a-development-branch/SKILL.md`。六步:Verify Tests → Detect Environment → Determine Base Branch → Present Options → Execute Choice → Cleanup Workspace。选项摆给用户:merge / 开 PR / 保留分支 / 丢弃,不替他决定。
+
+真正的安全在执行顺序(T1,原文注释):
+
+> Merge first — verify success before removing anything → **Verify tests on merged result** → Only after merge succeeds: cleanup worktree, then delete branch
+
+**先合并、在合并后的结果上重跑测试、只有过了才清理工作树和删分支**;外加自动探测环境与 base 分支、用主仓库根做 CWD 防误删。
+
+**[Author's analysis]** 顺序就是一切。先删分支再合并,合并一炸,work 就没了。文档原来列了"选项+清理",漏的正是这个"验证 gate 清理"的顺序——而顺序才是这个 skill 防的那类事故。
+
+---
+
+## 十五、工作流串联
 
 README 给的标准管线（T1）：
 
@@ -243,7 +360,7 @@ README 原话总结：
 
 ---
 
-## 八、给本教程的判断
+## 十六、给本教程的判断
 
 **[Tutorial perspective]** Superpowers 值得认真用，但要认清它的成本和适用边界。
 
@@ -271,3 +388,11 @@ README 原话总结：
 - `skills/systematic-debugging/SKILL.md` — 四阶段、Iron Law、rationalization 表
 - `skills/verification-before-completion/SKILL.md` — Gate Function、证据门槛
 - `docs/superpowers/plans/2026-0*-visual-companion-*.md` — visual companion 迭代史
+- `skills/subagent-driven-development/SKILL.md` — Durable Progress 账本、continuous execution;`implementer-prompt.md` / `task-reviewer-prompt.md` / `scripts/sdd-workspace`
+- `skills/receiving-code-review/SKILL.md` — 六步响应、Forbidden Responses、When To Push Back
+- `skills/dispatching-parallel-agents/SKILL.md` — 独立性判据、四步法
+- `skills/test-driven-development/SKILL.md` — Iron Law、Verify RED/GREEN;`testing-anti-patterns.md`
+- `skills/writing-plans/SKILL.md` — No Placeholders、Self-Review;`plan-document-reviewer-prompt.md`
+- `skills/requesting-code-review/SKILL.md` 与 `code-reviewer.md` — reviewer 子代理模板
+- `skills/executing-plans/SKILL.md` — 分支安全门、stop/revisit 规则
+- `skills/finishing-a-development-branch/SKILL.md` — 验证-gate-清理顺序

@@ -2,7 +2,7 @@
 
 ## Skill 的本质
 
-`T1` 在 OpenClaw 的技能模型里，`SKILL.md` 至少需要 `name` 和 `description` 这两个元信息字段。技能本体可以继续挂载脚本、参考资料和资源文件。[Skills docs](https://docs.openclaw.ai/skills)
+`T1` Claude Code 官方的技能模型：每个 skill 必须有一个 `SKILL.md` 文件；frontmatter 字段**全部可选**——`name` 缺省取目录名，`description` 官方标注为 Recommended，因为 Claude 靠它决定何时自动加载。技能本体可以继续挂载脚本、参考资料和资源文件。Claude Code 的 skill 遵循 [Agent Skills](https://agentskills.io) 开放标准。（[Claude Code skills docs](https://code.claude.com/docs/en/skills)，Anthropic）
 
 **[Tutorial perspective]** Skill 的本质不是“更长的提示词”。它是一个可路由、可分目录、可增量维护的能力包。提示词只是入口。真正值钱的是后面的目录、脚本、参考资料、知识沉淀和固定工作流。
 

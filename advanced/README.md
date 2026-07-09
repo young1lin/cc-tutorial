@@ -6,6 +6,12 @@
 /plugin marketplace add anthropics/claude-code
 ```
 
+> 本目录部分文档（[langchain-rag.md](langchain-rag.md)、[agents.md](agents.md)）直接引用 `advanced/vendor/` 下的第三方源码。那是三个 git submodule（langchain、langgraph、WeKnora），刚 clone 的仓库里是空目录，源码链接会 404。先执行：
+>
+> ```
+> git submodule update --init
+> ```
+
 **[Tutorial perspective]** 这一套用法的目标不是“让 Claude 更聪明”，而是砍掉重复探索。每次都开 Explore Agent 扫全仓库，像让人每天重新背一次地图。浪费上下文。也浪费时间。
 
 ## 导航
@@ -15,10 +21,19 @@
 - [Agents 与 Sub-agents](agents.md)
 - [Token 与缓存](token.md)
 - [LangChain 与 RAG](langchain-rag.md)
+- [Worktree 与并行开发](WORKTREE_PARALLEL_GUIDE.md)
+- [Workflow 与 ultracode](WORKFLOW_ULTRACODE_GUIDE.md)
+- [Loop 与调度全指南](LOOPS_SCHEDULING_GUIDE.md)
+- [Headless CLI 与 CI 集成](HEADLESS_CLI_GUIDE.md)
+- [权限与沙箱](PERMISSIONS_SANDBOX.md)
+- [Hooks 完全参考](HOOKS_GUIDE.md)
+- [Agent 协作系统总览](CLAUDE_CODE_AGENT_GUIDE.md)
+- [Agent Teams 完全指南](AGENT_TEAMS_COMPLETE_GUIDE.md)
 - [Superpowers 插件详解](SUPERPOWERS_GUIDE.md)
-- [Ralph Loop 插件详解](RALPH_LOOP_GUIDE.md)
+- [Plugins 打包与分发](PLUGINS_GUIDE.md)
 - [扩展机制全景](EXTENSIONS_OVERVIEW.md)
 - [记忆机制：原生 vs claude-mem](MEMORY_VS_CLAUDE_MEM.md)
+- [订阅计划价格对照](PLANS_PRICING.md)
 
 ## 核心思路
 

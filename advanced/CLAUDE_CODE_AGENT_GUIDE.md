@@ -254,9 +254,11 @@ Hooks 是在特定事件发生时自动执行的命令或脚本，用于：
 - 强制执行规则
 - 集成外部工具
 
-### 5.2 可用的 Hook 类型
+### 5.2 可用的 Hook 事件
 
-| Hook 类型 | 触发时机 | 常见用途 |
+`T1` 官方 [Hooks reference](https://code.claude.com/docs/en/hooks)。下表只列本文用到的常见事件；完整清单约 30 个（含 `SubagentStart`、`PreCompact`、`WorktreeCreate`、`PermissionRequest` 等）、matcher 语法与输入输出协议，见 [Hooks 完全参考](HOOKS_GUIDE.md)。
+
+| Hook 事件 | 触发时机 | 常见用途 |
 |-----------|----------|----------|
 | `PreToolUse` | 工具执行前 | 验证输入、阻止危险操作 |
 | `PostToolUse` | 工具执行后 | 记录日志、触发通知 |
@@ -264,7 +266,7 @@ Hooks 是在特定事件发生时自动执行的命令或脚本，用于：
 | `UserPromptSubmit` | 用户提交提示时 | 预处理、日志记录 |
 | `SessionStart` | 会话开始时 | 初始化环境 |
 | `SessionEnd` | 会话结束时 | 清理、报告 |
-| `Stop` | 会话停止时 | 通知、清理 |
+| `Stop` | Claude 完成一轮回复、准备停下时 | 拦截退出强制继续（Ralph Loop 的核心）、通知 |
 | `TeammateIdle` | 队友空闲时 | 质量检查、继续工作 |
 | `TaskCreated` | 任务被创建时 | 校验 schema、阻止创建 |
 | `TaskCompleted` | 任务完成时 | 验证、测试 |
@@ -281,7 +283,7 @@ Hooks 是在特定事件发生时自动执行的命令或脚本，用于：
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'File written: $FILE_PATH' >> log.txt"
+            "command": "jq -r '.tool_input.file_path' >> written-files.log"
           }
         ]
       }
@@ -311,6 +313,11 @@ Hooks 是在特定事件发生时自动执行的命令或脚本，用于：
   }
 }
 ```
+
+两个关键机制（`T1` 官方 Hooks reference）：
+
+- **输入走 stdin**：hook 收到的是一段 JSON（`hook_event_name`、`tool_name`、`tool_input` 等字段），用 `jq` 之类解析。不存在 `$FILE_PATH` 这类逐字段环境变量；可用环境变量只有 `$CLAUDE_PROJECT_DIR`、`$CLAUDE_PLUGIN_ROOT` 等少数几个。
+- **退出码语义**：`0` 放行；`2` 阻断并把 stderr 喂回 Claude；其他值是非阻断错误，**`1` 不会阻断**——要强制拦截就用 `exit 2`。
 
 ### 5.4 Hook 类型详解
 
@@ -354,45 +361,17 @@ Hooks 是在特定事件发生时自动执行的命令或脚本，用于：
 }
 ```
 
+官方还有第五种 `mcp_tool` 类型（把 MCP server 的某个工具当 hook 动作调用），本文不展开。另外 command 型 hook 支持 `async: true` 后台执行，`asyncRewake: true` 可在退出码 2 时唤醒 Claude（`T1` 官方 Hooks reference）。
+
 ---
 
 ## 6. Worktrees（工作树隔离）
 
-### 6.1 什么是 Worktrees
+Worktree 解决文件系统隔离：多个并行任务各自在独立目录改代码，互不踩踏。Claude Code 原生支持在会话内创建与退出 worktree，子代理与 Workflow 也能以 worktree 隔离运行。
 
-Git worktrees 允许你在同一仓库的独立目录中工作，适合：
-- 同时处理多个分支
-- 隔离实验性更改
-- 避免切换分支时的上下文丢失
+它和本文其他机制的分工：Agent Teams 管协作，Subagents 管上下文隔离，Worktree 管文件系统隔离。三者可叠加。
 
-### 6.2 使用 Worktrees
-
-**创建 Worktree:**
-```
-创建一个 worktree 来处理 feature-x 分支
-```
-
-**退出 Worktree:**
-```
-退出当前 worktree 并保留更改
-```
-
-或删除：
-```
-退出并删除 worktree
-```
-
-### 6.3 配置 Worktree
-
-```json
-// settings.json
-{
-  "worktree": {
-    "symlinkDirectories": ["node_modules", ".cache"],
-    "sparsePaths": ["src/", "tests/"]
-  }
-}
-```
+完整内容（原生工具实测、多会话并行开发、合并与清理、何时不用）见 [Worktree 与并行开发](WORKTREE_PARALLEL_GUIDE.md)。
 
 ---
 
@@ -426,6 +405,7 @@ Git worktrees 允许你在同一仓库的独立目录中工作，适合：
 | 复杂 Bug 调查 | Agent Teams | 竞争假设验证 |
 | 文档生成 | Skills (docx/pdf) | 专业工具 |
 | 项目规划 | Skills (project-planner) | 结构化输出 |
+| 确定性多 agent 编排（大规模迁移、对抗验证） | Workflow（ultracode） | 脚本化控制流 + 独立上下文，见 [Workflow 与 ultracode](WORKFLOW_ULTRACODE_GUIDE.md) |
 
 ---
 
@@ -740,7 +720,7 @@ CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1   # 启用 Agent Teams
 
 ---
 
-*文档版本: 1.1*
-*最后更新: 2026-07-04*
+*文档版本: 1.2*
+*最后更新: 2026-07-07*
 *适用于: Claude Code CLI*
-*校对: Agent Teams / Skills 部分已按官方文档校对（research/16、research/13）；Hooks / Worktrees 部分待对照官方文档*
+*校对: Agent Teams / Skills 部分已按官方文档校对（research/16、research/13）；Hooks 部分已对照官方 Hooks reference 校对（2026-07-07）；Worktrees 部分已拆分至 [WORKTREE_PARALLEL_GUIDE](WORKTREE_PARALLEL_GUIDE.md)*

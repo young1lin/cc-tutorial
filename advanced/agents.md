@@ -226,13 +226,13 @@ memory: project
 
 `T1` LangGraph 官方有完整 customer support bot 教程，展示了多状态、工具调用、checkpointer、interrupts 和敏感操作前人工确认的模式。[LangGraph customer support tutorial](https://langchain-ai.github.io/langgraph/tutorials/customer-support/customer-support/)
 
-我也直接拉了 `langgraph` 仓库本地源码。官方示例文件在：
+我也直接拉了 `langgraph` 仓库本地源码（git submodule，刚 clone 的仓库需先 `git submodule update --init`，否则是空目录）。官方示例文件在：
 
 ```text
 advanced/vendor/langgraph/examples/customer-support/customer-support.ipynb
 ```
 
-这不是纸上谈兵。仓库里就有完整样例。
+这不是纸上谈兵。初始化 submodule 之后，仓库里就有完整样例。
 
 推荐架构：
 
