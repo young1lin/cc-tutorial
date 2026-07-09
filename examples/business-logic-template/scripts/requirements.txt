@@ -1,0 +1,7 @@
+# Python dependencies for the auto-sync git hooks.
+# Install with:  pip install -r scripts/requirements.txt
+
+# Claude Agent SDK -- used by auto_sync.py to drive /<skill> sync headlessly.
+# Pin to a known-good range; the SDK is pre-1.0 and field names can shift
+# between minor releases. Tested against 0.1.x.
+claude-agent-sdk>=0.1.53,<1.0
