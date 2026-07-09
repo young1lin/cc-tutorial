@@ -1,0 +1,526 @@
+# ============================================
+# 传统工具调用方法（无 Function Calling）
+# ============================================
+# 说明：展示在原生 Function Calling 出现之前的工具调用方法
+# 历史背景：早期 LLM（如 GPT-3）不支持原生 Function Calling
+# 解决方案：通过结构化文本（XML/JSON）让模型"假装"调用工具
+# 代表：LangChain ReAct、OpenAI 早期 Function Calling
+# ============================================
+
+# 环境变量
+@STEPFUN_BASE_URL = https://api.stepfun.com/v1/chat/completions
+@STEPFUN_BEARER_TOKEN = Bearer {{$dotenv STEPFUN_API_KEY}}
+
+# ============================================
+# 1. 文本格式 ReAct（LangChain 风格） 适合智能客服系统，一步步获取信息，并且得到信息后执行下一步
+# ============================================
+
+### [传统 1.1] 文本格式 ReAct - 原始版本
+# 说明：通过提示词让模型输出特定格式的文本，解析后执行工具
+# 格式：
+#   Thought: 思考内容
+#   Action: 工具名称
+#   Action Input: 工具参数（可以是 JSON）
+#   Observation: 工具返回结果（需要人工或程序插入）
+# 历史：这是 LangChain 最早的 ReAct 实现方式
+# 参考：https://python.langchain.com/docs/modules/agents/agent_types/react
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个智能助手，可以使用以下工具：\n\n1. get_weather(location: str) - 获取指定城市的天气\n2. search(query: str) - 搜索信息\n3. calculator(expression: str) - 计算数学表达式\n\n请使用以下格式回答问题：\n\nThought: 你对问题的思考\nAction: 工具名称\nAction Input: 工具输入（JSON 格式）\n\n当你有足够信息后，使用：\n\nThought: 我现在知道最终答案了\nFinal Answer: 最终答案\n\n重要：每次只能执行一个 Action！"
+    },
+    {
+      "role": "user",
+      "content": "明天杭州天气怎么样？如果下雨，推荐室内景点。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [传统 1.2] 文本格式 ReAct - 多轮对话（模拟工具返回）
+# 说明：模拟完整的 ReAct 循环，人工或程序插入 Observation
+# 流程：
+#   1. 模型输出 Thought + Action + Action Input
+#   2. 程序解析，执行工具，插入 Observation
+#   3. 模型继续输出下一轮 Thought + Action
+#   4. 重复直到 Final Answer
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个智能助手，可以使用以下工具：\n\n1. get_weather(location: str) - 获取指定城市的天气\n2. search(query: str) - 搜索信息\n\n请使用以下格式回答问题：\n\nThought: 你对问题的思考\nAction: 工具名称\nAction Input: 工具输入（JSON 格式）\n\n当你有足够信息后，使用：\n\nThought: 我现在知道最终答案了\nFinal Answer: 最终答案"
+    },
+    {
+      "role": "user",
+      "content": "明天杭州天气怎么样？如果下雨，推荐室内景点。"
+    },
+    {
+      "role": "assistant",
+      "content": "Thought: 我需要先查询明天杭州的天气情况\nAction: get_weather\nAction Input: {\"location\": \"hangzhou\", \"date\": \"tomorrow\"}"
+    },
+    {
+      "role": "user",
+      "content": "Observation: {\"location\": \"杭州\", \"date\": \"2026-02-11\", \"weather\": \"Rainy\", \"temperature\": \"10°C\", \"description\": \"中雨\"}"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [传统 1.3] 文本格式 ReAct - 完整示例（3 轮循环）
+# 说明：展示完整的多轮 ReAct 对话
+# 演示：查天气 → 根据天气搜索景点 → 给出最终答案
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个智能助手。工具列表：\n- get_weather(location, date)\n- search(query)\n\n格式：\nThought: ...\nAction: ...\nAction Input: {...}\n\n或：\nThought: 我现在知道答案了\nFinal Answer: ..."
+    },
+    {
+      "role": "user",
+      "content": "明天杭州天气怎么样？如果下雨，推荐室内景点。"
+    },
+    {
+      "role": "assistant",
+      "content": "Thought: 需要先查天气\nAction: get_weather\nAction Input: {\"location\": \"hangzhou\", \"date\": \"tomorrow\"}"
+    },
+    {
+      "role": "user",
+      "content": "Observation: {\"weather\": \"Rainy\", \"temperature\": \"10°C\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "Thought: 天气是雨天，需要搜索室内景点\nAction: search\nAction Input: {\"query\": \"杭州室内景点推荐\"}"
+    },
+    {
+      "role": "user",
+      "content": "Observation: 杭州室内景点：浙江博物馆、杭州科技馆、西湖音乐喷泉（室内观赏区）、杭州图书馆"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 2. XML 格式的工具调用
+# ============================================
+
+### [传统 2.1] XML 格式 - Anthropic Claude 早期风格
+# 说明：Anthropic Claude（早期）使用 XML 标签来结构化输出
+# 格式：
+#   <thinking>思考过程</thinking>
+#   <action>
+#     <tool>工具名称</tool>
+#     <parameters>参数</parameters>
+#   </action>
+# 优势：结构清晰，易于解析
+# 历史：Claude 2.x 时期的推荐方式
+# 参考：https://docs.anthropic.com/en/docs/build-with-claude/tool-use
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个智能助手。当需要使用工具时，请使用以下 XML 格式：\n\n<thinking>你的思考过程</thinking>\n<action>\n  <tool>工具名称</tool>\n  <parameters>\n    <param_name>参数值</param_name>\n  </parameters>\n</action>\n\n可用工具：\n- get_weather：获取天气，参数 location, date\n- search：搜索信息，参数 query\n\n当有最终答案时，使用：\n<answer>你的答案</answer>"
+    },
+    {
+      "role": "user",
+      "content": "明天北京天气如何？"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [传统 2.2] XML 格式 - 多工具调用
+# 说明：使用 XML 格式表示多个工具调用
+# 场景：需要同时调用多个工具
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个智能助手。使用 XML 格式调用工具：\n\n<thinking>思考</thinking>\n<actions>\n  <action>\n    <tool>工具1</tool>\n    <parameters>...</parameters>\n  </action>\n  <action>\n    <tool>工具2</tool>\n    <parameters>...</parameters>\n  </action>\n</actions>\n\n可用工具：get_weather, search, calculator"
+    },
+    {
+      "role": "user",
+      "content": "查询北京、上海、杭州的天气。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [传统 2.3] XML 格式 - 工具返回（模拟完整流程）
+# 说明：模拟工具执行后的 XML 格式返回
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个智能助手。使用 XML 格式。"
+    },
+    {
+      "role": "user",
+      "content": "明天北京天气如何？"
+    },
+    {
+      "role": "assistant",
+      "content": "<thinking>需要查询明天北京的天气</thinking>\n<action>\n  <tool>get_weather</tool>\n  <parameters>\n    <location>beijing</location>\n    <date>tomorrow</date>\n  </parameters>\n</action>"
+    },
+    {
+      "role": "user",
+      "content": "<tool_result>\n  <tool>get_weather</tool>\n  <result>\n    <location>北京</location>\n    <weather>Sunny</weather>\n    <temperature>15°C</temperature>\n  </result>\n</tool_result>"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 3. JSON 格式的工具调用
+# ============================================
+
+### [传统 3.1] JSON 格式 - OpenAI 早期方案
+# 说明：在原生 Function Calling 之前，通过 JSON 格式模拟工具调用
+# 格式：让模型输出 JSON 字符串，程序解析后执行
+# 优势：标准化、易于解析
+# 劣势：需要精确的提示词，模型容易出错
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个智能助手。当需要使用工具时，请返回以下 JSON 格式：\n\n{\n  \"thought\": \"你的思考\",\n  \"action\": \"工具名称\",\n  \"action_input\": {\n    \"参数名\": \"参数值\"\n  }\n}\n\n可用工具：\n- get_weather(location, date)\n- search(query)\n- calculator(expression)\n\n当有最终答案时，返回：\n{\n  \"thought\": \"我知道答案了\",\n  \"final_answer\": \"答案内容\"\n}\n\n重要：只返回 JSON，不要包含其他文字！"
+    },
+    {
+      "role": "user",
+      "content": "明天杭州天气怎么样？"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [传统 3.2] JSON 格式 - 多步骤工作流
+# 说明：使用 JSON 数组表示多步骤计划
+# 场景：Plan-and-Execute 模式的传统实现
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个智能助手。请返回 JSON 格式的执行计划：\n\n{\n  \"plan\": [\n    {\n      \"step\": 1,\n      \"action\": \"工具名称\",\n      \"params\": {...},\n      \"reason\": \"为什么需要这一步\"\n    }\n  ]\n}\n\n可用工具：get_weather, search, calculator"
+    },
+    {
+      "role": "user",
+      "content": "帮我规划明天的杭州一日游，要考虑天气和景点。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [传统 3.3] JSON 格式 - 工具结果处理
+# 说明：模拟工具执行后，将结果以 JSON 格式返回
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个智能助手。使用 JSON 格式调用工具和处理结果。"
+    },
+    {
+      "role": "user",
+      "content": "明天杭州天气如何？"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"thought\": \"需要查询天气\",\n  \"action\": \"get_weather\",\n  \"action_input\": {\n    \"location\": \"hangzhou\",\n    \"date\": \"tomorrow\"\n  }\n}"
+    },
+    {
+      "role": "user",
+      "content": "{\n  \"tool\": \"get_weather\",\n  \"result\": {\n    \"location\": \"杭州\",\n    \"weather\": \"Sunny\",\n    \"temperature\": \"20°C\"\n  }\n}"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 4. 混合格式（Markdown + JSON）
+# ============================================
+
+### [传统 4.1] Markdown + JSON - 用户友好
+# 说明：结合 Markdown 的可读性和 JSON 的结构化
+# 优势：既能让用户理解，又能让程序解析
+# 应用：ChatGPT Plugins 早期实现
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一个智能助手。当需要调用工具时，使用以下格式：\n\n**思考**：你的思考过程\n\n**行动**：\n```json\n{\n  \"action\": \"工具名称\",\n  \"parameters\": {...}\n}\n```\n\n可用工具：get_weather, search"
+    },
+    {
+      "role": "user",
+      "content": "明天北京天气怎么样？"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 5. 对比：传统方法 vs 原生 Function Calling
+# ============================================
+
+### [对比 5.1] 传统 ReAct（文本解析）
+# 问题：
+# 1. 解析复杂，容易出错（格式不对、缺少字段）
+# 2. 需要额外的解析逻辑
+# 3. 模型可能"忘记"格式要求
+# 4. 无法保证输出结构化
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "传统 ReAct：你必须严格按照格式输出！\n\nThought: ...\nAction: ...\nAction Input: {...}\n\n不要有任何额外的话！"
+    },
+    {
+      "role": "user",
+      "content": "查询杭州天气"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+### [对比 5.2] 原生 Function Calling（现代方案）
+# 优势：
+# 1. 标准化接口，无需解析
+# 2. 模型针对性训练，调用更准确
+# 3. 返回结构化 JSON，直接使用
+# 4. 支持并行调用
+# 5. 错误处理更完善
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "查询杭州天气"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "获取指定城市的天气信息",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string"}
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 6. 实战：实现传统 ReAct 的完整流程
+# ============================================
+
+### [实战 6.1] 步骤 1：初始请求
+# 说明：用户发起请求，模型输出第一个 Action
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是 ReAct Agent。工具：get_weather, search。\n\n格式：\nThought: ...\nAction: ...\nAction Input: {...}\n\n或：\nThought: 我知道答案了\nFinal Answer: ..."
+    },
+    {
+      "role": "user",
+      "content": "明天杭州会下雨吗？如果下雨，推荐室内活动。"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+# 步骤 2：解析 Action，执行工具（程序代码）
+# ```python
+# import re
+# import json
+#
+# response = "Thought: 需要查天气\nAction: get_weather\nAction Input: {\"location\": \"hangzhou\"}"
+#
+# # 解析
+# action_match = re.search(r'Action: (\w+)', response)
+# input_match = re.search(r'Action Input: ({.*})', response)
+#
+# action = action_match.group(1)  # "get_weather"
+# action_input = json.loads(input_match.group(1))  # {"location": "hangzhou"}
+#
+# # 执行工具
+# result = execute_tool(action, action_input)
+# # result = {"weather": "Rainy", "temperature": "12°C"}
+# ```
+
+### [实战 6.2] 步骤 3：插入 Observation，继续对话
+# 说明：将工具结果插入对话，模型继续推理
+POST {{STEPFUN_BASE_URL}} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{STEPFUN_BEARER_TOKEN}}
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是 ReAct Agent。格式：Thought/Action/Action Input 或 Final Answer"
+    },
+    {
+      "role": "user",
+      "content": "明天杭州会下雨吗？如果下雨，推荐室内活动。"
+    },
+    {
+      "role": "assistant",
+      "content": "Thought: 需要查询明天杭州的天气\nAction: get_weather\nAction Input: {\"location\": \"hangzhou\", \"date\": \"tomorrow\"}"
+    },
+    {
+      "role": "user",
+      "content": "Observation: {\"weather\": \"Rainy\", \"temperature\": \"12°C\", \"description\": \"中雨\"}"
+    }
+  ],
+  "model": "step-3.5-flash",
+  "stream": false,
+  "temperature": 0
+}
+
+# ============================================
+# 总结
+# ============================================
+#
+# 传统工具调用方法的演变：
+#
+# 1. **文本格式 ReAct**（2022）
+#    - 代表：LangChain 早期版本
+#    - 方式：通过提示词让模型输出固定格式文本
+#    - 问题：格式不稳定、解析复杂、容易出错
+#
+# 2. **XML 格式**（2023）
+#    - 代表：Anthropic Claude 2.x
+#    - 方式：使用 XML 标签结构化输出
+#    - 优势：结构清晰、易于解析
+#    - 问题：仍需手动解析、无类型约束
+#
+# 3. **JSON 格式**（2023）
+#    - 代表：OpenAI 早期 Function Calling
+#    - 方式：让模型输出 JSON 字符串
+#    - 优势：标准化、易于集成
+#    - 问题：JSON 格式容易出错（缺少引号、逗号等）
+#
+# 4. **原生 Function Calling**（2024+）
+#    - 代表：OpenAI Function Calling、Anthropic Tool Use
+#    - 方式：API 原生支持，模型针对性训练
+#    - 优势：稳定、准确、支持并行、错误处理完善
+#    - 现状：成为事实标准
+#
+# 为什么需要了解传统方法？
+#
+# 1. **历史理解**：理解技术演进，知道"为什么需要 Function Calling"
+# 2. **兼容性**：某些老模型仍需使用传统方法
+# 3. **调试能力**：理解底层原理，更好地调试 Agent 系统
+# 4. **灵活性**：某些特殊场景可能需要自定义格式
+# 5. **教育价值**：对初学者来说，文本格式更直观
+#
+# 最佳实践：
+#
+# - **新项目**：优先使用原生 Function Calling
+# - **老项目**：逐步迁移到原生 Function Calling
+# - **教学**：从文本格式开始，帮助理解 Agent 原理
+# - **生产**：避免使用文本解析，降低出错风险
+#
+# 参考资料：
+# - LangChain ReAct: https://python.langchain.com/docs/modules/agents/agent_types/react
+# - Anthropic Tool Use: https://docs.anthropic.com/en/docs/build-with-claude/tool-use
+# - OpenAI Function Calling: https://platform.openai.com/docs/guides/function-calling
+# - ReAct Paper: https://arxiv.org/abs/2210.03629
+# ============================================
