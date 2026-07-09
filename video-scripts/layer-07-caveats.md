@@ -162,9 +162,6 @@ Claude Code 有严重的 BUG，不要开太久，或者对话太长，偶尔会�
 - 理解了这篇文章，你就能理解 Claude Code、AutoGPT、MetaGPT 等所有 Agent 工具的设计原理
 - Claude Code 的 Plan Mode、Memory 系统、MCP 工具调用，都可以在这篇文章中找到理论依据
 
-**阅读建议**：英文原版最佳，也有中文翻译版本。
-
-
 ### 2. Hugging Face Agents Course
 
 **链接**: `https://huggingface.co/learn/agents-course/en/unit0/introduction`

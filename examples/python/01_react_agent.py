@@ -71,36 +71,23 @@ MODEL_ALIASES = {
 # ReAct 提示词
 # ============================================
 
-# System Prompt - 固定的规则和行为规范
-REACT_SYSTEM_PROMPT = """You are a helpful assistant that uses the ReAct (Reasoning + Acting) pattern to solve problems.
-
-IMPORTANT RULES:
-1. You can only execute ONE Action at a time
-2. After writing Action and Action Input, STOP and wait for Observation
-3. NEVER write Observation yourself - the system will provide it
-4. Action Input MUST be valid JSON format: {{"key": "value"}}
-5. After receiving Observation, continue with Thought to decide next step or give Final Answer"""
-
-# 工具描述模板 - 动态内容
-TOOLS_TEMPLATE = """You have access to the following tools:
+# System Prompt - 完整的 ReAct 指令（工具 + 格式）
+REACT_SYSTEM_PROMPT = """Answer the following questions as best you can. You have access to the following tools:
 
 {tools}
 
-Available actions: [{tool_names}]"""
-
-# User Prompt - 问题 + scratchpad
-REACT_USER_PROMPT = """{tools_desc}
-
 Use the following format:
-Thought: your reasoning about what to do
-Action: the action to take (one of [{tool_names}])
-Action Input: the input to the action as JSON
-... (after Observation, continue with Thought)
-Thought: I now know the final answer
-Final Answer: the final answer
 
-Question: {input}
-Thought:{agent_scratchpad}"""
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action: the action to take, should be one of [{tool_names}]
+Action Input: the input to the action as JSON
+Observation: the result of the action
+... (this Thought/Action/Action Input/Observation can repeat N times)
+Thought: I now know the final answer
+Final Answer: the final answer to the original input question
+
+Begin!"""
 
 
 def format_tools_for_prompt() -> tuple[str, str]:
@@ -126,12 +113,9 @@ class ReActAgent:
     """ReAct Agent - 文本解析模式"""
 
     def __init__(self, provider: str = DEFAULT_PROVIDER):
-        today = datetime.now().strftime("%Y-%m-%d")
-        self.system_prompt = f"{REACT_SYSTEM_PROMPT}\n\nCurrent day is {today}"
         self.client, self.model = get_client(provider)
         self.provider = provider
         self.max_iterations = 10
-        self.scratchpad = ""
         self.logger = logging.getLogger(__name__)
 
     def _parse_action(self, text: str) -> tuple[str | None, dict | None]:
@@ -205,35 +189,44 @@ class ReActAgent:
 
     def run(self, question: str, stream: bool = False) -> str:
         """执行 ReAct 循环"""
-        print_box_start("📥 用户输入")
+        tools_desc, tool_names = format_tools_for_prompt()
+
+        # 构建固定的 system prompt
+        system_prompt = REACT_SYSTEM_PROMPT.format(
+            tools=tools_desc,
+            tool_names=tool_names,
+        )
+
+        # 打印 system prompt
+        print_box_start("🤖 System Prompt")
+        for line in system_prompt.split('\n'):
+            print(f"│ {line}")
+        print_box_end()
+
+        # 打印用户问题
+        print_box_start("👤 User")
         print(f"│ {question}")
         print_box_end()
 
-        tools_desc, tool_names = format_tools_for_prompt()
+        # 初始化 messages
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Question: {question}"},
+        ]
 
         for iteration in range(1, self.max_iterations + 1):
             print(f"\n{CYAN}🔄 第 {iteration} 轮{RESET}")
 
-            user_prompt = REACT_USER_PROMPT.format(
-                tools_desc=TOOLS_TEMPLATE.format(tools=tools_desc, tool_names=tool_names),
-                tool_names=tool_names,
-                input=question,
-                agent_scratchpad=self.scratchpad,
-            )
-
-            # 调试日志：记录 prompt
+            # 调试日志
             self.logger.debug(f"=== 第 {iteration} 轮 ===")
-            self.logger.debug(f"PROMPT:\n{user_prompt}")
+            self.logger.debug(f"MESSAGES:\n{json.dumps(messages, ensure_ascii=False, indent=2)}")
 
             response = self.client.chat.completions.create(
                 model=self.model,
-                messages=[
-                    {"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
+                messages=messages,
                 temperature=0,
                 stream=stream,
-                stop=["\nObservation:", "\nObservation"],  # 两种变体都支持
+                stop=["\nObservation:", "\nObservation"],
             )
 
             if stream:
@@ -262,13 +255,13 @@ class ReActAgent:
                     print(final_answer)
                     return final_answer
                 elif final_answer and iteration == 1:
-                    self.scratchpad += (
-                        f"\n(你必须先使用工具获取信息，不能直接给出答案。)\n"
-                    )
+                    messages.append({"role": "assistant", "content": output_cleaned})
+                    messages.append({"role": "user", "content": "(你必须先使用工具获取信息，不能直接给出答案。)"})
                     print(f"{YELLOW}⚠️ 第一轮必须先调用工具，请继续...{RESET}")
                     continue
                 else:
-                    self.scratchpad += f"\n(请继续，使用正确的格式：Thought -> Action -> Action Input)\n"
+                    messages.append({"role": "assistant", "content": output_cleaned})
+                    messages.append({"role": "user", "content": "(请继续，使用正确的格式：Thought -> Action -> Action Input)"})
                     print(f"{YELLOW}⚠️ 未找到有效的 Action，提示模型继续...{RESET}")
                     continue
 
@@ -288,11 +281,9 @@ class ReActAgent:
                 f"{GRAY}👁️ Observation:{RESET} {observation[:200]}{'...' if len(observation) > 200 else ''}"
             )
 
-            # 关键修复：使用清理后的输出 + 系统提供的 Observation
-            self.scratchpad += f" {output_cleaned}\nObservation: {observation}\n"
-
-            # 调试日志：记录 scratchpad
-            self.logger.debug(f"SCRATCHPAD:\n{self.scratchpad}")
+            # 追加到 messages
+            messages.append({"role": "assistant", "content": output_cleaned})
+            messages.append({"role": "user", "content": f"Observation: {observation}"})
 
         return "错误：达到最大迭代次数"
 
