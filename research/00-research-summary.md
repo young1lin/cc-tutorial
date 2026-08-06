@@ -26,7 +26,7 @@ topics:
 2. **知名博主的教程（Andrew Ng、Ethan Mollick、Zvi Mowshowitz、Addy Osmani）**
 3. **最佳实践主题**（代码分层、依赖注入、AAA 单元测试模式等）
 
-所有重要文档已保存至：`C:\PythonProject\cc-tutorial\docs\research\`
+所有重要文档已保存至：`C:\PythonProject\cc-tutorial\research\`
 
 ---
 
@@ -597,7 +597,7 @@ def test_user_login():
 
 ## 七、已保存的文档清单
 
-所有文档已保存至：`C:\PythonProject\cc-tutorial\docs\research\`
+所有文档已保存至：`C:\PythonProject\cc-tutorial\research\`
 
 ### 高优先级文档（已保存）
 

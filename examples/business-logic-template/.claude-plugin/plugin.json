@@ -1,9 +1,0 @@
-{
-  "name": "business-logic",
-  "displayName": "Business Logic Knowledge Base",
-  "version": "1.0.0",
-  "description": "Per-project living business-knowledge base: unit docs synced from git diffs and Claude Code conversation digests, one LLM round per push cycle.",
-  "author": { "name": "young1lin" },
-  "license": "MIT",
-  "keywords": ["knowledge-base", "docs-sync", "git-hooks"]
-}

@@ -155,3 +155,22 @@ Each research file should include YAML front matter with `title`, `author`, `dat
 ## Custom Commands
 
 - `/commit-push` - Stage, commit (conventional commits format), and push. Auto-excludes debug files, binaries, logs, temp files.
+
+<!-- business-logic-skill: explore-first (managed by install_hooks.py) -->
+
+## Explore via the business-logic knowledge base first
+
+When asked to understand business logic, locate a feature, explain how
+something works, or find the code for a given concept, **consult the
+living knowledge base at `.claude/skills/business-logic/` before re-deriving the design from
+source or grepping blindly.** It has one `overview.md` per business
+domain, plus flow docs, call-relation graphs, DB schemas and pitfall
+notes, kept in sync with the code by auto-sync git hooks -- usually
+faster and more accurate than re-reading the source.
+
+Start by listing `.claude/skills/business-logic/` to see the domain directories, then read the
+relevant domain's `overview.md` and drill into its docs as needed.
+Fall back to reading source only when a doc is missing or stale, and
+backfill what you learned so the next exploration is current.
+
+<!-- /business-logic-skill -->

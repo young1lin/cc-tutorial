@@ -7,3 +7,5 @@
 
 # Local git worktrees
 .claude/worktrees/
+# Python virtualenv (uv / venv) -- machine-specific, never commit
+.venv/

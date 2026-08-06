@@ -1,0 +1,25 @@
+# Dependencies for the auto-sync engine -- installed ON DEMAND, not all at once.
+#
+# The default runner is a CLI (claude / codex / opencode): it spawns that CLI as
+# a subprocess and needs NO third-party packages. Install the extras below ONLY
+# for the sync path you actually use:
+#
+#   pip install "pydantic-ai-slim[openai]"      # SYNC_RUNNER=api + a domestic/
+#                                               #   OpenAI-compatible provider
+#                                               #   (Zhipu / DeepSeek / Qwen /
+#                                               #   OpenRouter / ...)
+#   pip install "pydantic-ai-slim[anthropic]"   # SYNC_RUNNER=api + Anthropic direct
+#   pip install "claude-agent-sdk"              # SYNC_BACKEND=claude-sdk (legacy)
+#
+# Everything below is commented out so `pip install -r` installs nothing by
+# default -- uncomment the line(s) for your path, or use the one-liners above.
+
+# --- SYNC_RUNNER=api: PydanticAI direct API calls ---
+# Pick the extra matching your SYNC_BACKEND:
+#   openai     -> any OpenAI-compatible endpoint
+#   anthropic  -> Anthropic Messages API
+# pydantic-ai-slim[openai]>=2.0
+# pydantic-ai-slim[anthropic]>=2.0
+
+# --- SYNC_BACKEND=claude-sdk (legacy only; pre-1.0, field names can shift) ---
+# claude-agent-sdk>=0.1.53,<1.0
