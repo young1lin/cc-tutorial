@@ -9,3 +9,6 @@
 .claude/worktrees/
 # Python virtualenv (uv / venv) -- machine-specific, never commit
 .venv/
+# Python bytecode cache -- never commit
+__pycache__/
+*.pyc
